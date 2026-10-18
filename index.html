@@ -98,7 +98,7 @@ nav.tabs button[aria-selected="true"] .k{color:var(--ai)}
 .focus .w.new{background:var(--ai-soft);color:var(--ai)}
 
 /* mascot (red panda) — animated by tama-rig.js */
-.cat{width:100%;height:100%;position:relative}
+.cat{width:100%;height:100%;position:relative;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .cat .rig-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cat img.fb{position:absolute;left:0;right:0;bottom:1.5%;width:100%;height:82%;object-fit:contain;object-position:50% 100%;transform-origin:50% 100%;animation:fbBreath 3.6s ease-in-out infinite;user-select:none;pointer-events:none}
 .cat.rigged img.fb{display:none}
@@ -472,7 +472,10 @@ const SFX={
   flip:()=>tone(784,0,.08,{type:"triangle",vol:.05,slide:1.25}),
   listen:()=>{tone(988,0,.08,{vol:.06});tone(1319,.06,.1,{vol:.05})},
   pause:()=>{tone(1319,0,.08,{vol:.05});tone(988,.06,.1,{vol:.05})},
-  done:()=>[523,587,659,784,880,1047].forEach((f,i)=>tone(f,i*.08,.45,{type:"triangle",vol:.07}))
+  done:()=>[523,587,659,784,880,1047].forEach((f,i)=>tone(f,i*.08,.45,{type:"triangle",vol:.07})),
+  boing:()=>{tone(260,0,.22,{vol:.11,slide:2.4});tone(520,.05,.12,{type:"triangle",vol:.04,slide:1.6})},
+  giggle:()=>[880,988,880,1047,988].forEach((f,i)=>tone(f*(1+Math.random()*.05),i*.07,.09,{type:"triangle",vol:.06})),
+  whoosh:()=>{tone(300,0,.5,{type:"sawtooth",vol:.025,slide:3});tone(1200,.45,.3,{vol:.05,slide:.5})}
 };
 function sfx(n){if(!settings.sound)return;try{SFX[n]&&SFX[n]()}catch(e){}if(navigator.vibrate&&(n==="wrong"||n==="perfect")){try{navigator.vibrate(n==="wrong"?[30,40,30]:15)}catch(e){}}}
 
@@ -1434,6 +1437,23 @@ function confetti(){
 
 /* ============ Tama picker ============ */
 
+
+
+/* ============ tapping Tama ============ */
+const POKE_LINES={startle:["¡Eh!","¡Ay! ¿Qué pasa?","なに？ (¿qué?)","¡Me has asustado!","びっくりした！ (¡qué susto!)"],
+  giggle:["¡Jajaja, para!","くすぐったい！ (¡cosquillas!)","¡Ja, ja! ¡Que me haces cosquillas!","やめて〜 (¡para!)"],
+  spin:["¡Me mareo! 目が回る〜","¡Uaaa! ¡Todo da vueltas!","ふらふら… (estoy mareada)"]};
+let pokeTextTimer=null;
+window.addEventListener("tamapoke",e=>{
+  const {kind,el}=e.detail;
+  sfx(kind==="spin"?"whoosh":kind==="giggle"?"giggle":"boing");
+  if(navigator.vibrate)try{navigator.vibrate(kind==="spin"?[20,30,20,30,20]:10)}catch(_){}
+  if(!el.closest("#tamaCat"))return;
+  if($(".tama").classList.contains("speaking"))return;
+  const line=$("#tamaSay"),prev=line.textContent;
+  line.textContent=pick(POKE_LINES[kind]);
+  clearTimeout(pokeTextTimer);pokeTextTimer=setTimeout(()=>{if(line.textContent!==prev&&!$(".tama").classList.contains("speaking"))line.textContent=prev},2200);
+});
 
 /* ============ boot ============ */
 loadAll();
