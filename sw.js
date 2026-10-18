@@ -1,5 +1,5 @@
 // Hanashi service worker: keeps the app shell available offline.
-const CACHE = "hanashi-v6";
+const CACHE = "hanashi-v7";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./wanakana.min.js", "./tama-rig.js", "./tama-neutral.webp", "./tama-happy.webp", "./tama-talk.webp", "./tama-listen.webp", "./tama-think.webp", "./tama-oops.webp"];
 
 self.addEventListener("install", e => {
