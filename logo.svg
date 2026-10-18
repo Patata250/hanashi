@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="46" fill="#D7262E"/>
+  <g transform="translate(13 9) scale(.87)">
+    <!-- 八 : the two strokes are the cream ears, dark inner ear at the tips -->
+    <path d="M80 22c-5 28-22 54-50 76 5 6 10 10 16 13 28-21 44-48 52-80 1-6-2-10-8-11-5-1-9 0-10 2z" fill="#FFF1E0"/>
+    <path d="M84 32c-3 12-8 23-15 33l9 3c5-9 9-20 11-32z" fill="#5A2A1E"/>
+    <path d="M120 22c5 28 22 54 50 76-5 6-10 10-16 13-28-21-44-48-52-80-1-6 2-10 8-11 5-1 9 0 10 2z" fill="#FFF1E0"/>
+    <path d="M116 32c3 12 8 23 15 33l-9 3c-5-9-9-20-11-32z" fill="#5A2A1E"/>
+    <!-- face lives in the red space between the ears -->
+    <ellipse cx="85" cy="68" rx="7.5" ry="4.5" fill="#FFF1E0" transform="rotate(-12 85 68)"/>
+    <ellipse cx="115" cy="68" rx="7.5" ry="4.5" fill="#FFF1E0" transform="rotate(12 115 68)"/>
+    <ellipse cx="86" cy="86" rx="8" ry="9" fill="#2E1712"/><circle cx="88.8" cy="82.6" r="2.8" fill="#fff"/><circle cx="83.6" cy="89.6" r="1.2" fill="#fff" opacity=".8"/>
+    <ellipse cx="114" cy="86" rx="8" ry="9" fill="#2E1712"/><circle cx="116.8" cy="82.6" r="2.8" fill="#fff"/><circle cx="111.6" cy="89.6" r="1.2" fill="#fff" opacity=".8"/>
+    <path d="M94.5 100c0-2.6 2.4-3.8 5.5-3.8s5.5 1.2 5.5 3.8-2.8 5.2-5.5 5.2-5.5-2.6-5.5-5.2z" fill="#2E1712"/>
+    <ellipse cx="72" cy="100" rx="6" ry="3.6" fill="#F3A08F" opacity=".75"/><ellipse cx="128" cy="100" rx="6" ry="3.6" fill="#F3A08F" opacity=".75"/>
+    <!-- 刀 : horizontal stroke = muzzle line, the long stroke down = striped tail with the hook as its tip -->
+    <path d="M60 114h88c7 0 11 4 11 11v50c0 15-9 23-24 25l-10 1c-5-5-5-11 0-15l8-1c5-1 8-3 8-8v-45H60c-6 0-9-3-9-9s3-9 9-9z" fill="#FFF1E0"/>
+    <g fill="#7A3418"><rect x="139" y="141" width="20" height="8" rx="3"/><rect x="139" y="160" width="20" height="8" rx="3"/><path d="M139 179h20c-.5 6-3 10-7.5 12H139z"/></g>
+    <path d="M103 134c-4 25-20 47-50 60 4 6 8 10 12 12 32-15 50-40 56-69 1-5-2-8-7-9-6-1-10 1-11 6z" fill="#FFF1E0"/>
+  </g>
+</svg>

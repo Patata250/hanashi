@@ -1,4 +1,4 @@
-# Hanashi · 話
+# ¿Wakarú? · 分かる？
 
 Compañero para aprender japonés hablando: conversación por voz y por escrito, corrección de cada frase, vocabulario propio con repetición espaciada y explicación de kanji.
 
