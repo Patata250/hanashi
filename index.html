@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Maru+Gothic:wght@400;500;700&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="wanakana.min.js"></script>
+<script src="tama-rig.js"></script>
 <style>
 /* Layout: one-screen app. Header · Tama strip (mascot + status) · conversation log · composer (mic, kana input, send) · tab bar.
    Look: washi paper ground, ai-iro indigo, shu vermilion seal, matcha for success, kincha gold accents, seigaiha waves used sparingly. */
@@ -77,7 +78,7 @@ nav.tabs button[aria-selected="true"] .k{color:var(--ai)}
 
 /* Tama strip */
 .tama{display:flex;align-items:flex-end;gap:10px;padding-block:6px 0;background:var(--seigaiha) repeat-x bottom/40px 20px;border-bottom:1px solid var(--line);position:relative}
-.tama .catbox{width:86px;height:86px;flex:none;margin-bottom:-4px}
+.tama .catbox{width:98px;height:98px;flex:none;margin-bottom:-6px}
 .say{flex:1;min-width:0;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:8px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:5px;position:relative}
 .say .line{font-size:14px;font-weight:600;min-height:1.4em}
 .goal{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -93,44 +94,12 @@ nav.tabs button[aria-selected="true"] .k{color:var(--ai)}
 .focus .w{font-family:var(--f-jp);font-size:13px;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:1px 7px}
 .focus .w.new{background:var(--ai-soft);color:var(--ai)}
 
-/* mascot (red panda) */
+/* mascot (red panda) — animated by tama-rig.js */
 .cat{width:100%;height:100%;position:relative}
-.cat .pop,.cat .rig{position:absolute;inset:0;transform-origin:50% 96%}
-.cat img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;opacity:0;transition:opacity .16s ease;user-select:none;-webkit-user-drag:none;pointer-events:none}
-.cat .p-neutral{opacity:1}
-.cat.listen .p-listen{opacity:1}.cat.listen .p-neutral{opacity:0}
-.cat.think .p-think{opacity:1}.cat.think :is(.p-neutral,.p-listen){opacity:0}
-.cat.talk .p-talk{opacity:1}.cat.talk :is(.p-neutral,.p-listen,.p-think){opacity:0}
-.cat:is(.oops,.sad) .p-oops{opacity:1}.cat:is(.oops,.sad) :is(.p-neutral,.p-listen,.p-think,.p-talk){opacity:0}
-.cat.happy .p-happy{opacity:1}.cat.happy :is(.p-neutral,.p-listen,.p-think,.p-talk,.p-oops){opacity:0}
-.cat.peek .p-listen{opacity:1}.cat.peek .p-neutral{opacity:0}
-/* idle: breathing with a soft, uneven rhythm */
-.cat .rig{animation:breathe 3.7s cubic-bezier(.45,0,.55,1) infinite}
-@keyframes breathe{0%,100%{transform:scale(1,1)}38%{transform:scale(1.012,.986) translateY(.5%)}62%{transform:scale(.996,1.008)}}
-/* talking: lively bobbing, irregular so it does not look mechanical */
-.cat.talk .rig{animation:chatter 1.35s ease-in-out infinite}
-@keyframes chatter{0%,100%{transform:translateY(0) rotate(0)}14%{transform:translateY(-2.5%) rotate(-1.2deg)}30%{transform:translateY(0) rotate(0) scale(1.01,.99)}47%{transform:translateY(-1.6%) rotate(1deg)}63%{transform:translateY(-3%) rotate(-.4deg)}80%{transform:translateY(-.6%) rotate(.8deg)}}
-/* happy: squash, jump, land */
-.cat.happy .rig{animation:hop .62s cubic-bezier(.3,.7,.4,1) 2}
-@keyframes hop{0%{transform:scale(1,1)}14%{transform:scale(1.08,.9)}42%{transform:translateY(-13%) scale(.95,1.06) rotate(-2deg)}70%{transform:translateY(0) scale(1.06,.93)}86%{transform:scale(.98,1.02)}100%{transform:scale(1,1)}}
-/* listening: leans in and holds, with a tiny sway */
-.cat.listen .rig{animation:lean 2.6s ease-in-out infinite}
-@keyframes lean{0%,100%{transform:rotate(-2.5deg) translateX(-1%)}50%{transform:rotate(-4deg) translateX(-1.6%) translateY(-.6%)}}
-/* thinking: slow side-to-side ponder */
-.cat.think .rig{animation:ponder 2.2s ease-in-out infinite}
-@keyframes ponder{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(-1.5deg) translateY(-.8%)}}
-/* oops: small flinch, then a sheepish droop */
-.cat:is(.oops,.sad) .rig{animation:flinch .5s ease-out 1 both}
-@keyframes flinch{0%{transform:translateX(0)}20%{transform:translateX(-2.5%) rotate(-2deg)}45%{transform:translateX(2%) rotate(1.5deg)}70%{transform:translateX(-1%)}100%{transform:translateY(1.5%) scale(1.01,.98)}}
-/* pose change "pop" + random idle fidgets */
-.cat .pop.go{animation:posepop .32s cubic-bezier(.3,1.6,.5,1)}
-@keyframes posepop{0%{transform:scale(.95,1.04)}55%{transform:scale(1.03,.97)}100%{transform:scale(1)}}
-.cat .pop.f-hop{animation:fhop .55s cubic-bezier(.3,.7,.4,1)}
-@keyframes fhop{0%,100%{transform:none}25%{transform:scale(1.05,.94)}55%{transform:translateY(-6%) scale(.98,1.03)}80%{transform:scale(1.03,.97)}}
-.cat .pop.f-tilt{animation:ftilt 1.6s ease-in-out}
-@keyframes ftilt{0%,100%{transform:none}30%,70%{transform:rotate(4deg)}}
-.cat .pop.f-wiggle{animation:fwig .7s ease-in-out}
-@keyframes fwig{0%,100%{transform:none}20%{transform:rotate(-3deg)}40%{transform:rotate(3deg)}60%{transform:rotate(-2deg)}80%{transform:rotate(1deg)}}
+.cat .rig-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cat img.fb{position:absolute;left:0;right:0;bottom:1.5%;width:100%;height:82%;object-fit:contain;object-position:50% 100%;transform-origin:50% 100%;animation:fbBreath 3.6s ease-in-out infinite;user-select:none;pointer-events:none}
+.cat.rigged img.fb{display:none}
+@keyframes fbBreath{50%{transform:scale(1.012,.988)}}
 
 /* messages */
 .msgs{display:flex;flex-direction:column;gap:14px}
@@ -224,7 +193,7 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 
 /* Tama speaking in her bubble */
 .tama .catbox{transition:width .35s cubic-bezier(.3,1.4,.5,1),height .35s cubic-bezier(.3,1.4,.5,1)}
-.tama.speaking .catbox{width:124px;height:124px}
+.tama.speaking .catbox{width:134px;height:134px}
 .tama.speaking .say{border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft),var(--shadow)}
 .tama.speaking .goal{display:none}
 .say .line .jpline{font-size:19px;line-height:2.05}
@@ -466,9 +435,8 @@ function furi(t){
 const plain=t=>String(t??"").replace(/\[[\u3040-\u30ffー・ ]+\]/g,"");
 
 /* ============ Tama, the mascot (original design) ============ */
-// Tama, the red panda: six illustrated poses stacked and cross-faded; motion comes from CSS + small random fidgets.
-const POSES=["neutral","happy","talk","listen","think","oops"];
-function catSVG(){return `<div class="cat" aria-hidden="true"><div class="pop"><div class="rig">${POSES.map(p=>`<img class="p-${p}" src="tama-${p}.webp" alt="" draggable="false" decoding="async">`).join("")}</div></div></div>`}
+// Tama, the red panda. tama-rig.js animates every .cat element (mesh deformation over the pose drawings).
+function catSVG(){return `<div class="cat" aria-hidden="true"><img class="fb" src="tama-neutral.webp" alt="" draggable="false"></div>`}
 let moodTimer=null;
 function tama(mood,text,hold){
   const c=$("#tamaCat .cat");if(!c)return;
@@ -1463,26 +1431,9 @@ function confetti(){
 /* ============ Tama picker ============ */
 
 
-/* ============ Tama motion helpers ============ */
-function posePop(c){const p=c.querySelector(".pop");if(!p)return;p.className="pop";void p.offsetWidth;p.classList.add("go")}
-// observe class changes made anywhere (setVState etc.) to pop on every pose switch
-const poseObs=new MutationObserver(ms=>ms.forEach(m=>{if(m.attributeName==="class"&&m.oldValue!==m.target.className)posePop(m.target)}));
-function watchCat(){const c=$("#tamaCat .cat");if(c)poseObs.observe(c,{attributes:true,attributeOldValue:true,attributeFilter:["class"]})}
-function fidget(){
-  const c=$("#tamaCat .cat");
-  if(c&&c.className==="cat"&&!document.hidden&&!matchMedia("(prefers-reduced-motion: reduce)").matches){
-    const r=Math.random(),p=c.querySelector(".pop");
-    if(r<.35){p.className="pop";void p.offsetWidth;p.classList.add("f-hop")}
-    else if(r<.65){p.className="pop";void p.offsetWidth;p.classList.add("f-tilt")}
-    else if(r<.85){c.classList.add("peek");setTimeout(()=>c.classList.remove("peek"),1500)}
-    else{p.className="pop";void p.offsetWidth;p.classList.add("f-wiggle")}
-  }
-  setTimeout(fidget,6000+Math.random()*9000);
-}
-
 /* ============ boot ============ */
 loadAll();
-$("#tamaCat").innerHTML=catSVG();watchCat();setTimeout(fidget,5000);
+$("#tamaCat").innerHTML=catSVG();
 applyKana();renderAll();renderQuota();renderAssist();tama("idle",pick(IDLE_LINES));
 if(!settings.key)showOnboarding();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
