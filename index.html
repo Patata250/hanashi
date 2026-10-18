@@ -20,8 +20,9 @@
    Look: washi paper ground, ai-iro indigo, shu vermilion seal, matcha for success, kincha gold accents, seigaiha waves used sparingly. */
 :root{
   --bg:#f4efe6; --paper:#fbf8f2; --surface:#ffffff; --ink:#23252d; --muted:#6b6658; --line:#e3dccd;
-  --ai:#26407a; --ai-soft:#e6eaf3; --shu:#c8402c; --shu-soft:#f8e6e0; --ok:#4f7a33; --ok-soft:#e8f0dc; --warn:#a8741c; --warn-soft:#f6ecd6; --gold:#b8862b;
+  --ai:#26407a; --ai-soft:#e6eaf3; --shu:#b8371f; --shu-soft:#f8e6e0; --ok:#41692a; --ok-soft:#e8f0dc; --warn:#865a0f; --warn-soft:#f6ecd6; --gold:#b8862b;
   --shadow:0 1px 2px rgba(60,45,20,.06),0 6px 18px rgba(60,45,20,.07);
+  --me-bg:#26407a; --me-fg:#ffffff; --me-sub:#d9e0f2; --me-line:rgba(255,255,255,.28);
   --f-disp:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
   --f-jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
   --f-ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -33,6 +34,7 @@
   --bg:#12151d; --paper:#171b25; --surface:#1d2230; --ink:#ebe6da; --muted:#a39d8f; --line:#2c3242;
   --ai:#93a9e0; --ai-soft:#222c46; --shu:#ec7660; --shu-soft:#3b221d; --ok:#9cc46f; --ok-soft:#1f2e18; --warn:#e3b55e; --warn-soft:#33291a; --gold:#d8aa52;
   --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3); color-scheme:dark;
+  --me-bg:#2f4a8a; --me-fg:#f4f6fc; --me-sub:#cdd7f0; --me-line:rgba(255,255,255,.22);
   --washi:none;
   --seigaiha:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%2393a9e0' stroke-opacity='.10' stroke-width='1.2'%3E%3Cpath d='M0 20a20 20 0 0 1 40 0M6 20a14 14 0 0 1 28 0M12 20a8 8 0 0 1 16 0M-20 10a20 20 0 0 1 40 0M-14 10a14 14 0 0 1 28 0M-8 10a8 8 0 0 1 16 0M20 10a20 20 0 0 1 40 0M26 10a14 14 0 0 1 28 0M32 10a8 8 0 0 1 16 0'/%3E%3C/g%3E%3C/svg%3E")}}
 html,body{height:100%;margin:0}
@@ -92,26 +94,27 @@ nav.tabs button[aria-selected="true"] .k{color:var(--shu)}
 .cat{width:100%;height:100%;overflow:visible}
 .cat *{transform-box:view-box}
 .cat .eyes-happy,.cat .mouth-talk,.cat .sweat,.cat .dots,.cat .spark{display:none}
-.cat .blink{transform-origin:70px 63px;animation:blink 5s infinite}
-.cat .tail{transform-origin:94px 112px;animation:sway 3.2s ease-in-out infinite}
-.cat .head{transform-origin:70px 84px;transition:transform .3s}
-.cat .ear-l{transform-origin:50px 36px;transition:transform .3s}
-.cat .ear-r{transform-origin:90px 36px;transition:transform .3s}
+.cat .blink{transform-origin:100px 84px;animation:blink 5s infinite}
+.cat .tail{transform-origin:126px 178px;animation:sway 3.4s ease-in-out infinite}
+.cat .head{transform-origin:100px 126px;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.cat .ear-l{transform-origin:66px 42px;transition:transform .3s}
+.cat .ear-r{transform-origin:134px 42px;transition:transform .3s}
 .cat .pupils{transition:transform .3s}
-.cat .bodyall{transform-origin:70px 120px}
+.cat .bodyall{transform-origin:100px 190px;animation:breath 4s ease-in-out infinite}
+@keyframes breath{0%,100%{transform:scale(1,1)}50%{transform:scale(1.012,.988)}}
 @keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
-@keyframes sway{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
-@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-9px)}}
-@keyframes talk{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+@keyframes sway{0%,100%{transform:rotate(0)}50%{transform:rotate(-9deg)}}
+@keyframes hop{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:translateY(0) scale(1.06,.94)}45%{transform:translateY(-14px) scale(.97,1.03)}75%{transform:translateY(0) scale(1.04,.96)}}
+@keyframes talk{from{transform:scaleY(.4)}to{transform:scaleY(1)}}
 @keyframes twitch{0%,80%,100%{transform:rotate(0)}88%{transform:rotate(-12deg)}}
 @keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 @keyframes dot{0%,100%{opacity:.25}50%{opacity:1}}
-.cat.talk .mouth-idle{display:none}.cat.talk .mouth-talk{display:block;transform-origin:70px 75px;animation:talk .18s ease-in-out infinite alternate}
-.cat.happy .blink{display:none}.cat.happy .eyes-happy{display:block}.cat.happy .bodyall{animation:hop .45s ease 2}.cat.happy .spark{display:block;animation:twinkle 1s ease-in-out 2}
-.cat.oops .sweat{display:block}.cat.oops .head{transform:rotate(4deg)}
-.cat.sad .ear-l{transform:rotate(-24deg)}.cat.sad .ear-r{transform:rotate(24deg)}.cat.sad .head{transform:translateY(2px)}
-.cat.listen .head{transform:rotate(-7deg)}.cat.listen .ear-r{animation:twitch 1.4s infinite}
-.cat.think .dots{display:block}.cat.think .dots circle{animation:dot 1s infinite}.cat.think .dots circle:nth-child(2){animation-delay:.2s}.cat.think .dots circle:nth-child(3){animation-delay:.4s}.cat.think .pupils{transform:translate(2px,-2px)}
+.cat.talk .mouth-idle{display:none}.cat.talk .mouth-talk{display:block;transform-origin:100px 104px;animation:talk .17s ease-in-out infinite alternate}
+.cat.happy .blink{display:none}.cat.happy .eyes-happy{display:block}.cat.happy .bodyall{animation:hop .55s ease 2}.cat.happy .spark{display:block;transform-origin:100px 60px;animation:twinkle 1.1s ease-in-out 2}
+.cat.oops .sweat{display:block}.cat.oops .head{transform:rotate(5deg)}
+.cat.sad .ear-l{transform:rotate(-26deg)}.cat.sad .ear-r{transform:rotate(26deg)}.cat.sad .head{transform:translateY(3px)}.cat.sad .pupils{transform:translateY(3px)}
+.cat.listen .head{transform:rotate(-8deg)}.cat.listen .ear-r{animation:twitch 1.4s infinite}
+.cat.think .dots{display:block}.cat.think .dots circle{animation:dot 1s infinite}.cat.think .dots circle:nth-child(2){animation-delay:.2s}.cat.think .dots circle:nth-child(3){animation-delay:.4s}.cat.think .pupils{transform:translate(3px,-3px)}
 
 /* messages */
 .msgs{display:flex;flex-direction:column;gap:14px}
@@ -122,15 +125,15 @@ nav.tabs button[aria-selected="true"] .k{color:var(--shu)}
 .msg.me{align-self:flex-end;align-items:flex-end}
 .bubble{border-radius:18px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
 .msg.ai .bubble{border-top-left-radius:5px}
-.msg.me .bubble{background:var(--ai);border-color:var(--ai);color:var(--paper);border-top-right-radius:5px;box-shadow:none}
+.msg.me .bubble{background:var(--me-bg);border-color:var(--me-bg);color:var(--me-fg);border-top-right-radius:5px;box-shadow:none}
 .msg.me .said{font-family:var(--f-jp);font-size:17px}
-.msg.me .written{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.25)}
+.msg.me .written{margin-top:6px;padding-top:6px;border-top:1px solid var(--me-line)}
 .msg.me .written .jpline{font-size:17px;line-height:2}
-.msg.me .written rt{color:rgba(255,255,255,.75)}
+.msg.me .written rt{color:var(--me-sub)}
+.msg.me .written .tok.newish{text-decoration-color:#f0c46a}.msg.me .written .tok.known{text-decoration-color:#a8d58a}
 .msg.me .written .tok:hover,.msg.me .written .tok:active{background:rgba(255,255,255,.15)}
-.msg.me .metr{font-size:13px;opacity:.85}
-.msg.live .bubble{background:var(--paper);color:var(--ink);border:1.5px dashed var(--shu)}
-.msg.live .said{color:var(--ink)}
+.msg.me .metr{font-size:14px;color:var(--me-sub)}
+
 .jpline{font-family:var(--f-jp);font-size:20px;line-height:2.15;word-break:break-word}
 .tok{border:0;background:none;padding:0 1px;border-radius:5px;line-height:inherit;font-size:inherit;font-family:inherit;color:inherit;transition:background-color .15s}
 .tok:hover{background:var(--ai-soft)}
@@ -190,6 +193,17 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .micbtn.on.thinking{animation:breathe 1.2s ease-in-out infinite}
 @keyframes ring{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.55)}}
 @keyframes breathe{50%{transform:scale(.92)}}
+.lpanel{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1.5px solid var(--shu);border-radius:16px;padding:10px 12px;animation:pop .25s ease both}
+.lpanel canvas{width:100%;height:44px;display:block}
+.lptext{font-size:20px;line-height:1.5;color:var(--ink);min-height:1.5em;word-break:break-word}
+.lptext:empty::before{content:"…";color:var(--muted)}
+.lpbar{height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+.lpbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .1s linear}
+.lphint{font-size:12px;color:var(--muted)}
+.composer.listening .inputwrap,.composer.listening .send{visibility:hidden}
+.micbtn{--lvl:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.micbtn.on.listening{transform:scale(calc(1 + var(--lvl) * .22));transition:transform .06s linear}
+.micbtn.on.listening::before{animation:none;opacity:calc(.25 + var(--lvl) * .75);transform:scale(calc(1.1 + var(--lvl) * .7));transition:transform .08s linear,opacity .08s linear}
 .notice{font-size:13px;color:var(--muted);background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
@@ -304,6 +318,21 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <radialGradient id="tfur" cx="45%" cy="35%" r="75%"><stop offset="0" stop-color="#fffdf8"/><stop offset=".65" stop-color="#f6ecdf"/><stop offset="1" stop-color="#e3d1bb"/></radialGradient>
+  <radialGradient id="thead" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#fffefb"/><stop offset=".7" stop-color="#f7eee2"/><stop offset="1" stop-color="#e6d5c0"/></radialGradient>
+  <linearGradient id="torange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3a55a"/><stop offset="1" stop-color="#d9782f"/></linearGradient>
+  <linearGradient id="tdark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5d5560"/><stop offset="1" stop-color="#3c3540"/></linearGradient>
+  <linearGradient id="tear" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6b5b0"/><stop offset="1" stop-color="#eaa29f"/></linearGradient>
+  <radialGradient id="tiris" cx="50%" cy="70%" r="60%"><stop offset="0" stop-color="#d9a24a"/><stop offset=".55" stop-color="#7a4b22"/><stop offset="1" stop-color="#2a1c14"/></radialGradient>
+  <linearGradient id="tscarf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2513a"/><stop offset="1" stop-color="#b8341f"/></linearGradient>
+  <radialGradient id="tblush"><stop offset="0" stop-color="#f4a3a0" stop-opacity=".75"/><stop offset="1" stop-color="#f4a3a0" stop-opacity="0"/></radialGradient>
+  <radialGradient id="tshadow"><stop offset="0" stop-color="#3a2a1a" stop-opacity=".22"/><stop offset="1" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  <linearGradient id="ttail" gradientUnits="userSpaceOnUse" x1="0" y1="182" x2="0" y2="128"><stop offset="0" stop-color="#f8efe4"/><stop offset=".62" stop-color="#f8efe4"/><stop offset=".7" stop-color="#eea056"/><stop offset="1" stop-color="#d9782f"/></linearGradient>
+  <clipPath id="tbodyclip"><path d="M100 96c38 0 56 34 54 64-2 20-22 28-54 28s-52-8-54-28c-2-30 16-64 54-64z"/></clipPath>
+  <clipPath id="theadclip"><path d="M100 30c40 0 66 22 66 52 0 30-28 46-66 46S34 112 34 82c0-30 26-52 66-52z"/></clipPath>
+  <pattern id="tdots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1.4" fill="#fff" opacity=".75"/></pattern>
+</defs></svg>
 <div class="app">
   <header class="top pad">
     <div class="hanko" aria-hidden="true">話</div>
@@ -330,7 +359,13 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
           <button class="chip" id="btnAskEs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>Preguntar en español</button>
           <button class="chip" id="btnEnd">Terminar y repasar</button>
         </div>
-        <div class="composer">
+        <div class="lpanel" id="listenPanel" hidden>
+          <canvas id="wave" aria-hidden="true"></canvas>
+          <div class="lptext jp" id="lpText" aria-live="polite"></div>
+          <div class="lpbar"><i id="lpBar"></i></div>
+          <div class="row" style="justify-content:space-between"><span class="lphint" id="lpHint"></span><span class="row" style="gap:6px"><button class="mini" id="lpCancel">Cancelar</button><button class="mini on" id="lpSend">Enviar ya</button></span></div>
+        </div>
+        <div class="composer" id="composerRow">
           <button class="micbtn" id="btnMic" aria-label="Empezar a hablar"></button>
           <div class="inputwrap">
             <textarea id="input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Escribe en romaji: konnichiwa"></textarea>
@@ -383,38 +418,64 @@ const hasJP=s=>/[぀-ヿ一-龯]/.test(s||"");
 function rubyHTML(s,r){return (r&&r!==s&&(hasKanji(s)||(settings.kataHelp&&hasKata(s))))?`<ruby>${esc(s)}<rt>${esc(r)}</rt></ruby>`:esc(s)}
 
 /* ============ Tama, the mascot (original design) ============ */
-function catSVG(){return `<svg class="cat" viewBox="0 0 140 140" aria-hidden="true">
- <g class="bodyall">
-  <ellipse cx="70" cy="128" rx="50" ry="6" fill="#000" opacity=".08"/>
-  <rect x="18" y="108" width="104" height="22" rx="11" fill="#c8402c" stroke="#3b2f28" stroke-width="2"/>
-  <path d="M26 114h88" stroke="#e8a090" stroke-width="1.5" stroke-dasharray="3 4" opacity=".7"/>
-  <circle cx="20" cy="110" r="3.2" fill="#d8aa52"/><circle cx="120" cy="110" r="3.2" fill="#d8aa52"/>
-  <g class="tail"><path d="M92 112c22 2 30-14 22-30" fill="none" stroke="#3b2f28" stroke-width="12" stroke-linecap="round"/><path d="M92 112c22 2 30-14 22-30" fill="none" stroke="#f7efe2" stroke-width="8" stroke-linecap="round"/><path d="M116 88c2-3 1-6-2-8" fill="none" stroke="#e39a4a" stroke-width="8" stroke-linecap="round"/></g>
-  <path d="M42 112c-4-24 8-40 28-40s32 16 28 40z" fill="#f7efe2" stroke="#3b2f28" stroke-width="2.2" stroke-linejoin="round"/>
-  <path d="M60 112c0-14 4-22 10-22s10 8 10 22z" fill="#fffaf2"/>
-  <path d="M84 84c8 4 12 12 12 20" fill="none" stroke="#e39a4a" stroke-width="6" stroke-linecap="round" opacity=".9"/>
-  <ellipse cx="57" cy="113" rx="8" ry="5" fill="#fffaf2" stroke="#3b2f28" stroke-width="2"/><ellipse cx="83" cy="113" rx="8" ry="5" fill="#fffaf2" stroke="#3b2f28" stroke-width="2"/>
-  <g class="head">
-   <g class="ear-l"><path d="M44 44L38 14l26 16z" fill="#f7efe2" stroke="#3b2f28" stroke-width="2.2" stroke-linejoin="round"/><path d="M45 38l-3-16 13 9z" fill="#f2b3b0"/></g>
-   <g class="ear-r"><path d="M96 44l6-30-26 16z" fill="#e39a4a" stroke="#3b2f28" stroke-width="2.2" stroke-linejoin="round"/><path d="M95 38l3-16-13 9z" fill="#f2b3b0"/></g>
-   <ellipse cx="70" cy="58" rx="35" ry="29" fill="#f7efe2" stroke="#3b2f28" stroke-width="2.2"/>
-   <path d="M82 31c10 2 18 9 21 18-7 0-13-4-16-9-2 4-6 6-10 6 1-6 2-11 5-15z" fill="#e39a4a"/>
-   <path d="M44 42c4-6 10-9 15-9-1 5-4 9-9 11-2 0-4-1-6-2z" fill="#4b4650"/>
-   <circle cx="47" cy="68" r="6" fill="#f2b3b0" opacity=".55"/><circle cx="93" cy="68" r="6" fill="#f2b3b0" opacity=".55"/>
-   <g class="blink"><g class="pupils"><ellipse cx="57" cy="60" rx="5" ry="6.5" fill="#2a2420"/><ellipse cx="83" cy="60" rx="5" ry="6.5" fill="#2a2420"/><circle cx="58.8" cy="57.5" r="1.9" fill="#fff"/><circle cx="84.8" cy="57.5" r="1.9" fill="#fff"/></g></g>
-   <g class="eyes-happy" fill="none" stroke="#2a2420" stroke-width="2.6" stroke-linecap="round"><path d="M51 62q6-8 12 0"/><path d="M77 62q6-8 12 0"/></g>
-   <path d="M67.5 67h5l-2.5 3z" fill="#e58a8a" stroke="#3b2f28" stroke-width="1" stroke-linejoin="round"/>
-   <path class="mouth-idle" d="M64 72q3 3.5 6 0q3 3.5 6 0" fill="none" stroke="#3b2f28" stroke-width="1.8" stroke-linecap="round"/>
-   <ellipse class="mouth-talk" cx="70" cy="74.5" rx="4" ry="3.6" fill="#b5524a" stroke="#3b2f28" stroke-width="1.4"/>
-   <g stroke="#3b2f28" stroke-width="1.2" stroke-linecap="round" opacity=".55"><path d="M40 66l-12-2M40 70l-12 2M100 66l12-2M100 70l12 2"/></g>
-   <path class="sweat" d="M104 40c3 4 4 7 2 9s-5 0-5-3 1-4 3-6z" fill="#8fc3e8" stroke="#3b2f28" stroke-width="1"/>
+function catSVG(){return `<svg class="cat" viewBox="0 0 200 200" aria-hidden="true"><g class="bodyall">
+  <ellipse cx="100" cy="188" rx="64" ry="9" fill="url(#tshadow)"/>
+  <g class="tail">
+    <path d="M124 178c40 8 58-14 50-46" fill="none" stroke="#e1cdb4" stroke-width="18" stroke-linecap="round"/>
+    <path d="M124 178c40 8 58-14 50-46" fill="none" stroke="url(#ttail)" stroke-width="14" stroke-linecap="round"/>
   </g>
-  <path d="M46 83q24 12 48 0" fill="none" stroke="#c8402c" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="70" cy="90" r="5.5" fill="#d8aa52" stroke="#3b2f28" stroke-width="1.6"/><path d="M70 90v3.5" stroke="#3b2f28" stroke-width="1.4"/>
- </g>
- <g class="dots" fill="#6b6658"><circle cx="106" cy="24" r="3"/><circle cx="116" cy="16" r="3.5"/><circle cx="128" cy="8" r="4"/></g>
- <g class="spark" fill="#d8aa52"><path d="M20 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/><path d="M118 34l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/><path d="M108 8l1.2 3.4 3.4 1.2-3.4 1.2-1.2 3.4-1.2-3.4-3.4-1.2 3.4-1.2z"/></g>
-</svg>`}
+  <path d="M100 96c38 0 56 34 54 64-2 20-22 28-54 28s-52-8-54-28c-2-30 16-64 54-64z" fill="url(#tfur)"/>
+  <g clip-path="url(#tbodyclip)">
+    <ellipse cx="152" cy="150" rx="26" ry="40" fill="url(#torange)" opacity=".95"/>
+    <ellipse cx="50" cy="176" rx="16" ry="12" fill="url(#tdark)" opacity=".9"/>
+    <path d="M78 120c6 24 4 46 22 60 18-14 16-36 22-60z" fill="#fffdf9" opacity=".9"/>
+    <ellipse cx="100" cy="196" rx="70" ry="16" fill="#cdb79d" opacity=".35"/>
+  </g>
+  <g>
+    <ellipse cx="80" cy="182" rx="15" ry="9.5" fill="#fffaf3"/>
+    <ellipse cx="120" cy="182" rx="15" ry="9.5" fill="#fffaf3"/>
+    <path d="M76 185v-3M84 185v-3M116 185v-3M124 185v-3" stroke="#d6c2aa" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <g class="head">
+    <g class="ear-l">
+      <path d="M46 66C40 44 42 24 52 14c12 4 26 16 34 30z" fill="url(#tdark)"/>
+      <path d="M53 56c-3-12-2-24 4-31 7 4 15 11 20 20z" fill="url(#tear)" opacity=".9"/>
+    </g>
+    <g class="ear-r">
+      <path d="M154 66c6-22 4-42-6-52-12 4-26 16-34 30z" fill="url(#torange)"/>
+      <path d="M147 56c3-12 2-24-4-31-7 4-15 11-20 20z" fill="url(#tear)" opacity=".9"/>
+    </g>
+    <path d="M100 30c40 0 66 22 66 52 0 30-28 46-66 46S34 112 34 82c0-30 26-52 66-52z" fill="url(#thead)"/>
+    <g clip-path="url(#theadclip)">
+      <path d="M110 31C130 26 158 34 168 58 160 68 146 70 136 62 130 70 116 70 108 62 106 50 106 40 110 31z" fill="url(#torange)"/>
+      <path d="M30 40c10-12 28-16 40-12-2 12-10 20-22 24-8 2-14-2-18-12z" fill="url(#tdark)"/>
+      
+    </g>
+    <ellipse cx="64" cy="102" rx="13" ry="8" fill="url(#tblush)"/>
+    <ellipse cx="136" cy="102" rx="13" ry="8" fill="url(#tblush)"/>
+    <g class="blink">
+      <g class="pupils">
+        <ellipse cx="76" cy="84" rx="11" ry="13" fill="url(#tiris)"/>
+        <ellipse cx="124" cy="84" rx="11" ry="13" fill="url(#tiris)"/>
+        <ellipse cx="72" cy="78" rx="4.2" ry="4.8" fill="#fff"/><circle cx="80" cy="91" r="1.8" fill="#fff" opacity=".85"/>
+        <ellipse cx="120" cy="78" rx="4.2" ry="4.8" fill="#fff"/><circle cx="128" cy="91" r="1.8" fill="#fff" opacity=".85"/>
+      </g>
+    </g>
+    <g class="eyes-happy" fill="none" stroke="#4a3426" stroke-width="4" stroke-linecap="round"><path d="M66 88q10-12 20 0"/><path d="M114 88q10-12 20 0"/></g>
+    <path d="M96 97.5c0-1.6 1.6-2.5 4-2.5s4 .9 4 2.5-2.2 3.5-4 3.5-4-1.9-4-3.5z" fill="#e88b8b"/>
+    <path class="mouth-idle" d="M92 104q4 4 8 0q4 4 8 0" fill="none" stroke="#7a5442" stroke-width="2.2" stroke-linecap="round"/>
+    <g class="mouth-talk"><path d="M93 103q7 2 14 0q-1 9-7 9t-7-9z" fill="#8d3b36"/><path d="M96 109q4-3 8 0q-2 3-4 3t-4-3z" fill="#e88b8b"/></g>
+    <g stroke="#cbb79f" stroke-width="1.4" stroke-linecap="round" opacity=".8"><path d="M50 96l-16-3M51 101l-15 2M150 96l16-3M149 101l15 2"/></g>
+    <path class="sweat" d="M160 52c4 6 6 10 3 13s-8 1-8-4 2-6 5-9z" fill="#9fd0f0"/>
+  </g>
+  <path d="M56 122c26 16 62 16 88 0l4 12c-30 18-66 18-96 0z" fill="url(#tscarf)"/>
+  <path d="M56 122c26 16 62 16 88 0l4 12c-30 18-66 18-96 0z" fill="url(#tdots)"/>
+  <path d="M138 128c10-2 18 2 20 10-8 2-16 0-20-4z" fill="#c43c26"/>
+  <path d="M136 132c4 8 2 16-4 20-4-6-4-14 0-18z" fill="#b8341f"/>
+  <circle cx="137" cy="131" r="4.5" fill="#d1452e"/>
+</g>
+<g class="dots" fill="#8a8172"><circle cx="160" cy="34" r="4"/><circle cx="172" cy="22" r="5"/><circle cx="187" cy="10" r="6"/></g>
+<g class="spark" fill="#e3b04b"><path d="M24 40l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/><path d="M176 50l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/><path d="M160 14l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z"/></g></svg>`}
 let moodTimer=null;
 function tama(mood,text,hold){
   const c=$("#tamaCat .cat");if(!c)return;
@@ -424,7 +485,7 @@ function tama(mood,text,hold){
   clearTimeout(moodTimer);moodTimer=null;
   if(hold)moodTimer=setTimeout(()=>{moodTimer=null;const c2=$("#tamaCat .cat");if(!c2)return;c2.classList.remove("happy","oops","sad");if(vState==="speaking")c2.classList.add("talk");else if(vState==="listening")c2.classList.add("listen")},hold);
 }
-const IDLE_LINES=["Toca el micro rojo y hablamos. También puedes escribirme.","¿Practicamos un poco? Toca el micro o escribe en romaji.","Si no sabes qué decir, pulsa «¿Qué puedo decir?»."];
+const IDLE_LINES=["Toca el micro para hablar, o mantenlo pulsado mientras piensas y hablas.","¿Practicamos un poco? Toca el micro o escribe en romaji.","Si no sabes qué decir, pulsa «¿Qué puedo decir?»."];
 
 /* ============ sounds ============ */
 let actx=null;
@@ -476,7 +537,7 @@ const SCENES=[
 ];
 
 let words=[];
-let settings={key:"",model:"",furigana:true,kataHelp:true,romaji:false,rate:0.9,audioOnly:false,autoSpeak:true,sound:true,speakFix:true,kanaInput:true,goal:10,voice:"",streak:{day:"",n:0},today:{day:"",n:0}};
+let settings={key:"",model:"",furigana:true,kataHelp:true,romaji:false,rate:0.9,audioOnly:false,autoSpeak:true,sound:true,speakFix:true,kanaInput:true,goal:10,silence:2500,micMode:"auto",voice:"",streak:{day:"",n:0},today:{day:"",n:0}};
 let chat={scene:"libre",msgs:[]};
 let session={good:{},bad:{},fixes:[]};
 
@@ -587,20 +648,11 @@ function voiceHelp(noVoice){
 }
 
 /* ============ voice in ============ */
+// Listening session: keeps the mic open until you stay quiet for `settings.silence` ms (auto)
+// or until you release the button (hold). Chrome ends recognition on short pauses, so segments are chained.
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null;
-function recognize({lang="ja-JP",onInterim,onFinal,onError}){
-  if(!SR){onError&&onError("unsupported");return null}
-  try{
-    const r=new SR();r.lang=lang;r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
-    let finalText="";
-    r.onresult=e=>{let interim="";finalText="";for(const res of e.results){if(res.isFinal)finalText+=res[0].transcript;else interim+=res[0].transcript}onInterim&&onInterim(finalText+interim)};
-    r.onerror=e=>{r._err=e.error};
-    r.onend=()=>{if(rec===r)rec=null;if(r._aborted)return;if(r._err&&r._err!=="no-speech"&&r._err!=="aborted"){onError&&onError(r._err);return}onFinal&&onFinal(finalText.trim())};
-    rec=r;r.start();return r;
-  }catch(e){onError&&onError("start");return null}
-}
-function stopRec(){if(rec){rec._aborted=true;try{rec.abort()}catch(e){}rec=null}}
+const IS_ANDROID=/Android/i.test(navigator.userAgent);
+let L=null;              // current listening session
 function micErrorMsg(err){
   if(err==="unsupported")return "Este navegador no reconoce voz. Usa Chrome (Android, Windows, Mac) o Safari (iPhone).";
   if(err==="not-allowed"||err==="service-not-allowed")return "No tengo permiso para el micrófono. Actívalo en los permisos del navegador para esta página.";
@@ -608,7 +660,108 @@ function micErrorMsg(err){
   if(err==="audio-capture")return "No encuentro ningún micrófono.";
   return "No he podido escucharte. Toca el micro para intentarlo otra vez.";
 }
+function listen({lang="ja-JP",mode="auto",onUpdate,onDone,onError}){
+  if(!SR){onError&&onError("unsupported");return null}
+  stopListen(true);
+  const S={lang,mode,committed:"",seg:"",segFinal:"",lastSpeech:now(),started:now(),spoke:false,active:true,rec:null,timer:null,errCount:0,onUpdate,onDone,onError};
+  L=S;
+  const sep=/^ja/.test(lang)?"":" ";
+  const text=()=>[S.committed,S.seg].filter(Boolean).join(sep).replace(/\s+/g," ").trim();
+  S.text=text;
+  const startSeg=()=>{
+    if(!S.active)return;
+    let r;try{r=new SR()}catch(e){finish(true);onError&&onError("start");return}
+    S.rec=r;S.seg="";S.segFinal="";
+    r.lang=lang;r.interimResults=true;r.maxAlternatives=1;r.continuous=!IS_ANDROID;
+    r.onresult=e=>{let fin="",tmp="";for(let k=e.resultIndex;k<e.results.length;k++){}
+      for(const res of e.results){if(res.isFinal)fin+=res[0].transcript;else tmp+=res[0].transcript}
+      S.segFinal=fin;S.seg=fin+tmp;S.lastSpeech=now();S.spoke=true;bumpLevel();onUpdate&&onUpdate(text())};
+    r.onspeechstart=()=>{S.lastSpeech=now()};
+    r.onerror=e=>{r._err=e.error};
+    r.onend=()=>{
+      if(S.rec!==r)return;
+      S.committed=[S.committed,(S.segFinal||S.seg).trim()].filter(Boolean).join(sep);S.seg="";S.segFinal="";
+      if(!S.active)return;
+      const err=r._err;
+      if(err&&!["no-speech","aborted","network"].includes(err)){
+        if(err==="audio-capture"&&meter.on&&!settings.noMeter){settings.noMeter=true;saveSettings();stopMeter();setTimeout(startSeg,150);return}
+        finish(true);onError&&onError(err);return}
+      if(err==="network"&&++S.errCount>2){finish(true);onError&&onError("network");return}
+      startSeg();   // keep listening; the silence watcher decides when to stop
+    };
+    try{r.start()}catch(e){setTimeout(()=>{try{r.start()}catch(e2){}},200)}
+  };
+  const finish=(silent)=>{
+    if(!S.active)return;S.active=false;clearInterval(S.timer);
+    const t=text();
+    try{S.rec&&S.rec.abort()}catch(e){}S.rec=null;
+    if(L===S)L=null;stopMeter();
+    if(!silent)onDone&&onDone(t);
+  };
+  S.finish=finish;
+  S.timer=setInterval(()=>{
+    if(!S.active)return;
+    const quiet=now()-S.lastSpeech;
+    if(S.mode==="auto"){
+      if(S.spoke&&text()&&quiet>settings.silence)finish();
+      else if(!S.spoke&&now()-S.started>Math.max(9000,settings.silence*2.5))finish();
+    }
+    renderListenTimer(S,quiet);
+  },100);
+  startMeter();startSeg();
+  return S;
+}
+function stopListen(silent){if(L){const S=L;if(silent)S.finish(true);else S.finish()}}
 
+/* ---- live voice meter (bars react to your voice) ---- */
+const meter={on:false,stream:null,ctx:null,an:null,raf:0,fake:0,data:null};
+async function startMeter(){
+  meter.fake=0;drawMeterLoop();
+  if(settings.noMeter||!navigator.mediaDevices||meter.on)return;
+  try{
+    meter.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    if(!L){stopMeter();return}
+    const c=audioCtx();const src=c.createMediaStreamSource(meter.stream);meter.an=c.createAnalyser();meter.an.fftSize=256;meter.an.smoothingTimeConstant=.6;
+    src.connect(meter.an);meter.data=new Uint8Array(meter.an.frequencyBinCount);meter.on=true;
+  }catch(e){meter.on=false}
+}
+function stopMeter(){cancelAnimationFrame(meter.raf);meter.raf=0;if(meter.stream){meter.stream.getTracks().forEach(t=>t.stop());meter.stream=null}meter.on=false;meter.an=null;const b=$("#btnMic");if(b)b.style.setProperty("--lvl",0)}
+function bumpLevel(){meter.fake=Math.min(1,meter.fake+.55)}
+const BARS=32;const levels=new Array(BARS).fill(0);
+function drawMeterLoop(){
+  cancelAnimationFrame(meter.raf);
+  const cv=$("#wave");
+  const step=()=>{
+    let lvl=0;
+    if(meter.on&&meter.an){meter.an.getByteTimeDomainData(meter.data);let sum=0;for(const v of meter.data){const x=(v-128)/128;sum+=x*x}lvl=Math.min(1,Math.sqrt(sum/meter.data.length)*5.5)}
+    else{meter.fake*=.9;lvl=meter.fake*(.55+Math.random()*.45)}
+    levels.push(lvl);levels.shift();
+    const b=$("#btnMic");if(b)b.style.setProperty("--lvl",lvl.toFixed(3));
+    if(cv&&cv.offsetParent){
+      const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+      if(cv.width!==w*dpr){cv.width=w*dpr;cv.height=h*dpr}
+      const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+      const css=getComputedStyle(document.documentElement);g.fillStyle=css.getPropertyValue("--shu").trim()||"#b8371f";
+      const bw=w/BARS;
+      for(let i=0;i<BARS;i++){const v=Math.max(.06,levels[i]);const bh=Math.max(3,v*h*.95);const x=i*bw+bw*.22,y=(h-bh)/2;g.globalAlpha=.35+.65*(i/BARS);
+        const rw=bw*.56,rr=Math.min(rw/2,bh/2);g.beginPath();g.roundRect?g.roundRect(x,y,rw,bh,rr):g.rect(x,y,rw,bh);g.fill()}
+      g.globalAlpha=1;
+    }
+    if(L)meter.raf=requestAnimationFrame(step);
+  };
+  meter.raf=requestAnimationFrame(step);
+}
+
+/* ---- listening panel ---- */
+function showListenPanel(on,mode){
+  const p=$("#listenPanel");p.hidden=!on;$("#composerRow").classList.toggle("listening",on);
+  if(on){$("#lpText").textContent="";$("#lpHint").textContent=mode==="hold"?"Habla mientras mantienes pulsado · suelta para enviar":"Habla tranquilo: envío cuando calles "+(settings.silence/1000).toLocaleString("es-ES")+" s";$("#lpSend").hidden=mode==="hold";$("#lpBar").style.width="0%"}
+}
+function renderListenTimer(S,quiet){
+  const bar=$("#lpBar");if(!bar)return;
+  if(S.mode!=="auto"||!S.spoke||!S.text()){bar.style.width="0%";return}
+  bar.style.width=Math.min(100,quiet/settings.silence*100)+"%";
+}
 /* ============ Gemini ============ */
 const API="https://generativelanguage.googleapis.com/v1beta";
 function aiErr(e){
@@ -661,7 +814,7 @@ const cleanToks=a=>Array.isArray(a)?a.filter(t=>t&&typeof t.s==="string").map(t=
 /* ============ conversation ============ */
 const WELCOME={role:"ai",tokens:[{s:"こんにちは",r:"",m:"hola"},{s:"！",m:""},{s:"タマ",r:"たま",m:"Tama (mi nombre)"},{s:"です",m:"soy (educado)"},{s:"。",m:""},{s:"一緒",r:"いっしょ",m:"juntos"},{s:"に",m:"partícula: forma el adverbio «juntos»"},{s:"話しましょう",r:"はなしましょう",m:"hablemos"},{s:"！",m:""}],
  romaji:"Konnichiwa! Tama desu. Issho ni hanashimashou!",es:"¡Hola! Soy Tama. ¡Hablemos juntos!",
- help:"Toca cualquier palabra para ver qué significa en esa frase. Pulsa el micro rojo para hablar sin manos: yo te escucho, te corrijo y te contesto. Puedes pausar cuando quieras y seguir por escrito (en romaji se convierte solo a hiragana)."};
+ help:"Toca cualquier palabra para ver qué significa en esa frase. Toca el micro rojo para hablar sin manos, o mantenlo pulsado mientras hablas y suéltalo al terminar. Yo te escucho, te corrijo y te contesto. Puedes pausar cuando quieras y seguir por escrito (en romaji se convierte solo a hiragana)."};
 const allMsgs=()=>[WELCOME,...chat.msgs];
 const msgAt=i=>i===0?WELCOME:chat.msgs[i-1];
 const sayText=m=>(m.tokens||[]).map(t=>t.s).join("");
@@ -710,17 +863,18 @@ function renderChat(keepScroll){
 }
 function setLive(t){liveText=t;const m=$("#liveMsg");if(!m)return;m.hidden=!t;$("#liveTxt").textContent=t;if(t){const sc=$("#chatScroll");sc.scrollTop=sc.scrollHeight}}
 
-/* ---- hands-free voice loop (pause / resume any time) ---- */
+/* ---- conversation voice loop ---- */
+// voiceOn = hands-free conversation running (auto mode). Hold-to-talk works any time by pressing the mic.
 let voiceOn=false,vState="idle",vNoSpeech=0;
 function setVState(s){
   vState=s;const b=$("#btnMic");
-  b.className="micbtn"+(voiceOn?" on "+s:"");
-  b.innerHTML=!voiceOn?SVG.mic:s==="listening"?SVG.wave:s==="thinking"?SVG.dots:SVG.pause;
-  b.setAttribute("aria-label",voiceOn?"Pausar conversación":"Empezar a hablar");
-  if(s==="listening")tama("listen","Te escucho… habla en japonés.");
+  b.className="micbtn"+((voiceOn||s==="listening")?" on "+s:"");
+  b.innerHTML=s==="listening"?SVG.wave:(voiceOn&&s==="thinking")?SVG.dots:voiceOn?SVG.pause:SVG.mic;
+  b.setAttribute("aria-label",voiceOn?"Pausar conversación":"Hablar (toca, o mantén pulsado)");
+  if(s==="listening")tama("listen",L&&L.mode==="hold"?"Te escucho… suelta cuando termines.":"Te escucho… tómate tu tiempo.");
   else if(s==="thinking")tama("think","Mmm…");
-  else if(s==="speaking"){const c=$("#tamaCat .cat");if(c&&!moodTimer){c.classList.remove("listen","think");c.classList.add("talk")}else if(c)c.classList.add("talk")}
-  else{const c=$("#tamaCat .cat");if(c){c.classList.remove("talk","listen","think")}}
+  else if(s==="speaking"){const c=$("#tamaCat .cat");if(c){if(!moodTimer)c.classList.remove("listen","think");c.classList.add("talk")}}
+  else{const c=$("#tamaCat .cat");if(c)c.classList.remove("talk","listen","think")}
 }
 function resumeVoice(){
   if(!SR){toast(micErrorMsg("unsupported"));return}
@@ -730,31 +884,52 @@ function resumeVoice(){
   startListening();
 }
 function pauseVoice(silent){
-  voiceOn=false;stopRec();stopSpeaking();setLive("");vNoSpeech=0;
-  setVState(busy?"thinking":"idle");if(!silent){sfx("pause");tama("idle","En pausa. Puedes escribirme o tocar el micro para seguir.")}
+  voiceOn=false;stopListen(true);showListenPanel(false);stopSpeaking();setLive("");vNoSpeech=0;
+  setVState(busy?"thinking":"idle");if(!silent){sfx("pause");tama("idle","En pausa. Escríbeme, toca el micro para seguir o mantenlo pulsado para hablar.")}
 }
-function startListening(lang){
+function startListening(lang,mode){
   if(tab!=="chat")return;
+  mode=mode||"auto";
   stopSpeaking();setLive("");
-  const once=!voiceOn;               // one-shot (e.g. Spanish question while paused)
-  setVState("listening");if(once){$("#btnMic").className="micbtn on listening";$("#btnMic").innerHTML=SVG.wave}
-  recognize({lang:lang||"ja-JP",
-    onInterim:t=>setLive(t),
-    onFinal:t=>{setLive("");
-      if(t){vNoSpeech=0;send(t,false,lang==="es-ES")}
-      else if(voiceOn){vNoSpeech++;if(vNoSpeech<3)startListening(lang);else{pauseVoice(true);tama("idle","¿Sigues ahí? Toca el micro para seguir hablando.")}}
+  showListenPanel(true,mode);
+  const S=listen({lang:lang||"ja-JP",mode,
+    onUpdate:t=>{setLive(t);$("#lpText").textContent=t},
+    onDone:t=>{showListenPanel(false);setLive("");
+      if(t){vNoSpeech=0;setVState("idle");send(t,false,lang==="es-ES")}
+      else if(voiceOn&&mode==="auto"){vNoSpeech++;if(vNoSpeech<2)startListening(lang);else{pauseVoice(true);tama("idle","¿Sigues ahí? Toca el micro para seguir hablando.")}}
       else setVState("idle")},
-    onError:e=>{toast(micErrorMsg(e));pauseVoice(true)}});
+    onError:e=>{showListenPanel(false);toast(micErrorMsg(e));pauseVoice(true)}});
+  if(S)setVState("listening");
 }
 function afterAiReply(m,fb){
   const items=[];
-  if(settings.speakFix&&fb&&fb.level!=="perfect"&&fb.natural&&voiceOn){items.push({text:fb.level==="wrong"?"Corrección:":"Más natural:",lang:"es"});items.push({text:fb.natural,lang:"ja",rate:Math.max(.6,settings.rate-.1)})}
+  if(settings.speakFix&&fb&&fb.level!=="perfect"&&fb.natural){items.push({text:fb.level==="wrong"?"Corrección:":"Más natural:",lang:"es"});items.push({text:fb.natural,lang:"ja",rate:Math.max(.6,settings.rate-.1)})}
   if(m.tokens.length)items.push({text:sayText(m),lang:"ja"});
-  if(voiceOn)speakSeq(items,()=>setTimeout(()=>{if(voiceOn&&!busy&&vState!=="listening")startListening()},200));
-  else if(settings.autoSpeak&&m.tokens.length)speakSeq(items);
+  if(voiceOn)speakSeq(items,()=>setTimeout(()=>{if(voiceOn&&!busy&&!L)startListening()},250));
+  else if(settings.autoSpeak&&m.tokens.length)speakSeq(items,()=>{if(settings.micMode==="hold"&&tab==="chat")tama(undefined,"Mantén pulsado el micro para responder.")});
   else setVState("idle");
 }
 
+/* ---- mic button: tap = start/pause conversation · hold = talk while pressed ---- */
+let holdTimer=null,holding=false,pressAt=0;
+function micDown(e){
+  if(e.button>0)return;e.preventDefault();audioCtx();
+  pressAt=now();holding=false;clearTimeout(holdTimer);
+  holdTimer=setTimeout(()=>{holding=true;startHold()},settings.micMode==="hold"?0:320);
+}
+function micUp(e){
+  clearTimeout(holdTimer);
+  if(holding){holding=false;if(L&&L.mode==="hold")L.finish();return}
+  if(now()-pressAt>1500)return;
+  if(settings.micMode==="hold"){toast("Mantén pulsado el micro mientras hablas");return}
+  if(voiceOn)pauseVoice();else resumeVoice();
+}
+function startHold(){
+  if(!SR){toast(micErrorMsg("unsupported"));return}
+  if(busy){toast("Espera a que Tama conteste");holding=false;return}
+  stopListen(true);stopSpeaking();sfx("listen");if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
+  $("#input").blur();startListening("ja-JP","hold");
+}
 async function send(text,isStart,spanish){
   text=(text||"").trim();
   if(busy)return;if(!text&&!isStart)return;
@@ -1014,6 +1189,8 @@ function settingsSheet(){
    ${sw("autoSpeak","Leer respuestas en pausa","Cuando escribes, Tama también te contesta en voz alta.")}
    ${sw("audioOnly","Modo solo audio","Oculta el texto de Tama hasta que lo pidas: practica escuchando.")}
    ${sw("sound","Sonidos","Efectos al acertar, fallar y añadir palabras.")}
+   <div class="set"><div><label for="s_micMode">Cómo hablar</label><p>Toca el micro para conversar sin manos, o habla solo mientras lo mantienes pulsado.</p></div><select id="s_micMode" class="field" style="flex:0 0 150px"><option value="auto" ${settings.micMode!=="hold"?"selected":""}>Tocar (manos libres)</option><option value="hold" ${settings.micMode==="hold"?"selected":""}>Mantener pulsado</option></select></div>
+   <div class="set"><div><label for="s_silence">Espera cuando te callas</label><p>Tiempo de silencio antes de enviar lo que has dicho.</p></div><select id="s_silence" class="field" style="flex:0 0 110px">${[1500,2500,4000,6000,8000].map(ms=>`<option value="${ms}" ${settings.silence===ms?"selected":""}>${(ms/1000).toLocaleString("es-ES")} s</option>`).join("")}</select></div>
    <div class="set"><div><label for="s_goal">Objetivo diario</label><p>Frases y repasos al día.</p></div><select id="s_goal" class="field" style="flex:0 0 96px">${[5,10,20,30].map(n=>`<option ${settings.goal===n?"selected":""}>${n}</option>`).join("")}</select></div>
    <div class="set"><div><label for="s_rate">Velocidad de la voz</label><p id="rateTxt">${Math.round(settings.rate*100)}%</p></div><input type="range" id="s_rate" min="0.5" max="1.2" step="0.05" value="${settings.rate}" style="width:140px"></div>
    <div class="set"><div><label for="s_voice">Voz japonesa</label><p>${jaVoices.length?jaVoices.length+" disponibles":"Ninguna instalada"}</p></div>
@@ -1114,13 +1291,14 @@ document.addEventListener("click",e=>{
   if(d.tab)return setTab(d.tab);
   if(d.tabgo){closeSheet();return setTab(d.tabgo)}
   if(d.say!==undefined)return speak(d.say);
-  if(el.id==="btnMic"){if(voiceOn)pauseVoice();else resumeVoice();return}
+  if(el.id==="lpCancel"){if(L){const wasOn=voiceOn;L.finish(true);showListenPanel(false);setLive("");if(wasOn)pauseVoice();else setVState("idle")}return}
+  if(el.id==="lpSend"){if(L)L.finish();return}
   if(el.id==="btnAskEs"){if(voiceOn)pauseVoice(true);sfx("listen");tama("listen","Te escucho en español…");startListening("es-ES");return}
   if(el.id==="btnHint")return hintSheet();
   if(el.id==="btnResumeFromHint"){closeSheet();return resumeVoice()}
   if(d.use!==undefined){const o=(window._hintOpts||[])[+d.use];if(o){closeSheet();try{wanakana.unbind(inp)}catch(e2){}inp.value=o.jp;autoGrow();applyKana();inp.focus()}return}
   if(el.id==="btnKana"){settings.kanaInput=!settings.kanaInput;saveSettings();applyKana();sfx("flip");inp.focus();return}
-  if(d.scene){if(chat.scene===d.scene)return;chat.scene=d.scene;sfx("flip");renderScenes();chat.msgs.push({role:"sys",text:"Situación: "+SCENES.find(s=>s[0]===d.scene)[1]});saveChat();stopRec();setLive("");return send("",true)}
+  if(d.scene){if(chat.scene===d.scene)return;chat.scene=d.scene;sfx("flip");renderScenes();chat.msgs.push({role:"sys",text:"Situación: "+SCENES.find(s=>s[0]===d.scene)[1]});saveChat();stopListen(true);showListenPanel(false);setLive("");return send("",true)}
   if(el.id==="btnEnd")return summarySheet();
   if(el.id==="btnNewChat"){closeSheet();chat.msgs=[];session={good:{},bad:{},fixes:[]};saveChat();renderChat();return send("",true)}
   if(el.id==="btnRetry"){const last=chat.msgs[chat.msgs.length-1];if(last&&last.role==="me"){chat.msgs.pop();return send(last.text)}return send("",true)}
@@ -1145,7 +1323,8 @@ document.addEventListener("click",e=>{
   if(el.id==="btnShow"){rShown=true;rVerdict=rMode==="prod"?false:null;sfx("flip");renderReview();speak(rq[ri].jp);return}
   if(el.id==="btnCheck")return checkProd();
   if(el.id==="rMic"){const ri_=$("#rInput");el.classList.add("on","listening");sfx("listen");
-    recognize({onInterim:t=>{ri_.value=t},onFinal:t=>{el.classList.remove("on","listening");if(t){ri_.value=t;checkProd()}},onError:er=>{el.classList.remove("on","listening");toast(micErrorMsg(er))}});return}
+    if(L){L.finish();return}
+    listen({mode:"auto",onUpdate:t=>{ri_.value=t},onDone:t=>{el.classList.remove("on","listening");if(t){ri_.value=t;checkProd()}},onError:er=>{el.classList.remove("on","listening");toast(micErrorMsg(er))}});return}
   if(d.grade!==undefined){const g=+d.grade;if(g>=2)rGood++;review(rq[ri],g);rDone++;bumpActivity();sfx(g===0?"wrong":g===1?"unnatural":"receive");updateBadge();return nextCard()}
   if(el.id==="btnForce")return buildQueue(true);
   if(el.id==="btnSettings")return settingsSheet();
@@ -1162,9 +1341,21 @@ document.addEventListener("input",e=>{if(e.target.id==="s_rate"){settings.rate=+
 document.addEventListener("change",e=>{
   if(e.target.id==="s_voice"){settings.voice=e.target.value;saveSettings();pickVoice();speak("こんにちは")}
   if(e.target.id==="s_goal"){settings.goal=+e.target.value;saveSettings();renderGoal()}
+  if(e.target.id==="s_silence"){settings.silence=+e.target.value;saveSettings()}
+  if(e.target.id==="s_micMode"){settings.micMode=e.target.value;saveSettings();if(voiceOn&&settings.micMode==="hold")pauseVoice(true);toast(settings.micMode==="hold"?"Mantén pulsado el micro mientras hablas":"Toca el micro para conversar sin manos")}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&voiceOn)pauseVoice(true)});
+
+const micEl=$("#btnMic");
+micEl.addEventListener("pointerdown",e=>{try{micEl.setPointerCapture(e.pointerId)}catch(_){}micDown(e)});
+micEl.addEventListener("pointerup",micUp);
+micEl.addEventListener("pointercancel",()=>{clearTimeout(holdTimer);if(holding){holding=false;if(L&&L.mode==="hold")L.finish()}});
+micEl.addEventListener("contextmenu",e=>e.preventDefault());
+micEl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();if(!e.repeat){if(voiceOn)pauseVoice();else resumeVoice()}}});
+let spaceHold=false;
+document.addEventListener("keydown",e=>{if(e.code==="Space"&&!e.repeat&&tab==="chat"&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(document.activeElement.tagName)&&!$("#scrim")&&!$("#onb")){e.preventDefault();spaceHold=true;startHold()}});
+document.addEventListener("keyup",e=>{if(e.code==="Space"&&spaceHold){spaceHold=false;if(L&&L.mode==="hold")L.finish()}});
 
 /* ============ boot ============ */
 loadAll();
