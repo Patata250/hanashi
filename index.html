@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Hanashi</title>
+<meta name="description" content="Aprende japonés hablando con Tama, tu compañero gato.">
+<meta name="theme-color" content="#26407a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hanashi">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Maru+Gothic:wght@400;500;700&family=Figtree:wght@400;500;600;700&display=swap">
+<script src="wanakana.min.js"></script>
+<style>
+/* Layout: one-screen app. Header · Tama strip (mascot + status) · conversation log · composer (mic, kana input, send) · tab bar.
+   Look: washi paper ground, ai-iro indigo, shu vermilion seal, matcha for success, kincha gold accents, seigaiha waves used sparingly. */
+:root{
+  --bg:#f4efe6; --paper:#fbf8f2; --surface:#ffffff; --ink:#23252d; --muted:#6b6658; --line:#e3dccd;
+  --ai:#26407a; --ai-soft:#e6eaf3; --shu:#c8402c; --shu-soft:#f8e6e0; --ok:#4f7a33; --ok-soft:#e8f0dc; --warn:#a8741c; --warn-soft:#f6ecd6; --gold:#b8862b;
+  --shadow:0 1px 2px rgba(60,45,20,.06),0 6px 18px rgba(60,45,20,.07);
+  --f-disp:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+  --f-ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:14px; color-scheme:light;
+  --washi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .25 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --seigaiha:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%2326407a' stroke-opacity='.13' stroke-width='1.2'%3E%3Cpath d='M0 20a20 20 0 0 1 40 0M6 20a14 14 0 0 1 28 0M12 20a8 8 0 0 1 16 0M-20 10a20 20 0 0 1 40 0M-14 10a14 14 0 0 1 28 0M-8 10a8 8 0 0 1 16 0M20 10a20 20 0 0 1 40 0M26 10a14 14 0 0 1 28 0M32 10a8 8 0 0 1 16 0'/%3E%3C/g%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#12151d; --paper:#171b25; --surface:#1d2230; --ink:#ebe6da; --muted:#a39d8f; --line:#2c3242;
+  --ai:#93a9e0; --ai-soft:#222c46; --shu:#ec7660; --shu-soft:#3b221d; --ok:#9cc46f; --ok-soft:#1f2e18; --warn:#e3b55e; --warn-soft:#33291a; --gold:#d8aa52;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3); color-scheme:dark;
+  --washi:none;
+  --seigaiha:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%2393a9e0' stroke-opacity='.10' stroke-width='1.2'%3E%3Cpath d='M0 20a20 20 0 0 1 40 0M6 20a14 14 0 0 1 28 0M12 20a8 8 0 0 1 16 0M-20 10a20 20 0 0 1 40 0M-14 10a14 14 0 0 1 28 0M-8 10a8 8 0 0 1 16 0M20 10a20 20 0 0 1 40 0M26 10a14 14 0 0 1 28 0M32 10a8 8 0 0 1 16 0'/%3E%3C/g%3E%3C/svg%3E")}}
+html,body{height:100%;margin:0}
+body{background:var(--bg) var(--washi);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;transition:transform .12s ease,background-color .15s,border-color .15s,color .15s}
+button:active{transform:scale(.95)}
+:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
+a{color:var(--ai)}
+.jp{font-family:var(--f-jp)}
+.app{height:100%;display:flex;flex-direction:column;max-width:760px;margin:0 auto;padding-top:env(safe-area-inset-top,0px)}
+.pad{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+header.top{display:flex;align-items:center;gap:10px;padding-block:10px}
+.hanko{width:32px;height:32px;border-radius:7px;background:var(--shu);color:#fff;display:grid;place-items:center;font-family:var(--f-disp);font-weight:800;font-size:19px;transform:rotate(-4deg);flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}
+.brand{font-family:var(--f-disp);font-weight:800;font-size:21px;letter-spacing:.04em;line-height:1}
+.spacer{flex:1}
+.streak{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;color:var(--shu);background:var(--shu-soft);border-radius:999px;padding:4px 10px}
+.streak svg{width:15px;height:15px}
+.streak.off{color:var(--muted);background:var(--paper);border:1px solid var(--line)}
+.iconbtn{border:1px solid var(--line);background:var(--paper);border-radius:10px;height:36px;min-width:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600}
+.iconbtn svg{width:18px;height:18px}
+
+main{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;min-height:0;padding-block:12px 16px}
+
+nav.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs button{border:0;background:none;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:12px;font-weight:600}
+nav.tabs button .k{font-family:var(--f-disp);font-weight:800;font-size:20px;line-height:1.15}
+nav.tabs button[aria-selected="true"]{color:var(--ai)}
+nav.tabs button[aria-selected="true"] .k{color:var(--shu)}
+.badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--shu);color:#fff;font-size:11px;line-height:18px;margin-left:3px}
+
+/* Tama strip */
+.tama{display:flex;align-items:flex-end;gap:10px;padding-block:6px 0;background:var(--seigaiha) repeat-x bottom/40px 20px;border-bottom:1px solid var(--line);position:relative}
+.tama .catbox{width:86px;height:86px;flex:none;margin-bottom:-4px}
+.say{flex:1;min-width:0;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:8px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:5px;position:relative}
+.say .line{font-size:14px;font-weight:600;min-height:1.4em}
+.goal{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.goal .bar{flex:1;height:5px;border-radius:3px;background:var(--line);overflow:hidden}
+.goal .bar i{display:block;height:100%;background:var(--gold);border-radius:3px;transition:width .4s}
+.goal.done .bar i{background:var(--ok)}
+.scenes{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:8px}
+.scenes::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.chip svg{width:14px;height:14px}
+.chip[aria-pressed="true"]{background:var(--ai);border-color:var(--ai);color:var(--paper)}
+.focus{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted);padding-bottom:10px}
+.focus .w{font-family:var(--f-jp);font-size:13px;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:1px 7px}
+.focus .w.new{background:var(--ai-soft);color:var(--ai)}
+
+/* mascot svg */
+.cat{width:100%;height:100%;overflow:visible}
+.cat *{transform-box:view-box}
+.cat .eyes-happy,.cat .mouth-talk,.cat .sweat,.cat .dots,.cat .spark{display:none}
+.cat .blink{transform-origin:70px 63px;animation:blink 5s infinite}
+.cat .tail{transform-origin:94px 112px;animation:sway 3.2s ease-in-out infinite}
+.cat .head{transform-origin:70px 84px;transition:transform .3s}
+.cat .ear-l{transform-origin:50px 36px;transition:transform .3s}
+.cat .ear-r{transform-origin:90px 36px;transition:transform .3s}
+.cat .pupils{transition:transform .3s}
+.cat .bodyall{transform-origin:70px 120px}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes sway{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-9px)}}
+@keyframes talk{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+@keyframes twitch{0%,80%,100%{transform:rotate(0)}88%{transform:rotate(-12deg)}}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
+@keyframes dot{0%,100%{opacity:.25}50%{opacity:1}}
+.cat.talk .mouth-idle{display:none}.cat.talk .mouth-talk{display:block;transform-origin:70px 75px;animation:talk .18s ease-in-out infinite alternate}
+.cat.happy .blink{display:none}.cat.happy .eyes-happy{display:block}.cat.happy .bodyall{animation:hop .45s ease 2}.cat.happy .spark{display:block;animation:twinkle 1s ease-in-out 2}
+.cat.oops .sweat{display:block}.cat.oops .head{transform:rotate(4deg)}
+.cat.sad .ear-l{transform:rotate(-24deg)}.cat.sad .ear-r{transform:rotate(24deg)}.cat.sad .head{transform:translateY(2px)}
+.cat.listen .head{transform:rotate(-7deg)}.cat.listen .ear-r{animation:twitch 1.4s infinite}
+.cat.think .dots{display:block}.cat.think .dots circle{animation:dot 1s infinite}.cat.think .dots circle:nth-child(2){animation-delay:.2s}.cat.think .dots circle:nth-child(3){animation-delay:.4s}.cat.think .pupils{transform:translate(2px,-2px)}
+
+/* messages */
+.msgs{display:flex;flex-direction:column;gap:14px}
+.msg{max-width:90%;display:flex;flex-direction:column;gap:6px;animation:rise .28s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.9)}60%{transform:scale(1.03)}100%{opacity:1;transform:none}}
+.msg.ai{align-self:flex-start}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.bubble{border-radius:18px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.msg.ai .bubble{border-top-left-radius:5px}
+.msg.me .bubble{background:var(--ai);border-color:var(--ai);color:var(--paper);border-top-right-radius:5px;box-shadow:none}
+.msg.me .said{font-family:var(--f-jp);font-size:17px}
+.msg.me .written{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.25)}
+.msg.me .written .jpline{font-size:17px;line-height:2}
+.msg.me .written rt{color:rgba(255,255,255,.75)}
+.msg.me .written .tok:hover,.msg.me .written .tok:active{background:rgba(255,255,255,.15)}
+.msg.me .metr{font-size:13px;opacity:.85}
+.msg.live .bubble{background:var(--paper);color:var(--ink);border:1.5px dashed var(--shu)}
+.msg.live .said{color:var(--ink)}
+.jpline{font-family:var(--f-jp);font-size:20px;line-height:2.15;word-break:break-word}
+.tok{border:0;background:none;padding:0 1px;border-radius:5px;line-height:inherit;font-size:inherit;font-family:inherit;color:inherit;transition:background-color .15s}
+.tok:hover{background:var(--ai-soft)}
+.tok:active{transform:none;background:var(--ai-soft)}
+.tok.known{text-decoration:underline;text-decoration-color:var(--ok);text-decoration-thickness:2px;text-underline-offset:6px}
+.tok.newish{text-decoration:underline dotted;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:6px}
+rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
+.nofuri rt{display:none}
+.romaji{font-size:13px;color:var(--muted);font-style:italic}
+.trans{font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;margin-top:4px}
+.hidden-text .jpline,.hidden-text .romaji{filter:blur(7px);user-select:none}
+.msgtools{display:flex;gap:6px;flex-wrap:wrap}
+.mini{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.mini svg{width:14px;height:14px}
+.mini.on{color:var(--ai);border-color:var(--ai)}
+.help{background:var(--ai-soft);color:var(--ink);border-radius:12px;padding:8px 12px;font-size:14px}
+.sys{align-self:center;font-size:12px;font-weight:600;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 12px;animation:rise .28s ease both}
+
+.fb{border-radius:14px;padding:8px 12px;font-size:13px;max-width:100%;display:flex;gap:8px;align-items:flex-start;animation:pop .35s ease both;text-align:left}
+.fb .ic{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;margin-top:1px}
+.fb .ic svg{width:12px;height:12px}
+.fb .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.fb .t b{font-size:13px}
+.fb .nat{font-family:var(--f-jp);font-size:17px;color:var(--ink)}
+.fb .note{color:var(--ink);opacity:.85}
+.fb.perfect{background:var(--ok-soft)}.fb.perfect .ic{background:var(--ok)}.fb.perfect b{color:var(--ok)}
+.fb.unnatural{background:var(--warn-soft)}.fb.unnatural .ic{background:var(--warn)}.fb.unnatural b{color:var(--warn)}
+.fb.wrong{background:var(--shu-soft)}.fb.wrong .ic{background:var(--shu)}.fb.wrong b{color:var(--shu)}
+.fb.none{background:var(--paper);border:1px dashed var(--line);color:var(--muted)}
+.fb .say-btn{margin-top:4px;align-self:flex-start}
+.typing{display:flex;gap:4px;padding:14px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+/* composer */
+.dock{border-top:1px solid var(--line);background:var(--paper);padding-block:8px 10px;display:flex;flex-direction:column;gap:8px}
+.assist{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.assist::-webkit-scrollbar{display:none}
+.composer{display:flex;gap:8px;align-items:flex-end}
+.inputwrap{flex:1;min-width:0;position:relative;display:flex;align-items:flex-end;border:1px solid var(--line);background:var(--surface);border-radius:16px}
+.inputwrap:focus-within{border-color:var(--ai)}
+.inputwrap textarea{flex:1;min-width:0;resize:none;border:0;background:none;padding:11px 4px 11px 13px;font-family:var(--f-jp);font-size:17px;line-height:1.4;max-height:120px;outline:none}
+.kana{flex:none;margin:6px;height:32px;min-width:32px;border-radius:9px;border:1px solid var(--line);background:var(--paper);font-family:var(--f-jp);font-weight:700;font-size:15px;color:var(--ai)}
+.kana[aria-pressed="false"]{color:var(--muted);font-family:var(--f-ui)}
+.round{width:46px;height:46px;border-radius:50%;border:0;display:grid;place-items:center;flex:none}
+.round svg{width:20px;height:20px}
+.round.send{background:var(--ai);color:var(--paper)}
+.micbtn{width:54px;height:54px;border-radius:50%;border:0;display:grid;place-items:center;flex:none;background:var(--shu);color:#fff;position:relative;box-shadow:0 6px 16px rgba(200,64,44,.3)}
+.micbtn svg{width:24px;height:24px}
+.micbtn::before,.micbtn::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--shu);opacity:0;pointer-events:none}
+.micbtn.on{background:var(--ai);box-shadow:0 6px 16px rgba(38,64,122,.3)}
+.micbtn.on.listening{background:var(--shu)}
+.micbtn.on.listening::before,.micbtn.on.listening::after{animation:ring 1.6s ease-out infinite}
+.micbtn.on.listening::after{animation-delay:.8s}
+.micbtn.on.speaking::before{border-color:var(--ai);animation:ring 1.2s ease-out infinite}
+.micbtn.on.thinking{animation:breathe 1.2s ease-in-out infinite}
+@keyframes ring{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.55)}}
+@keyframes breathe{50%{transform:scale(.92)}}
+.notice{font-size:13px;color:var(--muted);background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* vocab */
+.h2{font-family:var(--f-disp);font-weight:800;font-size:18px;margin:0;letter-spacing:.02em}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:12px;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-size:15px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--ai);border-color:var(--ai);color:var(--paper)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5}
+.cands{display:flex;flex-direction:column;gap:8px}
+.cand{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;text-align:left;width:100%;animation:rise .25s ease both}
+.cand .jp{font-size:20px}
+.cand .meta{flex:1;min-width:0;font-size:13px;color:var(--muted)}
+.cand .meta b{color:var(--ink);font-size:14px;display:block}
+.sugs{display:flex;flex-wrap:wrap;gap:8px}
+.sug{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 10px;text-align:left;display:flex;flex-direction:column;animation:pop .3s ease both}
+.sug .jp{font-size:17px}
+.sug span{font-size:12px;color:var(--muted)}
+.sug[aria-pressed="true"]{border-color:var(--ai);background:var(--ai-soft)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:0;border-top:1px solid var(--line);background:none;text-align:left;width:100%}
+.item:active{transform:none;background:var(--paper)}
+.item:first-child{border-top:0}
+.item .jp{font-size:19px;min-width:4.5em}
+.item .es{flex:1;min-width:0;font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.pill.new{background:var(--ai-soft);color:var(--ai)}
+.pill.learn{background:var(--warn-soft);color:var(--warn)}
+.pill.weak{background:var(--shu-soft);color:var(--shu)}
+.pill.done{background:var(--ok-soft);color:var(--ok)}
+.pill.basic{background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+.empty{text-align:center;color:var(--muted);padding:12px 16px 24px;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.empty .catbox{width:110px;height:110px}
+.empty .jp{font-family:var(--f-disp);font-weight:800;font-size:26px;color:var(--ink)}
+
+/* review */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:var(--shadow);animation:pop .3s ease both;position:relative;overflow:hidden}
+.card::after{content:"";position:absolute;inset:auto 0 0 0;height:20px;background:var(--seigaiha) repeat-x bottom/40px 20px;pointer-events:none}
+.card .eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card .big{font-family:var(--f-jp);font-size:40px;line-height:1.9}
+.card .es-big{font-size:24px;font-weight:600}
+.card .ex{font-size:14px;color:var(--muted)}
+.card .ex .jp{font-size:17px;color:var(--ink);display:block}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;position:relative;z-index:1}
+.grade{border:1px solid var(--line);border-radius:12px;padding:9px 4px;background:var(--surface);font-weight:700;font-size:13px;display:flex;flex-direction:column;gap:1px}
+.grade small{font-weight:500;color:var(--muted);font-size:11px}
+.grade.g0{color:var(--shu)}.grade.g1{color:var(--warn)}.grade.g2{color:var(--ai)}.grade.g3{color:var(--ok)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--shu);transition:width .3s}
+.verdict{font-weight:700;font-size:14px;animation:pop .3s ease both}
+.verdict.ok{color:var(--ok)}.verdict.bad{color:var(--shu)}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(20,18,12,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s ease both}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.sheet{background:var(--paper) var(--washi);width:100%;max-width:760px;max-height:88%;overflow-y:auto;border-radius:20px 20px 0 0;padding-top:18px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:up .25s cubic-bezier(.2,.8,.3,1) both}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center;margin-top:-8px}
+.sheet .head{display:flex;align-items:flex-start;gap:12px}
+.sheet .head .jp{font-size:34px;line-height:1.8}
+.sec{display:flex;flex-direction:column;gap:3px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.sec .lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sec .val{font-size:15px}
+.sec.here{background:var(--ai-soft);border-color:transparent}
+.sec.here .val{font-size:16px;font-weight:600}
+.ctx{font-family:var(--f-jp);font-size:16px;line-height:1.9;color:var(--muted)}
+.ctx mark{background:var(--warn-soft);color:var(--ink);border-radius:4px;padding:0 2px}
+.skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--line),var(--paper),var(--line));background-size:200% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-variant-numeric:tabular-nums}
+.kanji{display:flex;flex-direction:column;gap:8px}
+.kj{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kj .c{font-family:var(--f-disp);font-weight:800;font-size:36px;line-height:1}
+.kj p{margin:0;font-size:14px}
+.kj small{color:var(--muted)}
+.opt{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.opt .t{flex:1;min-width:0}
+.opt .jp{font-size:18px;display:block}
+.opt small{color:var(--muted)}
+.set{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:8px;border-top:1px solid var(--line)}
+.set:first-of-type{border-top:0}
+.set label{font-weight:600}
+.set p{margin:0;font-size:12px;color:var(--muted)}
+.switch{width:46px;height:28px;border-radius:14px;border:0;background:var(--line);position:relative;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch[aria-checked="true"]{background:var(--ai)}
+.switch[aria-checked="true"]::after{left:21px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:30;max-width:90%;animation:pop .25s ease both;text-align:center}
+.sum li{margin-bottom:8px}
+.sum .jp{font-size:16px}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+
+/* onboarding */
+.onb{position:fixed;inset:0;z-index:40;background:var(--bg) var(--washi);overflow-y:auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.onb .inner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.onb .catbox{width:140px;height:140px;align-self:center}
+.onb h1{font-family:var(--f-disp);font-weight:800;font-size:30px;margin:0;line-height:1.3;text-align:center}
+.onb p{margin:0}
+.onb .lead{color:var(--muted);font-size:16px;text-align:center}
+.onb .card-s{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top pad">
+    <div class="hanko" aria-hidden="true">話</div>
+    <div class="brand">Hanashi</div>
+    <div class="spacer"></div>
+    <span class="streak off" id="streak" title="Días seguidos practicando"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 10.5 11C10.5 6.5 12 2 12 2z"/></svg><span id="streakN">0</span></span>
+    <button class="iconbtn" id="btnSettings" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+  </header>
+
+  <main>
+    <section class="view" id="v-chat">
+      <div class="tama pad">
+        <div class="catbox" id="tamaCat"></div>
+        <div class="say"><div class="line" id="tamaSay"></div><div class="goal" id="goal"></div></div>
+      </div>
+      <div class="scenes pad" id="scenes" role="group" aria-label="Situación"></div>
+      <div class="scroll pad" id="chatScroll">
+        <div class="focus" id="focusBar"></div>
+        <div class="msgs" id="msgs"></div>
+      </div>
+      <div class="dock pad">
+        <div class="assist">
+          <button class="chip" id="btnHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>¿Qué puedo decir?</button>
+          <button class="chip" id="btnAskEs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>Preguntar en español</button>
+          <button class="chip" id="btnEnd">Terminar y repasar</button>
+        </div>
+        <div class="composer">
+          <button class="micbtn" id="btnMic" aria-label="Empezar a hablar"></button>
+          <div class="inputwrap">
+            <textarea id="input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Escribe en romaji: konnichiwa"></textarea>
+            <button class="kana" id="btnKana" aria-pressed="true" title="Romaji → hiragana">あ</button>
+          </div>
+          <button class="round send" id="btnSend" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="v-vocab" hidden><div class="scroll pad"><div class="stack" id="vocabPane"></div></div></section>
+    <section class="view" id="v-review" hidden><div class="scroll pad"><div class="stack" id="reviewPane"></div></div></section>
+  </main>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="chat" aria-selected="true"><span class="k">話す</span>Conversar</button>
+    <button role="tab" data-tab="vocab" aria-selected="false"><span class="k">言葉</span>Vocabulario</button>
+    <button role="tab" data-tab="review" aria-selected="false"><span class="k">復習</span><span>Repasar<span class="badge" id="dueBadge" hidden>0</span></span></button>
+  </nav>
+</div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const DAY=864e5, now=()=>Date.now();
+const uidGen=()=>"w"+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const dayKey=(t=now())=>{const d=new Date(t);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const SVG={
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>',
+  slow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M10 2h4"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
+  tilde:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M5 14c2-4 4-4 7-2s5 2 7-2"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>',
+  dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>',
+  wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>'
+};
+function toast(t){document.querySelectorAll(".toast").forEach(x=>x.remove());const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+const kataToHira=s=>s.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const normJP=s=>kataToHira(String(s||"")).replace(/[\s、。！？!?.,・「」ー〜~]/g,"").trim();
+const normRo=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ou/g,"o").replace(/uu/g,"u").replace(/[^a-z]/g,"");
+const hasKanji=s=>/[一-龯㐀-䶿]/.test(s||"");
+const hasKata=s=>/[ァ-ヺ]/.test(s||"");
+const hasJP=s=>/[぀-ヿ一-龯]/.test(s||"");
+function rubyHTML(s,r){return (r&&r!==s&&(hasKanji(s)||(settings.kataHelp&&hasKata(s))))?`<ruby>${esc(s)}<rt>${esc(r)}</rt></ruby>`:esc(s)}
+
+/* ============ Tama, the mascot (original design) ============ */
+function catSVG(){return `<svg class="cat" viewBox="0 0 140 140" aria-hidden="true">
+ <g class="bodyall">
+  <ellipse cx="70" cy="128" rx="50" ry="6" fill="#000" opacity=".08"/>
+  <rect x="18" y="108" width="104" height="22" rx="11" fill="#c8402c" stroke="#3b2f28" stroke-width="2"/>
+  <path d="M26 114h88" stroke="#e8a090" stroke-width="1.5" stroke-dasharray="3 4" opacity=".7"/>
+  <circle cx="20" cy="110" r="3.2" fill="#d8aa52"/><circle cx="120" cy="110" r="3.2" fill="#d8aa52"/>
+  <g class="tail"><path d="M92 112c22 2 30-14 22-30" fill="none" stroke="#3b2f28" stroke-width="12" stroke-linecap="round"/><path d="M92 112c22 2 30-14 22-30" fill="none" stroke="#f7efe2" stroke-width="8" stroke-linecap="round"/><path d="M116 88c2-3 1-6-2-8" fill="none" stroke="#e39a4a" stroke-width="8" stroke-linecap="round"/></g>
+  <path d="M42 112c-4-24 8-40 28-40s32 16 28 40z" fill="#f7efe2" stroke="#3b2f28" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M60 112c0-14 4-22 10-22s10 8 10 22z" fill="#fffaf2"/>
+  <path d="M84 84c8 4 12 12 12 20" fill="none" stroke="#e39a4a" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+  <ellipse cx="57" cy="113" rx="8" ry="5" fill="#fffaf2" stroke="#3b2f28" stroke-width="2"/><ellipse cx="83" cy="113" rx="8" ry="5" fill="#fffaf2" stroke="#3b2f28" stroke-width="2"/>
+  <g class="head">
+   <g class="ear-l"><path d="M44 44L38 14l26 16z" fill="#f7efe2" stroke="#3b2f28" stroke-width="2.2" stroke-linejoin="round"/><path d="M45 38l-3-16 13 9z" fill="#f2b3b0"/></g>
+   <g class="ear-r"><path d="M96 44l6-30-26 16z" fill="#e39a4a" stroke="#3b2f28" stroke-width="2.2" stroke-linejoin="round"/><path d="M95 38l3-16-13 9z" fill="#f2b3b0"/></g>
+   <ellipse cx="70" cy="58" rx="35" ry="29" fill="#f7efe2" stroke="#3b2f28" stroke-width="2.2"/>
+   <path d="M82 31c10 2 18 9 21 18-7 0-13-4-16-9-2 4-6 6-10 6 1-6 2-11 5-15z" fill="#e39a4a"/>
+   <path d="M44 42c4-6 10-9 15-9-1 5-4 9-9 11-2 0-4-1-6-2z" fill="#4b4650"/>
+   <circle cx="47" cy="68" r="6" fill="#f2b3b0" opacity=".55"/><circle cx="93" cy="68" r="6" fill="#f2b3b0" opacity=".55"/>
+   <g class="blink"><g class="pupils"><ellipse cx="57" cy="60" rx="5" ry="6.5" fill="#2a2420"/><ellipse cx="83" cy="60" rx="5" ry="6.5" fill="#2a2420"/><circle cx="58.8" cy="57.5" r="1.9" fill="#fff"/><circle cx="84.8" cy="57.5" r="1.9" fill="#fff"/></g></g>
+   <g class="eyes-happy" fill="none" stroke="#2a2420" stroke-width="2.6" stroke-linecap="round"><path d="M51 62q6-8 12 0"/><path d="M77 62q6-8 12 0"/></g>
+   <path d="M67.5 67h5l-2.5 3z" fill="#e58a8a" stroke="#3b2f28" stroke-width="1" stroke-linejoin="round"/>
+   <path class="mouth-idle" d="M64 72q3 3.5 6 0q3 3.5 6 0" fill="none" stroke="#3b2f28" stroke-width="1.8" stroke-linecap="round"/>
+   <ellipse class="mouth-talk" cx="70" cy="74.5" rx="4" ry="3.6" fill="#b5524a" stroke="#3b2f28" stroke-width="1.4"/>
+   <g stroke="#3b2f28" stroke-width="1.2" stroke-linecap="round" opacity=".55"><path d="M40 66l-12-2M40 70l-12 2M100 66l12-2M100 70l12 2"/></g>
+   <path class="sweat" d="M104 40c3 4 4 7 2 9s-5 0-5-3 1-4 3-6z" fill="#8fc3e8" stroke="#3b2f28" stroke-width="1"/>
+  </g>
+  <path d="M46 83q24 12 48 0" fill="none" stroke="#c8402c" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="70" cy="90" r="5.5" fill="#d8aa52" stroke="#3b2f28" stroke-width="1.6"/><path d="M70 90v3.5" stroke="#3b2f28" stroke-width="1.4"/>
+ </g>
+ <g class="dots" fill="#6b6658"><circle cx="106" cy="24" r="3"/><circle cx="116" cy="16" r="3.5"/><circle cx="128" cy="8" r="4"/></g>
+ <g class="spark" fill="#d8aa52"><path d="M20 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/><path d="M118 34l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/><path d="M108 8l1.2 3.4 3.4 1.2-3.4 1.2-1.2 3.4-1.2-3.4-3.4-1.2 3.4-1.2z"/></g>
+</svg>`}
+let moodTimer=null;
+function tama(mood,text,hold){
+  const c=$("#tamaCat .cat");if(!c)return;
+  c.classList.remove("talk","happy","oops","sad","listen","think");
+  if(mood&&mood!=="idle")c.classList.add(mood);
+  if(text!==undefined)$("#tamaSay").textContent=text;
+  clearTimeout(moodTimer);moodTimer=null;
+  if(hold)moodTimer=setTimeout(()=>{moodTimer=null;const c2=$("#tamaCat .cat");if(!c2)return;c2.classList.remove("happy","oops","sad");if(vState==="speaking")c2.classList.add("talk");else if(vState==="listening")c2.classList.add("listen")},hold);
+}
+const IDLE_LINES=["Toca el micro rojo y hablamos. También puedes escribirme.","¿Practicamos un poco? Toca el micro o escribe en romaji.","Si no sabes qué decir, pulsa «¿Qué puedo decir?»."];
+
+/* ============ sounds ============ */
+let actx=null;
+function audioCtx(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(actx&&actx.state==="suspended")actx.resume();return actx}
+function tone(f,start,dur,{type="sine",vol=.12,slide=0}={}){
+  const c=audioCtx();if(!c)return;const t=c.currentTime+start;
+  const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(f*slide,t+dur);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(c.destination);o.start(t);o.stop(t+dur+.05);
+}
+// pentatonic, koto-like plucks
+const SFX={
+  send:()=>tone(587,0,.12,{type:"triangle",vol:.08,slide:1.4}),
+  receive:()=>{tone(880,0,.14,{type:"triangle",vol:.07});tone(1175,.07,.18,{type:"triangle",vol:.05})},
+  perfect:()=>{[659,784,988,1319].forEach((f,i)=>tone(f,i*.07,.4,{type:"triangle",vol:.09}));tone(2637,.28,.5,{vol:.025})},
+  unnatural:()=>{tone(784,0,.22,{type:"triangle",vol:.08});tone(659,.12,.32,{type:"triangle",vol:.07})},
+  wrong:()=>{tone(392,0,.25,{type:"triangle",vol:.1,slide:.85});tone(294,.13,.35,{vol:.07})},
+  add:()=>[1047,1175,1568,2093].forEach((f,i)=>tone(f,i*.05,.22,{type:"triangle",vol:.05})),
+  tap:()=>tone(1319,0,.05,{vol:.04}),
+  flip:()=>tone(784,0,.08,{type:"triangle",vol:.05,slide:1.25}),
+  listen:()=>{tone(988,0,.08,{vol:.06});tone(1319,.06,.1,{vol:.05})},
+  pause:()=>{tone(1319,0,.08,{vol:.05});tone(988,.06,.1,{vol:.05})},
+  done:()=>[523,587,659,784,880,1047].forEach((f,i)=>tone(f,i*.08,.45,{type:"triangle",vol:.07}))
+};
+function sfx(n){if(!settings.sound)return;try{SFX[n]&&SFX[n]()}catch(e){}if(navigator.vibrate&&(n==="wrong"||n==="perfect")){try{navigator.vibrate(n==="wrong"?[30,40,30]:15)}catch(e){}}}
+
+/* ============ data ============ */
+const BASIC=[
+ ["私","わたし","watashi","yo"],["あなた","あなた","anata","tú (se evita mucho; mejor usar el nombre)"],
+ ["これ","これ","kore","esto"],["それ","それ","sore","eso"],["あれ","あれ","are","aquello"],
+ ["ここ","ここ","koko","aquí"],["そこ","そこ","soko","ahí"],["あそこ","あそこ","asoko","allí"],
+ ["は","は","wa","partícula de tema (se lee «wa»)"],["が","が","ga","partícula de sujeto"],["を","を","o","partícula de objeto directo"],
+ ["に","に","ni","a / en (destino, hora, lugar de existencia)"],["で","で","de","en (lugar de la acción) / con (medio)"],
+ ["へ","へ","e","hacia (se lee «e»)"],["と","と","to","y / con"],["の","の","no","de (posesión)"],["も","も","mo","también"],
+ ["か","か","ka","partícula de pregunta"],["ね","ね","ne","¿verdad? / ¿eh?"],["よ","よ","yo","énfasis (te informo)"],
+ ["です","です","desu","ser / estar (educado)"],["じゃないです","じゃないです","ja nai desu","no es"],
+ ["〜ます","ます","masu","terminación educada de verbos"],["〜ません","ません","masen","negativo educado"],["〜ました","ました","mashita","pasado educado"],
+ ["〜ましょう","ましょう","mashou","¡hagamos…!"],["〜たいです","たいです","tai desu","quiero (hacer)…"],
+ ["何","なに / なん","nani / nan","qué"],["どこ","どこ","doko","dónde"],["いつ","いつ","itsu","cuándo"],["誰","だれ","dare","quién"],
+ ["どう","どう","dou","cómo / qué tal"],["いくら","いくら","ikura","cuánto cuesta"],
+ ["はい","はい","hai","sí"],["いいえ","いいえ","iie","no"],["ありがとう","ありがとう","arigatou","gracias"],
+ ["すみません","すみません","sumimasen","perdón / disculpe"],["お願いします","おねがいします","onegaishimasu","por favor (pidiendo)"],
+ ["ください","ください","kudasai","deme / por favor"],["好き","すき","suki","gustar"],["ある","ある","aru","haber / tener (cosas)"],["いる","いる","iru","haber / estar (seres vivos)"]
+].map(([jp,kana,romaji,es],i)=>({id:"b"+i,jp,kana,romaji,es,basic:true}));
+const SCENES=[
+ ["libre","Libre","conversación libre y cotidiana"],["presentarse","Presentarse","conocerse: nombre, de dónde eres, a qué te dedicas"],
+ ["dia","Tu día","qué has hecho hoy, planes, rutina"],["comida","Restaurante","pedir comida y bebida en un restaurante"],
+ ["tienda","De compras","comprar en una tienda o konbini"],["camino","Direcciones","preguntar cómo llegar a un sitio"],["gustos","Gustos","aficiones, lo que te gusta y no"]
+];
+
+let words=[];
+let settings={key:"",model:"",furigana:true,kataHelp:true,romaji:false,rate:0.9,audioOnly:false,autoSpeak:true,sound:true,speakFix:true,kanaInput:true,goal:10,voice:"",streak:{day:"",n:0},today:{day:"",n:0}};
+let chat={scene:"libre",msgs:[]};
+let session={good:{},bad:{},fixes:[]};
+
+/* ============ storage ============ */
+const LS={get(k){try{return JSON.parse(localStorage.getItem("hanashi_"+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("hanashi_"+k,JSON.stringify(v))}catch(e){toast("No se pudo guardar en este dispositivo.")}}};
+const saveWord=()=>LS.set("words",words);
+function deleteWord(w){words=words.filter(x=>x.id!==w.id);saveWord()}
+const saveSettings=()=>LS.set("settings",settings);
+function saveChat(){chat.msgs=chat.msgs.slice(-40);LS.set("chat",chat)}
+function loadAll(){words=LS.get("words")||[];settings={...settings,...(LS.get("settings")||{})};chat=LS.get("chat")||chat;delete settings.mode;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}}
+function exportData(){
+  const data={app:"hanashi",version:2,exported:new Date().toISOString(),words,settings:{...settings,key:undefined,model:undefined},chat};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`hanashi-progreso-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast("Progreso exportado");
+}
+$("#importFile").addEventListener("change",async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const d=JSON.parse(await f.text());if(d.app!=="hanashi"||!Array.isArray(d.words))throw 0;
+    const key=settings.key,model=settings.model;
+    const byJp=new Map(words.map(w=>[normJP(w.jp),w]));
+    d.words.forEach(w=>{const k=normJP(w.jp),cur=byJp.get(k);if(!cur||(w.lastSeen||w.added||0)>(cur.lastSeen||cur.added||0))byJp.set(k,w)});
+    words=[...byJp.values()];
+    if(d.settings)settings={...settings,...d.settings,key,model};
+    if(d.chat&&d.chat.msgs)chat=d.chat;
+    saveWord();saveSettings();saveChat();closeSheet();renderAll();sfx("done");toast(`Importado: ${words.length} palabras`);
+  }catch(err){toast("Ese archivo no es una copia de Hanashi.")}
+  e.target.value="";
+});
+
+/* ============ streak & daily goal ============ */
+function todayN(){return settings.today.day===dayKey()?settings.today.n:0}
+function bumpActivity(){
+  const k=dayKey(),y=dayKey(now()-DAY);
+  if(settings.today.day!==k)settings.today={day:k,n:0};
+  settings.today.n++;
+  if(settings.streak.day!==k){settings.streak={day:k,n:settings.streak.day===y?settings.streak.n+1:1};if(settings.streak.n>1)toast(`¡Racha de ${settings.streak.n} días!`)}
+  if(settings.today.n===settings.goal){setTimeout(()=>{sfx("done");tama("happy","¡Objetivo de hoy cumplido! お疲れ様！",3500);toast("¡Objetivo diario cumplido!")},900)}
+  saveSettings();renderStreak();renderGoal();
+}
+function renderStreak(){const k=dayKey(),y=dayKey(now()-DAY);const alive=settings.streak.day===k||settings.streak.day===y;const n=alive?settings.streak.n:0;
+  $("#streakN").textContent=n;$("#streak").classList.toggle("off",settings.streak.day!==k);$("#streak").title=`${n} días seguidos practicando`}
+function renderGoal(){const n=todayN(),g=settings.goal;$("#goal").className="goal"+(n>=g?" done":"");
+  $("#goal").innerHTML=`<span>Hoy ${Math.min(n,g)}/${g}</span><span class="bar"><i style="width:${Math.min(100,n/g*100)}%"></i></span>`}
+
+/* ============ SRS ============ */
+function status(w){
+  if(w.basic)return["basic","básico"];
+  if(w.lastFail&&now()-w.lastFail<3*DAY)return["weak","floja"];
+  if(!w.reps)return["new","nueva"];
+  if((w.interval||0)>=21)return["done","dominada"];
+  return["learn","aprendiendo"];
+}
+function priority(w){let p=0;const t=now();if(w.lastFail&&t-w.lastFail<3*DAY)p+=50;p+=(w.lapses||0)*6;if((w.reps||0)<2)p+=30;if((w.due||0)<=t)p+=20+Math.min(20,(t-(w.due||t))/DAY);p-=(w.good||0)*0.5;return p}
+function review(w,g){
+  const t=now();w.ease=w.ease||2.5;w.interval=w.interval||0;w.reps=w.reps||0;
+  if(g===0){w.lapses=(w.lapses||0)+1;w.bad=(w.bad||0)+1;w.reps=0;w.interval=0;w.ease=Math.max(1.3,w.ease-0.2);w.due=t+10*6e4;w.lastFail=t}
+  else{w.good=(w.good||0)+1;if(w.reps===0)w.interval=[0,1,1,3][g];else if(w.reps===1)w.interval=[0,2,3,6][g];else w.interval=Math.round(w.interval*[0,1.2,w.ease,w.ease*1.3][g]*10)/10;
+    w.ease=Math.max(1.3,w.ease+[0,-0.15,0,0.1][g]);w.reps++;w.due=t+w.interval*DAY}
+  w.lastSeen=t;saveWord();
+}
+function convUsage(w,result){if(result==="wrong"){review(w,0);session.bad[w.id]=w.jp}else{if((w.due||0)<=now())review(w,2);else{w.good=(w.good||0)+1;w.lastSeen=now();saveWord()}session.good[w.id]=w.jp}}
+function lookupPenalty(w){w.lookups=(w.lookups||0)+1;w.ease=Math.max(1.3,(w.ease||2.5)-0.05);w.due=Math.min(w.due||now(),now()+36e5);saveWord()}
+const dueWords=()=>words.filter(w=>!w.basic&&(w.due||0)<=now());
+const focusWords=(n=6)=>[...words].sort((a,b)=>priority(b)-priority(a)).slice(0,n);
+function findWord(s){const a=normJP(s);if(!a)return null;return words.find(w=>normJP(w.jp)===a||normJP(w.kana)===a)||null}
+function findBasic(s){const a=normJP(s);return BASIC.find(b=>normJP(b.jp.replace("〜",""))===a||normJP(b.kana)===a)||null}
+
+/* ============ voice out ============ */
+let jaVoices=[],jaVoice=null,esVoice=null,curU=null,voiceWarned=false;
+function pickVoice(){
+  if(!("speechSynthesis" in window))return;
+  const v=speechSynthesis.getVoices();
+  jaVoices=v.filter(x=>/^ja/i.test(x.lang.replace("_","-")));
+  jaVoice=jaVoices.find(x=>x.name===settings.voice)||jaVoices.find(x=>/google|kyoko|otoya|haruka|nanami|ayumi|sayaka/i.test(x.name))||jaVoices[0]||null;
+  const es=v.filter(x=>/^es/i.test(x.lang.replace("_","-")));esVoice=es.find(x=>/es-ES/i.test(x.lang.replace("_","-")))||es[0]||null;
+}
+if("speechSynthesis" in window){pickVoice();speechSynthesis.addEventListener?.("voiceschanged",pickVoice);setTimeout(pickVoice,500);setTimeout(pickVoice,1500)}
+function speakSeq(items,onend){
+  items=items.filter(i=>i&&String(i.text||"").trim());
+  if(!items.length){onend&&onend();return}
+  if(!("speechSynthesis" in window)){voiceHelp(true);onend&&onend();return}
+  const ss=speechSynthesis;if(!jaVoice)pickVoice();
+  let started=false,idx=0;const token={};curU=token;
+  const next=()=>{
+    if(curU!==token)return;
+    if(idx>=items.length){curU=null;setVState(voiceOn?"idle":"idle");onend&&onend();return}
+    const it=items[idx++];const u=new SpeechSynthesisUtterance(it.text);
+    if(it.lang==="es"){u.lang="es-ES";if(esVoice)u.voice=esVoice;u.rate=1.05}else{u.lang="ja-JP";if(jaVoice)u.voice=jaVoice;u.rate=it.rate||settings.rate}
+    u.onstart=()=>{started=true;setVState("speaking")};
+    u.onend=()=>next();
+    u.onerror=e=>{if(e.error==="interrupted"||e.error==="canceled")return;console.warn("tts",e.error);next()};
+    try{ss.resume()}catch(e){}ss.speak(u);
+    if(idx===1)setTimeout(()=>{if(!started&&!ss.speaking&&curU===token){if(!voiceWarned){voiceWarned=true;voiceHelp(!jaVoices.length)}next()}},3000);
+  };
+  if(ss.speaking||ss.pending){ss.cancel();setTimeout(next,120)}else next();
+}
+const speak=(text,rate,onend)=>speakSeq([{text,lang:"ja",rate}],onend);
+function stopSpeaking(){curU=null;try{speechSynthesis.cancel()}catch(e){}if(vState==="speaking")setVState("idle")}
+function voiceHelp(noVoice){
+  openSheet(`<div class="grab"></div><h3 class="h2">El audio no suena</h3>
+   <p style="margin:0">${noVoice?"Tu dispositivo no tiene ninguna voz japonesa instalada.":"El navegador no ha reproducido la voz."} La voz es gratis y la pone tu propio dispositivo:</p>
+   <ol class="steps"><li><b>Android:</b> Ajustes → Accesibilidad → Texto a voz → Motor de Google → Instalar datos de voz → Japonés.</li>
+    <li><b>iPhone:</b> Ajustes → Accesibilidad → Contenido leído → Voces → Japonés → descarga Kyoko u Otoya. Quita el modo silencio.</li>
+    <li><b>Windows:</b> usa Chrome o Edge, que ya traen voces japonesas.</li>
+    <li><b>Mac:</b> Ajustes del Sistema → Accesibilidad → Contenido leído → Voz del sistema → Gestionar voces → Japonés.</li></ol>
+   <button class="btn primary" data-close>Entendido</button>`);
+}
+
+/* ============ voice in ============ */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;
+function recognize({lang="ja-JP",onInterim,onFinal,onError}){
+  if(!SR){onError&&onError("unsupported");return null}
+  try{
+    const r=new SR();r.lang=lang;r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+    let finalText="";
+    r.onresult=e=>{let interim="";finalText="";for(const res of e.results){if(res.isFinal)finalText+=res[0].transcript;else interim+=res[0].transcript}onInterim&&onInterim(finalText+interim)};
+    r.onerror=e=>{r._err=e.error};
+    r.onend=()=>{if(rec===r)rec=null;if(r._aborted)return;if(r._err&&r._err!=="no-speech"&&r._err!=="aborted"){onError&&onError(r._err);return}onFinal&&onFinal(finalText.trim())};
+    rec=r;r.start();return r;
+  }catch(e){onError&&onError("start");return null}
+}
+function stopRec(){if(rec){rec._aborted=true;try{rec.abort()}catch(e){}rec=null}}
+function micErrorMsg(err){
+  if(err==="unsupported")return "Este navegador no reconoce voz. Usa Chrome (Android, Windows, Mac) o Safari (iPhone).";
+  if(err==="not-allowed"||err==="service-not-allowed")return "No tengo permiso para el micrófono. Actívalo en los permisos del navegador para esta página.";
+  if(err==="network")return "El reconocimiento de voz necesita internet.";
+  if(err==="audio-capture")return "No encuentro ningún micrófono.";
+  return "No he podido escucharte. Toca el micro para intentarlo otra vez.";
+}
+
+/* ============ Gemini ============ */
+const API="https://generativelanguage.googleapis.com/v1beta";
+function aiErr(e){
+  const c=e&&e.code;
+  if(c==="no_key")return "Falta tu clave de Gemini. Añádela en Ajustes.";
+  if(c==="bad_key")return "Tu clave de Gemini no funciona. Revísala en Ajustes.";
+  if(c==="rate_limited")return "Has llegado al límite gratuito de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).";
+  if(c==="offline")return "No hay conexión a internet.";
+  if(c==="invalid_json")return "La respuesta llegó mal formada. Pulsa reenviar.";
+  return "No he podido conectar con Gemini. Inténtalo otra vez en un momento.";
+}
+async function listModels(key){
+  const r=await fetch(`${API}/models?pageSize=200`,{headers:{"x-goog-api-key":key}});
+  if(r.status===400||r.status===401||r.status===403)throw{code:"bad_key"};
+  if(!r.ok)throw{code:"upstream"};
+  const j=await r.json();
+  const names=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")).map(m=>m.name.replace(/^models\//,""));
+  const flash=names.filter(n=>/^gemini-[\d.]+-flash/.test(n)&&!/(lite|image|tts|live|audio|thinking|exp|8b)/.test(n));
+  const ver=n=>parseFloat((n.match(/gemini-([\d.]+)/)||[])[1]||0);
+  const stable=flash.filter(n=>!/preview/.test(n));
+  const pool=(stable.length?stable:flash).sort((a,b)=>ver(b)-ver(a)||a.length-b.length);
+  return pool[0]||"gemini-2.5-flash";
+}
+async function ask(prompt,_retry){
+  if(!settings.key)throw{code:"no_key"};
+  if(!navigator.onLine)throw{code:"offline"};
+  if(!settings.model){try{settings.model=await listModels(settings.key);saveSettings()}catch(e){if(e.code==="bad_key")throw e;settings.model="gemini-2.5-flash"}}
+  const gen={responseMimeType:"application/json",temperature:0.7};
+  if(!settings.noThinkCfg){if(/2\.5/.test(settings.model))gen.thinkingConfig={thinkingBudget:0};else if(/gemini-[3-9]/.test(settings.model))gen.thinkingConfig={thinkingLevel:"low"}}
+  let r;
+  try{r=await fetch(`${API}/models/${settings.model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.key},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:gen})})}
+  catch(e){throw{code:navigator.onLine?"upstream":"offline"}}
+  if(!r.ok){
+    const txt=await r.text();
+    if(r.status===429)throw{code:"rate_limited"};
+    if(r.status===400&&/thinking/i.test(txt)&&!settings.noThinkCfg&&!_retry){settings.noThinkCfg=true;saveSettings();return ask(prompt,true)}
+    if(r.status===404&&!_retry){settings.model="";saveSettings();return ask(prompt,true)}
+    if((r.status===400&&/API key|API_KEY/i.test(txt))||r.status===401||r.status===403)throw{code:"bad_key"};
+    if(r.status>=500&&!_retry){await new Promise(z=>setTimeout(z,1200));return ask(prompt,true)}
+    console.warn("gemini",r.status,txt);throw{code:"upstream"};
+  }
+  const j=await r.json();
+  const text=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+  const s=text.replace(/^```(?:json)?\s*|\s*```$/g,"").trim();
+  try{return JSON.parse(s)}catch(e){const a=s.indexOf("{"),b=s.lastIndexOf("}");if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e2){}}throw{code:"invalid_json"}}
+}
+const LEARNER="El alumno habla español, es principiante, lee hiragana con soltura, está aprendiendo katakana y apenas conoce kanji. Su prioridad es hablar y entender con fluidez.";
+const cleanToks=a=>Array.isArray(a)?a.filter(t=>t&&typeof t.s==="string").map(t=>({s:t.s,r:t.r||"",m:t.m||""})):[];
+
+/* ============ conversation ============ */
+const WELCOME={role:"ai",tokens:[{s:"こんにちは",r:"",m:"hola"},{s:"！",m:""},{s:"タマ",r:"たま",m:"Tama (mi nombre)"},{s:"です",m:"soy (educado)"},{s:"。",m:""},{s:"一緒",r:"いっしょ",m:"juntos"},{s:"に",m:"partícula: forma el adverbio «juntos»"},{s:"話しましょう",r:"はなしましょう",m:"hablemos"},{s:"！",m:""}],
+ romaji:"Konnichiwa! Tama desu. Issho ni hanashimashou!",es:"¡Hola! Soy Tama. ¡Hablemos juntos!",
+ help:"Toca cualquier palabra para ver qué significa en esa frase. Pulsa el micro rojo para hablar sin manos: yo te escucho, te corrijo y te contesto. Puedes pausar cuando quieras y seguir por escrito (en romaji se convierte solo a hiragana)."};
+const allMsgs=()=>[WELCOME,...chat.msgs];
+const msgAt=i=>i===0?WELCOME:chat.msgs[i-1];
+const sayText=m=>(m.tokens||[]).map(t=>t.s).join("");
+const toksOf=(m,k)=>k==="me"?(m.meTokens||[]):(m.tokens||[]);
+let busy=false,chatError="",liveText="";
+
+function renderScenes(){$("#scenes").innerHTML=SCENES.map(([k,l])=>`<button class="chip" data-scene="${k}" aria-pressed="${chat.scene===k}">${l}</button>`).join("")}
+function renderFocus(){
+  const f=focusWords(6).filter(w=>!w.basic);
+  $("#focusBar").innerHTML=f.length?`<span>Practicando:</span>`+f.map(w=>`<span class="w ${status(w)[0]==="new"?"new":""}">${esc(w.jp)}</span>`).join(""):`<span>Añade palabras en <b>Vocabulario</b> y la conversación girará en torno a ellas.</span>`;
+}
+function tokClass(t){if(!t.m)return"";if(findWord(t.s))return"known";if(findBasic(t.s))return"";return hasKanji(t.s)||hasKata(t.s)||t.s.length>1?"newish":""}
+function fbHTML(f,said){
+  if(!f)return hasJP(said)?`<div class="fb none">Sin evaluación para esta frase.</div>`:"";
+  const lv=f.level||"perfect";
+  const head={perfect:"Perfecto, así lo diría un japonés",unnatural:"Se entiende, pero un japonés lo diría así:",wrong:"Hay un error. Lo correcto sería:"}[lv]||"";
+  const ic={perfect:SVG.check,unnatural:SVG.tilde,wrong:SVG.x}[lv]||SVG.check;
+  return `<div class="fb ${lv}"><span class="ic">${ic}</span><span class="t"><b>${head}</b>
+    ${lv!=="perfect"&&f.natural?`<span class="nat">${esc(f.natural)}</span>`:""}${f.note_es?`<span class="note">${esc(f.note_es)}</span>`:""}
+    ${lv!=="perfect"&&f.natural?`<button class="mini say-btn" data-say="${esc(f.natural)}">${SVG.play}Escuchar</button>`:""}</span></div>`;
+}
+function tokLine(toks,i,k){return `<div class="jpline ${settings.furigana?"":"nofuri"}">${toks.map((t,j)=>t.m?`<button class="tok ${tokClass(t)}" data-m="${i}" data-t="${j}"${k?` data-k="${k}"`:""}>${rubyHTML(t.s,t.r)}</button>`:esc(t.s)).join("")}</div>`}
+function msgHTML(m,i){
+  if(m.role==="sys")return `<div class="sys">${esc(m.text)}</div>`;
+  if(m.role==="me"){
+    const showWritten=(m.meTokens||[]).length&&(normJP(m.meTokens.map(t=>t.s).join(""))!==normJP(m.text)||m.meTokens.some(t=>hasKanji(t.s)));
+    return `<div class="msg me"><div class="bubble"><div class="said">${esc(m.text)}</div>
+      ${showWritten?`<div class="written">${tokLine(m.meTokens,i,"me")}</div>`:""}
+      ${m.meEs?`<div class="metr">${esc(m.meEs)}</div>`:""}</div>
+      ${m.pending?"":fbHTML(m.feedback,m.text)}</div>`;
+  }
+  const hide=settings.audioOnly&&!m.revealed;
+  return `<div class="msg ai">${m.help?`<div class="help">${esc(m.help)}</div>`:""}
+   ${(m.tokens||[]).length?`<div class="bubble ${hide?"hidden-text":""}">${tokLine(m.tokens,i)}
+     ${settings.romaji&&m.romaji?`<div class="romaji">${esc(m.romaji)}</div>`:""}${m.showEs?`<div class="trans">${esc(m.es)}</div>`:""}</div>
+   <div class="msgtools"><button class="mini" data-act="play" data-i="${i}">${SVG.play}Escuchar</button><button class="mini" data-act="slow" data-i="${i}">${SVG.slow}Despacio</button>
+     ${hide?`<button class="mini" data-act="reveal" data-i="${i}">${SVG.eye}Ver texto</button>`:""}<button class="mini ${m.showEs?"on":""}" data-act="es" data-i="${i}">Traducir</button></div>`:""}</div>`;
+}
+function renderChat(keepScroll){
+  const sc=$("#chatScroll"),prev=sc.scrollTop,atBottom=sc.scrollHeight-sc.scrollTop-sc.clientHeight<80;
+  $("#msgs").innerHTML=allMsgs().map((m,i)=>msgHTML(m,i)).join("")+
+   `<div class="msg me live" id="liveMsg" ${liveText?"":"hidden"}><div class="bubble"><div class="said" id="liveTxt">${esc(liveText)}</div></div></div>`+
+   (busy?`<div class="msg ai"><div class="bubble typing"><i></i><i></i><i></i></div></div>`:"")+
+   (chatError?`<div class="notice">${esc(chatError)} <button class="mini" id="btnRetry">Reenviar</button></div>`:"");
+  renderFocus();requestAnimationFrame(()=>sc.scrollTop=(keepScroll&&!atBottom)?prev:sc.scrollHeight);
+}
+function setLive(t){liveText=t;const m=$("#liveMsg");if(!m)return;m.hidden=!t;$("#liveTxt").textContent=t;if(t){const sc=$("#chatScroll");sc.scrollTop=sc.scrollHeight}}
+
+/* ---- hands-free voice loop (pause / resume any time) ---- */
+let voiceOn=false,vState="idle",vNoSpeech=0;
+function setVState(s){
+  vState=s;const b=$("#btnMic");
+  b.className="micbtn"+(voiceOn?" on "+s:"");
+  b.innerHTML=!voiceOn?SVG.mic:s==="listening"?SVG.wave:s==="thinking"?SVG.dots:SVG.pause;
+  b.setAttribute("aria-label",voiceOn?"Pausar conversación":"Empezar a hablar");
+  if(s==="listening")tama("listen","Te escucho… habla en japonés.");
+  else if(s==="thinking")tama("think","Mmm…");
+  else if(s==="speaking"){const c=$("#tamaCat .cat");if(c&&!moodTimer){c.classList.remove("listen","think");c.classList.add("talk")}else if(c)c.classList.add("talk")}
+  else{const c=$("#tamaCat .cat");if(c){c.classList.remove("talk","listen","think")}}
+}
+function resumeVoice(){
+  if(!SR){toast(micErrorMsg("unsupported"));return}
+  voiceOn=true;$("#input").blur();sfx("listen");
+  if(busy){setVState("thinking");return}
+  if(chat.msgs.filter(m=>m.role!=="sys").length===0){setVState("thinking");send("",true);return}
+  startListening();
+}
+function pauseVoice(silent){
+  voiceOn=false;stopRec();stopSpeaking();setLive("");vNoSpeech=0;
+  setVState(busy?"thinking":"idle");if(!silent){sfx("pause");tama("idle","En pausa. Puedes escribirme o tocar el micro para seguir.")}
+}
+function startListening(lang){
+  if(tab!=="chat")return;
+  stopSpeaking();setLive("");
+  const once=!voiceOn;               // one-shot (e.g. Spanish question while paused)
+  setVState("listening");if(once){$("#btnMic").className="micbtn on listening";$("#btnMic").innerHTML=SVG.wave}
+  recognize({lang:lang||"ja-JP",
+    onInterim:t=>setLive(t),
+    onFinal:t=>{setLive("");
+      if(t){vNoSpeech=0;send(t,false,lang==="es-ES")}
+      else if(voiceOn){vNoSpeech++;if(vNoSpeech<3)startListening(lang);else{pauseVoice(true);tama("idle","¿Sigues ahí? Toca el micro para seguir hablando.")}}
+      else setVState("idle")},
+    onError:e=>{toast(micErrorMsg(e));pauseVoice(true)}});
+}
+function afterAiReply(m,fb){
+  const items=[];
+  if(settings.speakFix&&fb&&fb.level!=="perfect"&&fb.natural&&voiceOn){items.push({text:fb.level==="wrong"?"Corrección:":"Más natural:",lang:"es"});items.push({text:fb.natural,lang:"ja",rate:Math.max(.6,settings.rate-.1)})}
+  if(m.tokens.length)items.push({text:sayText(m),lang:"ja"});
+  if(voiceOn)speakSeq(items,()=>setTimeout(()=>{if(voiceOn&&!busy&&vState!=="listening")startListening()},200));
+  else if(settings.autoSpeak&&m.tokens.length)speakSeq(items);
+  else setVState("idle");
+}
+
+async function send(text,isStart,spanish){
+  text=(text||"").trim();
+  if(busy)return;if(!text&&!isStart)return;
+  chatError="";let meMsg=null;
+  if(text){meMsg={role:"me",text,pending:true};chat.msgs.push(meMsg);sfx("send");bumpActivity()}
+  busy=true;setVState("thinking");renderChat();saveChat();
+  const focus=focusWords(6).filter(w=>!w.basic);
+  const known=words.filter(w=>!w.basic).slice(0,300).map(w=>w.jp+(w.kana&&w.kana!==w.jp?"("+w.kana+")":"")).join("、");
+  const scene=SCENES.find(s=>s[0]===chat.scene)||SCENES[0];
+  const hist=chat.msgs.filter(m=>m.role!=="sys").slice(-16).map(m=>m.role==="me"?"ALUMNO: "+m.text:"TAMA: "+sayText(m)).join("\n");
+  const prompt=`Eres Tama, un gato japonés simpático y amable que habla como un amigo nativo y ayuda a un alumno a practicar conversación. ${LEARNER}
+Situación: ${scene[2]}.
+Vocabulario que el alumno está aprendiendo: ${known||"(todavía ninguno)"}.
+Gramática básica que conoce: partículas は が を に で へ と の も か ね よ, です/じゃないです, verbos en 〜ます/〜ません/〜ました/〜ましょう/〜たいです, palabras interrogativas.
+Palabras PRIORITARIAS para practicar ahora, con su id: ${focus.map(w=>w.id+"="+w.jp+"("+w.es+")").join(", ")||"(ninguna)"}.
+${voiceOn?"El alumno te HABLA en voz alta y su mensaje viene de un reconocedor de voz: puede tener errores de transcripción (homófonos, kanji equivocados). No le penalices por errores que claramente son de la transcripción.":"El alumno escribe con teclado convirtiendo romaji a hiragana, así que es normal que escriba todo en hiragana: no lo cuentes como error."}
+
+Reglas:
+- Responde con 1 o 2 frases cortas en japonés natural de nivel principiante, estilo です/ます, como en una conversación hablada real. Termina normalmente con una pregunta sencilla para que el alumno siga hablando.
+- Usa sobre todo el vocabulario del alumno y la gramática básica. Incluye 1 o 2 palabras prioritarias de forma natural, o pregunta cosas que inviten al alumno a usarlas. Como mucho 1 palabra nueva por respuesta.
+- Kanji solo en palabras comunes; el resto en hiragana/katakana.
+- ${isStart&&!text?"Empieza tú la conversación con un saludo adecuado a la situación.":"Responde al último mensaje del alumno."}
+- Si el alumno habla en español o pregunta algo (qué significa, cómo se dice…), contesta brevemente en español en "help_es" y luego sigue la conversación en japonés.
+
+SOBRE EL ÚLTIMO MENSAJE DEL ALUMNO (si está en japonés, también romaji):
+- "me_tokens": su frase escrita como la escribiría un japonés (con los kanji habituales), sin corregir su contenido, dividida en palabras en orden: s = texto; r = lectura en hiragana (si s tiene kanji o katakana, si no ""); m = significado breve en español en ese contexto (puntuación: m "").
+- "me_es": traducción al español de lo que dijo.
+- "feedback": level "perfect" si es correcto Y es como lo diría un japonés en esa situación; "unnatural" si se entiende o es aceptable pero un nativo no lo diría así (palabra rara, demasiado literal, registro inadecuado, falta o sobra algo); "wrong" si tiene errores de gramática, partículas, conjugación o vocabulario. natural: cómo lo diría un japonés. note_es: explicación breve y concreta en español. Sé exigente con la naturalidad pero no penalices puntuación ni que escriba en hiragana.
+- Si el mensaje no está en japonés: me_tokens [], me_es "", feedback null.
+- "word_usage": por id, las palabras PRIORITARIAS que usó: "good" si bien, "wrong" si mal (o si demuestra no entenderla).
+
+TU RESPUESTA:
+- "tokens": tu respuesta japonesa dividida en palabras, en orden, cubriendo todo el texto. s = texto exacto; r = lectura en hiragana (si s tiene kanji o katakana, si no ""); m = significado breve en español EN ESTE CONTEXTO (partículas: su función; puntuación: "").
+- "romaji" y "es" (traducción).
+
+Conversación hasta ahora:
+${hist||"(vacía)"}
+
+Devuelve SOLO JSON:
+{"help_es":"","me_tokens":[],"me_es":"","feedback":null,"word_usage":[],"tokens":[{"s":"","r":"","m":""}],"romaji":"","es":""}`;
+  try{
+    const res=await ask(prompt);
+    let fb=null;
+    if(meMsg){meMsg.pending=false;meMsg.meTokens=cleanToks(res.me_tokens);meMsg.meEs=res.me_es||"";
+      if(res.feedback&&typeof res.feedback==="object"&&res.feedback.level){fb=res.feedback;meMsg.feedback=fb;
+        if(fb.level!=="perfect")session.fixes.push({said:text,natural:fb.natural,note:fb.note_es,level:fb.level})}}
+    (res.word_usage||[]).forEach(u=>{const w=words.find(x=>x.id===u.id);if(w&&(u.result==="good"||u.result==="wrong"))convUsage(w,u.result)});
+    const m={role:"ai",tokens:cleanToks(res.tokens),romaji:res.romaji||"",es:res.es||"",help:res.help_es||""};
+    chat.msgs.push(m);busy=false;
+    renderChat();saveChat();updateBadge();
+    if(fb){sfx(fb.level);
+      if(fb.level==="perfect")tama("happy",pick(["¡Perfecto! すごい！","¡Eso es! Así lo diría un japonés.","¡Muy bien! いいね！"]),2200);
+      else if(fb.level==="unnatural")tama("oops",pick(["¡Casi! Mira cómo lo diría un japonés.","Se entiende, pero hay una forma más natural."]),2600);
+      else tama("sad",pick(["Ups, revisa la corrección.","Un pequeño error, ¡no pasa nada!"]),2600)}
+    else sfx("receive");
+    setTimeout(()=>afterAiReply(m,fb),fb?700:150);
+  }catch(e){console.warn(e);busy=false;if(meMsg)meMsg.pending=false;chatError=aiErr(e);renderChat();pauseVoice(true);tama("sad","Algo ha fallado. Mira el mensaje de abajo.",3000);if(e.code==="no_key"||e.code==="bad_key")showOnboarding()}
+}
+
+/* ---- "what can I say?" ---- */
+async function hintSheet(){
+  const wasOn=voiceOn;if(voiceOn)pauseVoice(true);
+  sfx("tap");
+  openSheet(`<div class="grab"></div><h3 class="h2">¿Qué puedo decir?</h3><div class="stack" style="gap:8px" id="hintBody"><div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div><div class="skel" style="width:80%"></div></div>`);
+  const last=[...allMsgs()].reverse().find(m=>m.role==="ai"&&(m.tokens||[]).length);
+  const known=words.filter(w=>!w.basic).slice(0,200).map(w=>w.jp).join("、");
+  try{
+    const r=await ask(`${LEARNER} Está en una conversación en japonés. Lo último que le dijeron: «${last?sayText(last):"(nada todavía)"}». Situación: ${(SCENES.find(s=>s[0]===chat.scene)||SCENES[0])[2]}.
+Su vocabulario: ${known||"(muy poco)"}.
+Propón 3 respuestas que podría decir, de más fácil a algo más completa, naturales y de nivel principiante (estilo です/ます), usando su vocabulario cuando sea posible.
+Para cada una: jp (como la escribiría un japonés), kana (todo en hiragana/katakana), romaji, es (traducción), tip (por qué funciona o qué estructura usa, muy breve, en español).
+Devuelve SOLO JSON: {"options":[{"jp":"","kana":"","romaji":"","es":"","tip":""}]}`);
+    const opts=(r.options||[]).filter(o=>o&&o.jp);window._hintOpts=opts;
+    const b=$("#hintBody");if(!b)return;
+    b.innerHTML=opts.map((o,i)=>`<div class="opt"><div class="t"><span class="jp">${esc(o.jp)}</span><small>${esc(o.romaji)}</small><div style="font-size:14px">${esc(o.es)}</div><small>${esc(o.tip)}</small></div>
+      <div class="stack" style="gap:6px"><button class="mini" data-say="${esc(o.jp)}">${SVG.play}</button><button class="mini" data-use="${i}">Usar</button></div></div>`).join("")+
+      `<p style="margin:0;font-size:13px;color:var(--muted)">Escúchala, repítela en voz alta y luego dila tú. Es la mejor forma de que se te quede.</p>
+      ${wasOn?`<button class="btn primary" id="btnResumeFromHint">${SVG.mic}Seguir hablando</button>`:""}`;
+  }catch(e){const b=$("#hintBody");if(b)b.innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
+}
+
+/* ---- token sheet ---- */
+function ctxSentence(toks,j){
+  let st=j,en=j;
+  while(st>0&&!/[。！？!?]/.test(toks[st-1].s))st--;
+  while(en<toks.length-1&&!/[。！？!?]/.test(toks[en].s))en++;
+  return {html:toks.slice(st,en+1).map((t,k)=>st+k===j?`<mark>${esc(t.s)}</mark>`:esc(t.s)).join(""),text:toks.slice(st,en+1).map(t=>t.s).join(""),full:toks.map(t=>t.s).join("")};
+}
+function tokenSheet(mi,j,k,silent){
+  const m=msgAt(mi);const toks=m&&toksOf(m,k);const t=toks&&toks[j];if(!t)return;
+  if(!silent){sfx("tap");if(voiceOn)pauseVoice(true)}
+  const w=findWord(t.s),b=findBasic(t.s);
+  if(w&&!t.looked&&k!=="me"){t.looked=true;lookupPenalty(w)}
+  const ctx=ctxSentence(toks,j),x=t.x;
+  const body=x?`<div class="sec"><span class="lbl">Traducción general</span><span class="val">${esc(x.general)}${x.dict&&x.dict!==t.s?` <span style="color:var(--muted);font-size:13px">· diccionario: <span class="jp">${esc(x.dict)}</span></span>`:""}</span></div>
+     <div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x.here)}</span></div>
+     <div class="sec"><span class="lbl">Cómo se usa</span><span class="val">${esc(x.usage)}</span></div>
+     ${x.ex_jp?`<div class="sec"><span class="lbl">Otro ejemplo</span><span class="val jp" style="font-size:17px">${esc(x.ex_jp)} <button class="mini" data-say="${esc(x.ex_jp)}">${SVG.play}</button></span><span style="font-size:13px;color:var(--muted)">${esc(x.ex_es)}</span></div>`:""}`:
+    `<div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(t.m)}</span></div>
+     <div class="sec" id="tokMore"><span class="lbl">Traducción general y uso</span><div class="skel" style="width:80%"></div><div class="skel" style="width:60%;margin-top:6px"></div></div>`;
+  openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${rubyHTML(t.s,t.r)}</div><div style="color:var(--muted)">${esc(t.r||"")}</div></div>
+   <button class="iconbtn" data-say="${esc(t.s)}" aria-label="Escuchar">${SVG.play}</button></div>
+   <div class="ctx">${ctx.html} <button class="mini" data-say="${esc(ctx.text)}">${SVG.play}</button></div>
+   <div class="stack" style="gap:8px" id="tokBody">${body}</div>
+   ${w?`<div class="row"><span class="pill ${status(w)[0]}">${status(w)[1]}</span><span style="font-size:13px;color:var(--muted)">Está en tu vocabulario.</span><span class="spacer"></span><button class="btn" data-open-word="${w.id}">Ficha</button></div>`:
+     b?`<div class="row"><span class="pill basic">kit básico</span></div>`:`<button class="btn primary" data-add-tok="${mi}:${j}:${k||""}">Añadir a mi vocabulario</button>`}`);
+  if(!silent)speak(t.s);
+  if(!x){
+    ask(`${LEARNER} En la frase japonesa «${ctx.full}» aparece la palabra «${t.s}»${t.r?" (lectura "+t.r+")":""}.
+Explícasela en español:
+general: traducción general de la palabra suelta (sus significados principales, breve).
+here: qué significa exactamente en ESTA frase y por qué (1 frase).
+usage: cómo se usa normalmente (1-2 frases sencillas: con qué partículas o palabras va, matices, si es formal o coloquial).
+dict: forma de diccionario si está conjugada o es una forma derivada; si no, "".
+ex_jp: otro ejemplo corto y sencillo con esa palabra (estilo です/ます); ex_es: su traducción.
+Devuelve SOLO JSON: {"general":"","here":"","usage":"","dict":"","ex_jp":"","ex_es":""}`).then(r=>{
+      t.x={general:r.general||"",here:r.here||t.m,usage:r.usage||"",dict:r.dict||"",ex_jp:r.ex_jp||"",ex_es:r.ex_es||""};saveChat();
+      if($("#tokBody"))tokenSheet(mi,j,k,true);
+    }).catch(e=>{const el=$("#tokMore");if(el)el.innerHTML=`<span class="lbl">Traducción general y uso</span><span class="val" style="color:var(--muted)">${esc(aiErr(e))}</span>`});
+  }
+}
+
+/* ============ vocabulary ============ */
+let vocabFilter="all",cands=null,candBusy=false,sugs=null,sugBusy=false,sugSel=new Set(),vocabMsg="";
+function renderVocab(){
+  const mine=words.filter(w=>!w.basic),weak=mine.filter(w=>status(w)[0]==="weak").length;
+  let list=vocabFilter==="basic"?BASIC:mine.filter(w=>vocabFilter==="all"||status(w)[0]===vocabFilter);
+  if(vocabFilter!=="basic")list=[...list].sort((a,b)=>priority(b)-priority(a));
+  const prevQ=$("#addInput")?$("#addInput").value:"";
+  $("#vocabPane").innerHTML=`
+   <div class="stats"><div class="stat"><b>${mine.length}</b><span>palabras</span></div><div class="stat"><b>${dueWords().length}</b><span>para repasar</span></div><div class="stat"><b style="color:${weak?"var(--shu)":"inherit"}">${weak}</b><span>flojas</span></div></div>
+   <form class="stack" id="addForm" style="gap:8px"><h2 class="h2">Añadir palabra</h2>
+     <div class="row"><input class="field" id="addInput" autocomplete="off" autocapitalize="off" placeholder="En japonés, romaji o español: neko, gato…" value="${esc(prevQ)}">
+     <button class="btn primary" ${candBusy?"disabled":""}>${candBusy?"Buscando…":"Buscar"}</button></div>
+     ${vocabMsg?`<div class="notice">${esc(vocabMsg)}</div>`:""}
+     ${cands?`<div class="cands">${cands.length?cands.map((c,i)=>`<button type="button" class="cand" data-cand="${i}"><span class="jp">${rubyHTML(c.jp,c.kana)}</span><span class="meta"><b>${esc(c.es)}</b>${esc(c.romaji)} · ${esc(c.type||"")}</span><span class="pill new">Añadir</span></button>`).join(""):`<div class="notice">No encontré nada. Prueba con otra forma.</div>`}</div>`:""}
+   </form>
+   <div class="stack" style="gap:8px">
+     <div class="row"><h2 class="h2" style="flex:1">Sugerencias de Tama</h2><button class="btn" id="btnSug" ${sugBusy?"disabled":""}>${sugBusy?"Pensando…":sugs?"Otras":"Sugerir palabras"}</button></div>
+     ${sugs?`<div class="sugs">${sugs.map((s,i)=>`<button class="sug" data-sug="${i}" aria-pressed="${sugSel.has(i)}" style="animation-delay:${i*40}ms"><span class="jp">${rubyHTML(s.jp,s.kana)}</span><span>${esc(s.es)}</span></button>`).join("")}</div>
+       <div class="row"><button class="btn primary" id="btnSugAdd" ${sugSel.size?"":"disabled"}>Añadir ${sugSel.size||""} seleccionadas</button><span style="font-size:12px;color:var(--muted)">Toca las que quieras aprender.</span></div>`:
+       `<p style="margin:0;font-size:13px;color:var(--muted)">Palabras útiles y frecuentes relacionadas con las que ya tienes. Tú eliges cuáles añadir.</p>`}
+   </div>
+   <div class="stack" style="gap:8px">
+     <div class="filters">${[["all","Todas"],["weak","Flojas"],["new","Nuevas"],["learn","Aprendiendo"],["done","Dominadas"],["basic","Kit básico"]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${vocabFilter===k}">${l}</button>`).join("")}</div>
+     ${list.length?`<div class="list">${list.map(w=>{const st=w.basic?["basic","básico"]:status(w);return `<button class="item" data-open-word="${w.id}"><span class="jp">${rubyHTML(w.jp,w.kana)}</span><span class="es">${esc(w.es)}</span><span class="pill ${st[0]}">${st[1]}</span></button>`}).join("")}</div>`:
+      `<div class="empty"><div class="catbox">${catSVG()}</div><span class="jp">${mine.length?"よし！":"言葉"}</span>${mine.length?"Nada en esta categoría.":"Aún no tienes palabras. Escribe arriba la primera que estés aprendiendo, o pide sugerencias a Tama."}</div>`}
+   </div>`;
+}
+const CARD_FIELDS='{"jp":"","kana":"","romaji":"","es":"","type":"","ex_jp":"","ex_kana":"","ex_es":""}';
+async function lookup(q){
+  candBusy=true;cands=null;vocabMsg="";renderVocab();
+  try{const r=await ask(`${LEARNER} El alumno quiere añadir a su vocabulario japonés: "${q}". Puede estar escrito en japonés, romaji o español. Da de 1 a 3 candidatos (la palabra más común primero; si es inequívoca, solo 1).
+Para cada uno: jp (forma escrita habitual), kana (lectura en hiragana; katakana si es préstamo), romaji, es (significado breve), type (sustantivo, verbo, adjetivo…; para verbos añade la forma ます), ex_jp (frase de ejemplo muy sencilla estilo です/ます), ex_kana (la frase en kana), ex_es (traducción).
+Devuelve SOLO JSON: {"candidates":[${CARD_FIELDS}]}`);cands=(r.candidates||[]).filter(c=>c&&c.jp)}
+  catch(e){vocabMsg=aiErr(e);cands=null}
+  candBusy=false;renderVocab();
+}
+function addWord(c,silent){
+  if(findWord(c.jp)){if(!silent)toast(`${c.jp} ya está en tu vocabulario`);return null}
+  const w={id:uidGen(),jp:c.jp,kana:c.kana||c.jp,romaji:c.romaji||"",es:c.es||"",type:c.type||"",ex_jp:c.ex_jp||"",ex_kana:c.ex_kana||"",ex_es:c.ex_es||"",added:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,good:0,bad:0};
+  words.push(w);saveWord();if(!silent){toast(`Añadida: ${w.jp}`);sfx("add")}updateBadge();return w;
+}
+async function suggest(){
+  sugBusy=true;renderVocab();
+  try{const mine=words.filter(w=>!w.basic).map(w=>w.jp).join("、");
+    const r=await ask(`${LEARNER} Vocabulario actual: ${mine||"(vacío)"}.
+Sugiere 8 palabras japonesas NUEVAS (que no estén en la lista) muy útiles para conversar: frecuentes, de nivel principiante y, si hay vocabulario, relacionadas con él o que permitan formar más frases con él. Mezcla sustantivos, verbos y adjetivos.
+Para cada una: jp, kana, romaji, es, type, ex_jp, ex_kana, ex_es.
+Devuelve SOLO JSON: {"words":[${CARD_FIELDS}]}`);
+    sugs=(r.words||[]).filter(s=>s&&s.jp&&!findWord(s.jp));sugSel=new Set();sfx("receive")}
+  catch(e){toast(aiErr(e))}
+  sugBusy=false;renderVocab();
+}
+async function explainKanji(w){
+  const box=$("#kanjiBox");if(box)box.innerHTML=`<div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div>`;
+  try{const r=await ask(`${LEARNER} Explica los kanji de la palabra japonesa ${w.jp} (${w.kana}, "${w.es}") para ayudarle a recordarlos.
+Para cada kanji: c, meaning (en español), on (lectura on en katakana), kun (lectura kun en hiragana), parts (componentes visuales o radicales, breve), mnemonic (regla mnemotécnica corta y visual en español que una forma y significado).
+Devuelve SOLO JSON: {"kanji":[{"c":"","meaning":"","on":"","kun":"","parts":"","mnemonic":""}]}`);
+    w.kanjiInfo=(r.kanji||[]).filter(k=>k&&k.c);saveWord();if($("#kanjiBox"))$("#kanjiBox").innerHTML=kanjiHTML(w)}
+  catch(e){if($("#kanjiBox"))$("#kanjiBox").innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
+}
+const kanjiHTML=w=>w.kanjiInfo.map(k=>`<div class="kj"><span class="c">${esc(k.c)}</span><div><p><b>${esc(k.meaning)}</b> <small>${esc(k.kun)} · ${esc(k.on)}</small></p><p><small>${esc(k.parts)}</small></p><p>${esc(k.mnemonic)}</p></div></div>`).join("");
+function wordSheet(id){
+  const w=words.find(x=>x.id===id)||BASIC.find(x=>x.id===id);if(!w)return;sfx("tap");
+  if(w.basic){openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${esc(w.jp)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana.split(" / ")[0])}">${SVG.play}</button></div><div style="font-size:18px;font-weight:600">${esc(w.es)}</div><span class="pill basic" style="align-self:flex-start">kit básico</span>`);return}
+  const st=status(w),dueTxt=(w.due||0)<=now()?"hoy":new Date(w.due).toLocaleDateString("es-ES",{day:"numeric",month:"short"});
+  openSheet(`<div class="grab"></div>
+   <div class="head"><div style="flex:1"><div class="jp">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.jp)}">${SVG.play}</button></div>
+   <div style="font-size:19px;font-weight:600">${esc(w.es)} <span style="font-size:13px;color:var(--muted);font-weight:400">${esc(w.type)}</span></div>
+   ${w.ex_jp?`<div class="sec"><span class="lbl">Ejemplo</span><div class="row"><span class="jp" style="font-size:18px;flex:1">${esc(w.ex_jp)}</span><button class="mini" data-say="${esc(w.ex_jp)}">${SVG.play}Escuchar</button></div><small style="color:var(--muted)">${esc(w.ex_kana)}</small><span>${esc(w.ex_es)}</span></div>`:""}
+   <dl class="kv"><dt>Estado</dt><dd><span class="pill ${st[0]}">${st[1]}</span></dd><dt>Aciertos / fallos</dt><dd>${w.good||0} / ${w.bad||0}</dd><dt>Consultada</dt><dd>${w.lookups||0} veces</dd><dt>Próximo repaso</dt><dd>${dueTxt}</dd></dl>
+   ${hasKanji(w.jp)?`<div class="stack" style="gap:8px"><h3 class="h2">Kanji</h3><div class="kanji" id="kanjiBox">${w.kanjiInfo?kanjiHTML(w):`<button class="btn" data-kanji="${w.id}">Explicar sus kanji con trucos para recordarlos</button>`}</div></div>`:""}
+   <div class="row"><button class="btn" data-practice="${w.id}">Practicar en conversación</button><span class="spacer"></span><button class="btn ghost" data-del="${w.id}" style="color:var(--shu)">Eliminar</button></div>`);
+}
+
+/* ============ review ============ */
+// card types: rec (see + hear → meaning), listen (hear only → meaning), prod (meaning → say it)
+let rq=null,ri=0,rShown=false,rMode="rec",rVerdict=null,rDone=0,rGood=0;
+function buildQueue(force){
+  let q=dueWords().sort((a,b)=>priority(b)-priority(a));
+  if(force&&!q.length)q=words.filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,10);
+  rq=q.slice(0,20);ri=0;rDone=0;rGood=0;nextCard(true);
+}
+function nextCard(first){
+  if(!first)ri++;rShown=false;rVerdict=null;
+  const w=rq&&rq[ri];
+  if(w)rMode=(w.reps||0)<1?"rec":(w.reps||0)<3?pick(["rec","listen","prod"]):pick(["listen","prod","prod"]);
+  if(!first&&rq&&!w&&rDone)sfx("done");
+  renderReview();if(w&&rMode!=="prod")setTimeout(()=>speak(w.jp),200);
+}
+function renderReview(){
+  const mine=words.filter(w=>!w.basic);
+  if(!mine.length){$("#reviewPane").innerHTML=`<div class="empty"><div class="catbox">${catSVG()}</div><span class="jp">復習</span>Cuando añadas palabras, aquí las repasarás justo antes de que se te olviden.</div>`;return}
+  if(!rq)return buildQueue(false);
+  const w=rq[ri];
+  if(!w){$("#reviewPane").innerHTML=`<div class="empty"><div class="catbox" id="revCat">${catSVG()}</div><span class="jp">${rDone?"お疲れ様！":"よし！"}</span>${rDone?`Has repasado ${rDone} palabras (${rGood} bien). `:""}No queda nada pendiente por ahora.</div>
+    <div class="row" style="justify-content:center"><button class="btn primary" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn" id="btnForce">Repasar igualmente</button></div>`;
+    if(rDone){const c=$("#revCat .cat");if(c)c.classList.add("happy")}return}
+  const pct=Math.round(ri/rq.length*100);
+  const grades=`<div class="grades">${[["Fallé","otra vez"],["Difícil","pronto"],["Bien",""],["Fácil","más tarde"]].map(([a,b],g)=>`<button class="grade g${g}" data-grade="${g}">${a}<small>${b||"&nbsp;"}</small></button>`).join("")}</div>`;
+  const answer=`<div class="big ${settings.furigana?"":"nofuri"}">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted);font-size:14px">${esc(w.kana)} · ${esc(w.romaji)}</div>`;
+  let body;
+  if(rMode==="rec"||rMode==="listen"){
+    body=`<span class="eyebrow">${rMode==="listen"?"Escucha: ¿qué significa?":"¿Qué significa?"}</span>
+     ${rMode==="rec"||rShown?answer:`<div class="big" style="opacity:.25">？</div>`}
+     <button class="mini" data-say="${esc(w.jp)}">${SVG.play}Escuchar otra vez</button>
+     ${rShown?`<div class="es-big">${esc(w.es)}</div>${w.ex_jp?`<div class="ex"><span class="jp">${esc(w.ex_jp)}</span>${esc(w.ex_es)}</div>`:""}${grades}`:`<button class="btn primary" id="btnShow">Mostrar respuesta</button>`}`;
+  }else{
+    body=`<span class="eyebrow">Dilo en japonés</span><div class="es-big">${esc(w.es)}</div>
+     ${!rShown?`<div class="row" style="width:100%"><button class="micbtn" id="rMic" type="button" aria-label="Decirlo" style="width:46px;height:46px">${SVG.mic}</button><input class="field jp" id="rInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Dila al micro o escríbela en romaji"></div>
+       <div class="row"><button class="btn primary" id="btnCheck">Comprobar</button><button class="btn ghost" id="btnShow">No me sale</button></div>`:
+      `${rVerdict!==null?`<div class="verdict ${rVerdict?"ok":"bad"}">${rVerdict?"¡Correcto!":"Respuesta correcta:"}</div>`:""}${answer}<button class="mini" data-say="${esc(w.jp)}">${SVG.play}Escuchar</button>${grades}`}`;
+  }
+  $("#reviewPane").innerHTML=`<div class="row"><div class="progress" style="flex:1"><i style="width:${pct}%"></i></div><span style="font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums">${ri+1}/${rq.length}</span></div>
+   <div class="card">${body}</div><p style="margin:0;font-size:12px;color:var(--muted);text-align:center">Las palabras que fallas vuelven antes y Tama las usa más al hablar.</p>`;
+  const ri_=$("#rInput");if(ri_){if(settings.kanaInput&&window.wanakana)wanakana.bind(ri_,{IMEMode:true,upcaseKatakana:true});ri_.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing)checkProd()})}
+}
+function checkProd(){
+  const w=rq[ri];const a=$("#rInput").value;
+  rVerdict=!!a.trim()&&(normJP(a)===normJP(w.jp)||normJP(a)===normJP(w.kana)||normRo(a)===normRo(w.romaji));
+  rShown=true;sfx(rVerdict?"perfect":"wrong");renderReview();speak(w.jp);
+}
+
+/* ============ sheets ============ */
+function openSheet(html){closeSheet();const s=document.createElement("div");s.className="scrim";s.id="scrim";s.innerHTML=`<div class="sheet pad" role="dialog" aria-modal="true">${html}</div>`;document.body.appendChild(s);s.addEventListener("click",e=>{if(e.target===s||e.target.closest("[data-close]"))closeSheet()})}
+function closeSheet(){const s=$("#scrim");if(s)s.remove()}
+function settingsSheet(){
+  if(voiceOn)pauseVoice(true);pickVoice();
+  const sw=(k,l,p)=>`<div class="set"><div><label for="s_${k}">${l}</label><p>${p}</p></div><button class="switch" id="s_${k}" role="switch" aria-checked="${!!settings[k]}" data-set="${k}"></button></div>`;
+  openSheet(`<div class="grab"></div><h3 class="h2">Ajustes</h3><div>
+   ${sw("furigana","Furigana","Lectura en hiragana encima de los kanji.")}
+   ${sw("kataHelp","Ayuda con katakana","Muestra también la lectura encima del katakana.")}
+   ${sw("romaji","Romaji","Transcripción en letras latinas.")}
+   ${sw("kanaInput","Romaji → hiragana al escribir","Escribe «konnichiwa» y aparece こんにちは. En MAYÚSCULAS sale katakana.")}
+   ${sw("speakFix","Decir las correcciones en voz alta","Al hablar, Tama te dice la versión correcta antes de seguir.")}
+   ${sw("autoSpeak","Leer respuestas en pausa","Cuando escribes, Tama también te contesta en voz alta.")}
+   ${sw("audioOnly","Modo solo audio","Oculta el texto de Tama hasta que lo pidas: practica escuchando.")}
+   ${sw("sound","Sonidos","Efectos al acertar, fallar y añadir palabras.")}
+   <div class="set"><div><label for="s_goal">Objetivo diario</label><p>Frases y repasos al día.</p></div><select id="s_goal" class="field" style="flex:0 0 96px">${[5,10,20,30].map(n=>`<option ${settings.goal===n?"selected":""}>${n}</option>`).join("")}</select></div>
+   <div class="set"><div><label for="s_rate">Velocidad de la voz</label><p id="rateTxt">${Math.round(settings.rate*100)}%</p></div><input type="range" id="s_rate" min="0.5" max="1.2" step="0.05" value="${settings.rate}" style="width:140px"></div>
+   <div class="set"><div><label for="s_voice">Voz japonesa</label><p>${jaVoices.length?jaVoices.length+" disponibles":"Ninguna instalada"}</p></div>
+     ${jaVoices.length?`<select id="s_voice" class="field" style="flex:0 1 180px">${jaVoices.map(v=>`<option ${jaVoice&&v.name===jaVoice.name?"selected":""}>${esc(v.name)}</option>`).join("")}</select>`:`<button class="btn" id="btnVoiceHelp">Cómo instalarla</button>`}</div>
+   </div>
+   <button class="btn primary" data-say="こんにちは、タマです。よろしくね！" style="align-self:flex-start">${SVG.play}Probar la voz</button>
+   <h3 class="h2">Tu progreso</h3>
+   <p style="margin:0;font-size:13px;color:var(--muted)">Se guarda en este dispositivo. Para pasarlo a otro, exporta aquí e importa allí.</p>
+   <div class="row"><button class="btn" id="btnExport">Exportar progreso</button><button class="btn" id="btnImport">Importar</button></div>
+   <h3 class="h2">Gemini</h3>
+   <dl class="kv"><dt>Clave</dt><dd>${settings.key?"••••"+esc(settings.key.slice(-4)):"sin configurar"}</dd><dt>Modelo</dt><dd>${esc(settings.model||"automático")}</dd></dl>
+   <div class="row"><button class="btn" id="btnChangeKey">Cambiar clave</button><button class="btn ghost" id="btnInstallHelp">Instalar como app</button></div>`);
+}
+function summarySheet(){
+  if(voiceOn)pauseVoice(true);
+  const g=Object.values(session.good),b=Object.values(session.bad),f=session.fixes;
+  openSheet(`<div class="grab"></div><div class="row" style="gap:12px;flex-wrap:nowrap"><div style="width:70px;height:70px;flex:none" id="sumCat">${catSVG()}</div><h3 class="h2">Resumen de la conversación</h3></div>
+   ${!g.length&&!b.length&&!f.length?`<p style="margin:0;color:var(--muted)">Todavía no hay mucho que resumir. ¡Sigue hablando con Tama!</p>`:""}
+   ${g.length?`<div><b style="color:var(--ok)">Usaste bien:</b> <span class="jp">${g.map(esc).join("、")}</span></div>`:""}
+   ${b.length?`<div><b style="color:var(--shu)">Para reforzar:</b> <span class="jp">${b.map(esc).join("、")}</span><br><small style="color:var(--muted)">Aparecerán antes en tus repasos.</small></div>`:""}
+   ${f.length?`<div><b>Frases para mejorar</b><ul class="sum">${f.map(x=>`<li><span style="color:var(--muted)">${esc(x.said)}</span> → <span class="jp">${esc(x.natural)}</span> <button class="mini" data-say="${esc(x.natural)}">${SVG.play}</button><br><small>${x.level==="unnatural"?"Más natural: ":"Error: "}${esc(x.note)}</small></li>`).join("")}</ul><p style="margin:0;font-size:13px;color:var(--muted)">Consejo: escucha cada frase corregida y repítela en voz alta un par de veces.</p></div>`:""}
+   <div class="row"><button class="btn primary" id="btnNewChat">Empezar otra conversación</button><button class="btn ghost" data-close>Seguir</button></div>`);
+  const c=$("#sumCat .cat");if(c&&(g.length||f.length))c.classList.add("happy");
+}
+let deferredInstall=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e});
+function installHelp(){
+  if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.finally(()=>deferredInstall=null);return}
+  openSheet(`<div class="grab"></div><h3 class="h2">Instalar Hanashi</h3>
+   <ol class="steps"><li><b>Android (Chrome):</b> menú ⋮ → «Instalar aplicación» o «Añadir a pantalla de inicio».</li><li><b>iPhone (Safari):</b> botón Compartir → «Añadir a pantalla de inicio».</li><li><b>Ordenador (Chrome o Edge):</b> icono de instalar en la barra de direcciones.</li></ol>
+   <button class="btn primary" data-close>Entendido</button>`);
+}
+
+/* ============ onboarding ============ */
+function showOnboarding(){
+  if($("#onb"))return;
+  const d=document.createElement("div");d.className="onb pad";d.id="onb";
+  d.innerHTML=`<div class="inner">
+   <div class="catbox" id="onbCat">${catSVG()}</div>
+   <h1>はじめまして。<br>Soy Tama.</h1>
+   <p class="lead">Voy a ayudarte a aprender japonés hablando, con las palabras que tú estás aprendiendo. Para poder conversar uso Gemini, la IA de Google, que es gratis con tu propia clave.</p>
+   <div class="card-s">
+     <ol class="steps"><li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con tu cuenta de Google.</li><li>Pulsa <b>Create API key</b> y cópiala.</li><li>Pégala aquí. Se guarda solo en este dispositivo.</li></ol>
+     <form id="keyForm" class="stack" style="gap:8px">
+       <input class="field" id="keyInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…" value="${esc(settings.key)}">
+       <div class="row"><button class="btn primary" id="keySave">Empezar</button>${settings.key?`<button type="button" class="btn ghost" id="keyCancel">Cancelar</button>`:""}</div>
+       <div class="notice" id="keyMsg" hidden></div>
+     </form>
+   </div>
+   <p style="font-size:12px;color:var(--muted);text-align:center">El nivel gratuito de Gemini tiene un límite diario, de sobra para practicar. Google puede usar las conversaciones del nivel gratuito para mejorar sus productos.</p>
+  </div>`;
+  document.body.appendChild(d);
+}
+document.addEventListener("submit",async e=>{
+  if(e.target.id==="keyForm"){e.preventDefault();
+    const k=$("#keyInput").value.trim(),msg=$("#keyMsg"),btn=$("#keySave");
+    if(!k){msg.hidden=false;msg.textContent="Pega tu clave de Gemini.";return}
+    btn.disabled=true;btn.textContent="Comprobando…";msg.hidden=true;
+    try{const model=await listModels(k);settings.key=k;settings.model=model;settings.noThinkCfg=false;saveSettings();
+      const c=$("#onbCat .cat");if(c)c.classList.add("happy");sfx("done");
+      setTimeout(()=>{const o=$("#onb");if(o)o.remove();toast("¡Listo! Toca el micro rojo para hablar con Tama");renderAll()},900);
+    }catch(err){msg.hidden=false;msg.textContent=err.code==="bad_key"?"Esa clave no funciona. Cópiala de nuevo desde AI Studio.":"No he podido comprobarla. ¿Tienes internet?";btn.disabled=false;btn.textContent="Empezar"}
+    return}
+  if(e.target.id==="addForm"){e.preventDefault();const q=$("#addInput").value.trim();if(q)lookup(q)}
+});
+
+/* ============ kana input ============ */
+const inp=$("#input");
+function applyKana(){
+  const on=settings.kanaInput&&!!window.wanakana;
+  try{window.wanakana&&wanakana.unbind(inp)}catch(e){}
+  if(on)wanakana.bind(inp,{IMEMode:true,upcaseKatakana:true});
+  $("#btnKana").setAttribute("aria-pressed",on);$("#btnKana").textContent=on?"あ":"Aa";
+  $("#btnKana").title=on?"Escribiendo en japonés (romaji → hiragana). Toca para escribir en español":"Escribiendo en español. Toca para escribir en japonés";
+  inp.placeholder=on?"Escribe en romaji…":"Escribe en español…";
+}
+function autoGrow(){inp.style.height="auto";inp.style.height=Math.min(120,inp.scrollHeight)+"px"}
+inp.addEventListener("input",autoGrow);
+inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("#btnSend").click()}});
+inp.addEventListener("focus",()=>{if(voiceOn)pauseVoice()});
+function finishKana(s){return s.replace(/n$/,"ん").replace(/N$/,"ン")}
+
+/* ============ tabs & render ============ */
+let tab="chat";
+function setTab(t){
+  if(t!=="chat"&&voiceOn)pauseVoice(true);
+  if(t!=="chat")stopSpeaking();
+  tab=t;sfx("tap");document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  ["chat","vocab","review"].forEach(k=>$("#v-"+k).hidden=k!==t);
+  if(t==="vocab")renderVocab();if(t==="review"){rq=null;renderReview()}if(t==="chat")renderChat()}
+function updateBadge(){const n=dueWords().length;const b=$("#dueBadge");b.hidden=!n;b.textContent=n}
+function renderAll(){renderScenes();renderChat();updateBadge();renderStreak();renderGoal();setVState(vState);if(tab==="vocab")renderVocab();if(tab==="review")renderReview()}
+
+/* ============ events ============ */
+document.addEventListener("pointerdown",()=>audioCtx(),{once:true});
+document.addEventListener("click",e=>{
+  const el=e.target.closest("button");if(!el)return;const d=el.dataset;
+  if(d.tab)return setTab(d.tab);
+  if(d.tabgo){closeSheet();return setTab(d.tabgo)}
+  if(d.say!==undefined)return speak(d.say);
+  if(el.id==="btnMic"){if(voiceOn)pauseVoice();else resumeVoice();return}
+  if(el.id==="btnAskEs"){if(voiceOn)pauseVoice(true);sfx("listen");tama("listen","Te escucho en español…");startListening("es-ES");return}
+  if(el.id==="btnHint")return hintSheet();
+  if(el.id==="btnResumeFromHint"){closeSheet();return resumeVoice()}
+  if(d.use!==undefined){const o=(window._hintOpts||[])[+d.use];if(o){closeSheet();try{wanakana.unbind(inp)}catch(e2){}inp.value=o.jp;autoGrow();applyKana();inp.focus()}return}
+  if(el.id==="btnKana"){settings.kanaInput=!settings.kanaInput;saveSettings();applyKana();sfx("flip");inp.focus();return}
+  if(d.scene){if(chat.scene===d.scene)return;chat.scene=d.scene;sfx("flip");renderScenes();chat.msgs.push({role:"sys",text:"Situación: "+SCENES.find(s=>s[0]===d.scene)[1]});saveChat();stopRec();setLive("");return send("",true)}
+  if(el.id==="btnEnd")return summarySheet();
+  if(el.id==="btnNewChat"){closeSheet();chat.msgs=[];session={good:{},bad:{},fixes:[]};saveChat();renderChat();return send("",true)}
+  if(el.id==="btnRetry"){const last=chat.msgs[chat.msgs.length-1];if(last&&last.role==="me"){chat.msgs.pop();return send(last.text)}return send("",true)}
+  if(d.act){const m=msgAt(+d.i);if(!m)return;
+    if(d.act==="play")return speak(sayText(m));
+    if(d.act==="slow")return speak(sayText(m),Math.max(0.5,settings.rate-0.3));
+    if(d.act==="reveal"){m.revealed=true;sfx("flip");return renderChat(true)}
+    if(d.act==="es"){m.showEs=!m.showEs;sfx("flip");return renderChat(true)}}
+  if(d.t!==undefined)return tokenSheet(+d.m,+d.t,d.k);
+  if(d.addTok){const [mi,j,k]=d.addTok.split(":");const t=toksOf(msgAt(+mi),k)[+j];el.disabled=true;el.textContent="Añadiendo…";const s=(t.x&&t.x.dict)||t.s;
+    ask(`${LEARNER} Da la ficha de la palabra japonesa "${s}" (aparece como «${t.s}» con el sentido "${t.m}"), en forma de diccionario. Para verbos, en type añade la forma ます. Devuelve SOLO JSON: ${CARD_FIELDS}`)
+      .then(c=>{addWord(c.jp?c:{jp:s,kana:t.r||s,es:t.m});closeSheet();renderChat(true)}).catch(()=>{addWord({jp:s,kana:t.r||s,es:t.m});closeSheet();renderChat(true)});return}
+  if(d.openWord)return wordSheet(d.openWord);
+  if(d.kanji){const w=words.find(x=>x.id===d.kanji);if(w)explainKanji(w);return}
+  if(d.del){const w=words.find(x=>x.id===d.del);if(!w)return;if(el.dataset.armed){deleteWord(w);closeSheet();toast(`Eliminada: ${w.jp}`);renderAll();return}el.dataset.armed="1";el.textContent="Pulsa otra vez para eliminar";return}
+  if(d.practice){const w=words.find(x=>x.id===d.practice);closeSheet();setTab("chat");if(w)send(`Quiero practicar la palabra ${w.jp}. Hazme preguntas para que la use.`);return}
+  if(d.filter){vocabFilter=d.filter;sfx("tap");return renderVocab()}
+  if(d.cand!==undefined){const c=cands[+d.cand];if(c&&addWord(c)){cands=null;if($("#addInput"))$("#addInput").value="";renderVocab()}return}
+  if(el.id==="btnSug")return suggest();
+  if(d.sug!==undefined){const i=+d.sug;sugSel.has(i)?sugSel.delete(i):sugSel.add(i);sfx("tap");return renderVocab()}
+  if(el.id==="btnSugAdd"){let n=0;[...sugSel].forEach(i=>{if(addWord(sugs[i],true))n++});sugs=sugs.filter((_,i)=>!sugSel.has(i));sugSel=new Set();toast(`${n} palabras añadidas`);sfx("add");return renderVocab()}
+  if(el.id==="btnShow"){rShown=true;rVerdict=rMode==="prod"?false:null;sfx("flip");renderReview();speak(rq[ri].jp);return}
+  if(el.id==="btnCheck")return checkProd();
+  if(el.id==="rMic"){const ri_=$("#rInput");el.classList.add("on","listening");sfx("listen");
+    recognize({onInterim:t=>{ri_.value=t},onFinal:t=>{el.classList.remove("on","listening");if(t){ri_.value=t;checkProd()}},onError:er=>{el.classList.remove("on","listening");toast(micErrorMsg(er))}});return}
+  if(d.grade!==undefined){const g=+d.grade;if(g>=2)rGood++;review(rq[ri],g);rDone++;bumpActivity();sfx(g===0?"wrong":g===1?"unnatural":"receive");updateBadge();return nextCard()}
+  if(el.id==="btnForce")return buildQueue(true);
+  if(el.id==="btnSettings")return settingsSheet();
+  if(el.id==="btnVoiceHelp")return voiceHelp(true);
+  if(el.id==="btnExport")return exportData();
+  if(el.id==="btnImport")return $("#importFile").click();
+  if(el.id==="btnChangeKey"){closeSheet();return showOnboarding()}
+  if(el.id==="keyCancel"){$("#onb").remove();return}
+  if(el.id==="btnInstallHelp"){closeSheet();return installHelp()}
+  if(d.set){settings[d.set]=!settings[d.set];el.setAttribute("aria-checked",settings[d.set]);saveSettings();sfx("tap");if(d.set==="kanaInput")applyKana();renderChat(true);return}
+  if(el.id==="btnSend"){let v=inp.value;if(settings.kanaInput)v=finishKana(v);inp.value="";autoGrow();return send(v)}
+});
+document.addEventListener("input",e=>{if(e.target.id==="s_rate"){settings.rate=+e.target.value;$("#rateTxt").textContent=Math.round(settings.rate*100)+"%";saveSettings()}});
+document.addEventListener("change",e=>{
+  if(e.target.id==="s_voice"){settings.voice=e.target.value;saveSettings();pickVoice();speak("こんにちは")}
+  if(e.target.id==="s_goal"){settings.goal=+e.target.value;saveSettings();renderGoal()}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&voiceOn)pauseVoice(true)});
+
+/* ============ boot ============ */
+loadAll();
+$("#tamaCat").innerHTML=catSVG();
+applyKana();renderAll();tama("idle",pick(IDLE_LINES));
+if(!settings.key)showOnboarding();
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
