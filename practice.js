@@ -54,8 +54,8 @@ function distract(target,n,key){
   for(const w of shuffle(pool().all)){const k=String(w[key]).toLowerCase();if(seen.has(k))continue;seen.add(k);out.push(w);if(out.length>=n)break}
   return out;
 }
-function localItem(kind){
-  const w=pickTarget();if(!w)return null;
+function localItem(kind,target){
+  const w=target||pickTarget();if(!w)return null;
   kind=kind||pick(["word","reverse","wordlisten","word","match"]);
   if(kind==="match"){
     const {all,mine}=pool();
@@ -106,7 +106,7 @@ async function fetchBatch(){
   if(PX.aiDown&&now()-PX.lastAICheck<60000)return;
   PX.busy=true;PX.lastAICheck=now();
   const types=typesFor(PX.mode);
-  const mine=words.filter(w=>!w.basic).slice(0,250);
+  const mine=[...words].filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,70);
   const focus=focusWords(8).filter(w=>!w.basic);
   const prompt=`${LEARNER}
 ${FURI_RULE}
@@ -117,7 +117,7 @@ Gramática que conoce: partículas は が を に で へ と の も か ね �
 Reglas:
 - Frases cortas (3 a 8 palabras), naturales, estilo です/ます, útiles en una conversación real. Situaciones variadas.
 - Usa sobre todo su vocabulario y la gramática que conoce; como mucho 1 palabra nueva por frase. Que cada ejercicio practique al menos una palabra PRIORITARIA si es posible, y pon los ids de las palabras del alumno que aparecen en "words".
-- No repitas ninguna de estas frases recientes: ${PX.recent.slice(-25).join(" / ")||"(ninguna)"}.
+- No repitas ninguna de estas frases recientes: ${PX.recent.slice(-15).join(" / ")||"(ninguna)"}.
 - Las opciones incorrectas deben ser plausibles pero claramente incorrectas en esa frase (una sola respuesta correcta).
 - explain: 1 frase breve en español que ayude a entender la respuesta (gramática, partícula o matiz).
 Formatos:
@@ -129,7 +129,7 @@ listen: igual que meaning (el alumno solo la oirá, sin ver el texto).
 speak: {"type":"speak","es":"frase en español","full":"frase japonesa que debe decir","kana":"la misma frase toda en hiragana/katakana","explain":"","words":[]}
 Devuelve SOLO JSON: {"items":[...]}`;
   try{
-    const r=await ask(prompt);
+    const r=await ask(prompt,false,null,{max:3500});
     const items=(r.items||[]).map(validate).filter(Boolean);
     if(!items.length)throw{code:"invalid_json"};
     PX.aiDown=false;
@@ -146,21 +146,27 @@ Devuelve SOLO JSON: {"items":[...]}`;
   if(PX.active&&PX.state==="loading")next();
 }
 function ensureAhead(){
+  if(PX.mode==="review")return;
   if(PX.mode==="words"){while(PX.queue.length-PX.i<4){const l=localItem();if(!l)break;PX.queue.push(l)}return}
   if(PX.queue.length-PX.i<4)fetchBatch();
 }
 
 /* ---------- flow ---------- */
+function reviewQueue(){
+  return dueWords().sort((a,b)=>priority(b)-priority(a)).slice(0,20).map(w=>localItem((w.reps||0)<2?"word":pick(["reverse","wordlisten","word","reverse"]),w)).filter(Boolean);
+}
 function start(mode){
   stopSpeaking();PX.mode=mode;PX.active=true;PX.queue=[];PX.i=0;PX.cur=null;PX.combo=0;PX.warned=false;
   PX.round={n:0,good:0,words:new Set()};
+  if(mode==="review"){PX.queue=reviewQueue();PX.total=PX.queue.length;if(!PX.total){PX.active=false;toast("No tienes nada pendiente de repasar.");return render()}sfx("flip");return next()}
   if(mode==="mix"||mode==="words"){for(let k=0;k<2;k++){const l=localItem();if(l)PX.queue.push(l)}}
   sfx("flip");ensureAhead();next();
 }
 function stop(){PX.active=false;stopListen&&stopListen(true);stopSpeaking();renderPractice()}
 function next(){
   stopSpeaking();
-  if(PX.round.n>=ROUND){PX.state="round";return render()}
+  if(PX.mode==="review"){if(PX.i>=PX.queue.length){PX.state="round";return render()}}
+  else if(PX.round.n>=ROUND){PX.state="round";return render()}
   ensureAhead();
   if(PX.i>=PX.queue.length){PX.state="loading";return render()}
   PX.cur=PX.queue[PX.i++];PX.fresh=true;PX.showHint=false;PX.sel=null;PX.built=[];PX.spoken="";PX.speakScore=0;PX.state="ask";
@@ -259,7 +265,7 @@ function footer(c){
 function render(){
   const pane=$("#practicePane");if(!pane)return;
   if(!PX.active)return renderHome();
-  const st=pstat(),pct=Math.min(100,PX.round.n/ROUND*100);
+  const st=pstat(),pct=PX.mode==="review"?Math.min(100,PX.i/Math.max(1,PX.queue.length)*100):Math.min(100,PX.round.n/ROUND*100);
   const top=`<div class="pxtop"><button class="iconbtn" id="pxClose" aria-label="Salir">${SVG.x}</button><div class="progress" style="flex:1"><i style="width:${pct}%"></i></div>
     <span class="pxcombo ${PX.combo>=3?"hot":""}" title="Aciertos seguidos"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 10.5 11C10.5 6.5 12 2 12 2z"/></svg>${PX.combo}</span></div>`;
   if(PX.state==="loading"){
@@ -267,10 +273,10 @@ function render(){
   if(PX.state==="round"){
     const acc=Math.round(PX.round.good/Math.max(1,PX.round.n)*100);
     pane.innerHTML=`${top}<div class="pxload"><div class="pxcatbig" id="pxCat"></div>
-      <h2 class="h2">¡Ronda completada!</h2>
+      <h2 class="h2">${PX.mode==="review"?"¡Repaso completado!":"¡Ronda completada!"}</h2>
       <div class="stats" style="width:100%"><div class="stat"><b>${PX.round.good}/${PX.round.n}</b><span>aciertos</span></div><div class="stat"><b>${acc}%</b><span>precisión</span></div><div class="stat"><b>${st.xp}</b><span>XP hoy</span></div></div>
       ${PX.round.words.size?`<p style="margin:0;color:var(--muted);font-size:14px">Has practicado: <span class="jp">${[...PX.round.words].slice(0,12).map(esc).join("、")}</span></p>`:""}
-      <div class="row" style="justify-content:center"><button class="btn primary" id="pxMore">Otra ronda</button><button class="btn" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn ghost" id="pxClose2">Terminar</button></div></div>`;
+      <div class="row" style="justify-content:center">${PX.mode==="review"?(dueWords().length?`<button class="btn primary" data-pxmode="review">Repasar ${dueWords().length} más</button>`:`<button class="btn primary" data-pxmode="mix">Seguir practicando</button>`):`<button class="btn primary" id="pxMore">Otra ronda</button>`}<button class="btn" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn ghost" id="pxClose2">Terminar</button></div></div>`;
     if(acc>=80){sfx("done");confetti()}
     placeCat("happy");PX.round={n:0,good:0,words:new Set()};return}
   const c=PX.cur;
@@ -290,6 +296,7 @@ function renderHome(){
     <h2 class="h2" style="font-size:24px">練習 · Practicar</h2>
     <p style="margin:0;color:var(--muted);text-align:center;max-width:42ch">Ejercicios cortos con tus palabras para soltarte antes de conversar. Nunca se acaban: los que fallas vuelven, y las palabras flojas salen más.</p>
     <div class="stats" style="width:100%"><div class="stat"><b>${st.done}</b><span>ejercicios hoy</span></div><div class="stat"><b>${st.xp}</b><span>XP hoy</span></div><div class="stat"><b>${st.best}</b><span>mejor racha</span></div></div>
+    ${(()=>{const n=dueWords().length;return `<div class="pxreview ${n?"":"done"}"><div><b>${n?`Repaso de hoy · ${n} palabra${n>1?"s":""}`:"Repaso de hoy al día"}</b><small>${n?"Las que tocan según tu memoria: primero las que fallas.":"Vuelve más tarde: Tama te avisará con el número rojo."}</small></div>${n?`<button class="btn primary" data-pxmode="review">Repasar</button>`:`<span class="pxok">${SVG.check}</span>`}</div>`})()}
     <div class="pxmodes">${MODES.map(([k,n,d])=>`<button class="pxmode" data-pxmode="${k}"><b>${n}</b><small>${d}</small></button>`).join("")}</div>
     ${!mine.length?`<div class="notice">Aún no tienes palabras propias: practicarás con lo básico. Añade palabras en <b>Vocabulario</b> y los ejercicios girarán en torno a ellas.</div>`:""}
     ${!settings.key?`<div class="notice">Sin clave de Gemini solo funciona el modo <b>Palabras</b>.</div>`:""}
@@ -312,7 +319,7 @@ function speakNow(){
 document.addEventListener("click",e=>{
   const el=e.target.closest("button");if(!el||!el.closest("#practicePane"))return;
   const d=el.dataset;
-  if(d.pxmode){if(d.pxmode!=="words"&&!settings.key){showOnboarding();return}return start(d.pxmode)}
+  if(d.pxmode){if(!["words","review"].includes(d.pxmode)&&!settings.key){showOnboarding();return}return start(d.pxmode)}
   if(el.id==="pxClose"||el.id==="pxClose2")return stop();
   if(el.id==="pxMore"){sfx("flip");return next()}
   if(el.id==="pxCheck")return check();

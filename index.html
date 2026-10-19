@@ -72,7 +72,7 @@ main{flex:1;min-height:0;position:relative}
 .view{position:absolute;inset:0;display:flex;flex-direction:column}
 .scroll{flex:1;overflow-y:auto;min-height:0;padding-block:12px 16px}
 
-nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs button{border:0;background:none;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:12px;font-weight:600}
 nav.tabs button .k{font-family:var(--f-disp);font-weight:800;font-size:20px;line-height:1.15}
 nav.tabs button[aria-selected="true"]{color:var(--ink)}
@@ -229,6 +229,26 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .tchoice[aria-pressed="true"]{border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft)}
 .confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 
+
+/* dictionary search */
+.searchbox{position:relative;display:flex;align-items:center}
+.searchbox svg{position:absolute;left:12px;width:18px;height:18px;color:var(--muted);pointer-events:none}
+.searchbox .field{padding-left:38px;font-size:16px;border-radius:14px}
+.acres{display:flex;flex-direction:column;gap:6px}
+.ac{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;text-align:left;width:100%;animation:rise .18s ease both}
+.ac:active{transform:scale(.98)}
+.acjp{font-size:20px;line-height:1.9;min-width:3.5em}
+.acmeta{flex:1;min-width:0;display:flex;flex-direction:column}
+.acmeta b{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acmeta small{font-size:12px;color:var(--muted)}
+.acadd{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ai);color:var(--on-ai);font-size:22px;font-weight:700;line-height:1}
+.acadd svg{width:16px;height:16px}
+.ac.have{opacity:.7}.ac.have .acadd{background:var(--ok);color:#fff}
+.ac.flash{animation:pop .35s ease both}
+.acmore{border:1px dashed var(--line);background:transparent;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--muted);text-align:left}
+.lvl{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;border-radius:5px;padding:0 5px;background:var(--ai-soft);color:var(--ai);margin-left:4px;vertical-align:1px}
+.sug.gone{animation:none;transform:scale(.8);opacity:0;transition:transform .25s,opacity .25s}
+
 /* ---------- practice ---------- */
 .pxscroll{display:flex;flex-direction:column}
 #practicePane{flex:1;min-height:100%;gap:12px}
@@ -240,6 +260,10 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .pxmode b{font-size:16px}.pxmode small{font-size:12px;color:var(--muted)}
 .pxmode:last-child{grid-column:1/-1;background:transparent;box-shadow:none;border-style:dashed}
 .pxmode:first-child{grid-column:1/-1;background:var(--ai);border-color:var(--ai);color:var(--on-ai)}.pxmode:first-child small{color:var(--on-ai);opacity:.85}
+.pxreview{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--ai);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow)}
+.pxreview>div{flex:1;display:flex;flex-direction:column;gap:2px}.pxreview b{font-size:16px}.pxreview small{font-size:12px;color:var(--muted)}
+.pxreview.done{border-color:var(--line)}
+.pxok{width:32px;height:32px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.pxok svg{width:16px;height:16px}
 .pxtop{display:flex;align-items:center;gap:10px}
 .pxtop .iconbtn svg{width:16px;height:16px}
 .pxtop .progress{height:10px;border-radius:5px}.pxtop .progress i{background:var(--ok);border-radius:5px;transition:width .4s cubic-bezier(.3,1.3,.5,1)}
@@ -455,14 +479,12 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
 
     <section class="view" id="v-vocab" hidden><div class="scroll pad"><div class="stack" id="vocabPane"></div></div></section>
     <section class="view" id="v-practice" hidden><div class="scroll pad pxscroll"><div class="stack" id="practicePane"></div></div></section>
-    <section class="view" id="v-review" hidden><div class="scroll pad"><div class="stack" id="reviewPane"></div></div></section>
   </main>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="chat" aria-selected="true"><span class="k">話す</span>Conversar</button>
-    <button role="tab" data-tab="practice" aria-selected="false"><span class="k">練習</span>Practicar</button>
+    <button role="tab" data-tab="practice" aria-selected="false"><span class="k">練習</span><span>Practicar<span class="badge" id="dueBadge" hidden>0</span></span></button>
     <button role="tab" data-tab="vocab" aria-selected="false"><span class="k">言葉</span>Vocabulario</button>
-    <button role="tab" data-tab="review" aria-selected="false"><span class="k">復習</span><span>Repasar<span class="badge" id="dueBadge" hidden>0</span></span></button>
   </nav>
 </div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
@@ -845,11 +867,11 @@ async function listModels(key){
   const pool=(stable.length?stable:flash).sort((a,b)=>ver(b)-ver(a)||a.length-b.length);
   return pool[0]||"gemini-2.5-flash";
 }
-async function ask(prompt,_retry,signal){
+async function ask(prompt,_retry,signal,opts){
   if(!settings.key)throw{code:"no_key"};
   if(!navigator.onLine)throw{code:"offline"};
   if(!settings.model){try{settings.model=await listModels(settings.key);saveSettings()}catch(e){if(e.code==="bad_key")throw e;settings.model="gemini-2.5-flash"}}
-  const gen={responseMimeType:"application/json",temperature:0.7};
+  const gen={responseMimeType:"application/json",temperature:0.7,maxOutputTokens:(opts&&opts.max)||1500};
   if(!settings.noThinkCfg){if(/2\.5/.test(settings.model))gen.thinkingConfig={thinkingBudget:0};else if(/gemini-[3-9]/.test(settings.model))gen.thinkingConfig={thinkingLevel:"low"}}
   let r;
   try{r=await fetch(`${API}/models/${settings.model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.key},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:gen}),signal})}
@@ -857,10 +879,10 @@ async function ask(prompt,_retry,signal){
   if(!r.ok){
     const txt=await r.text();
     if(r.status===429){usageToday().hit=true;saveSettings();renderQuota();throw{code:"rate_limited"}}
-    if(r.status===400&&/thinking/i.test(txt)&&!settings.noThinkCfg&&!_retry){settings.noThinkCfg=true;saveSettings();return ask(prompt,true,signal)}
-    if(r.status===404&&!_retry){settings.model="";saveSettings();return ask(prompt,true,signal)}
+    if(r.status===400&&/thinking/i.test(txt)&&!settings.noThinkCfg&&!_retry){settings.noThinkCfg=true;saveSettings();return ask(prompt,true,signal,opts)}
+    if(r.status===404&&!_retry){settings.model="";saveSettings();return ask(prompt,true,signal,opts)}
     if((r.status===400&&/API key|API_KEY/i.test(txt))||r.status===401||r.status===403)throw{code:"bad_key"};
-    if(r.status>=500&&!_retry){await new Promise(z=>setTimeout(z,1200));return ask(prompt,true,signal)}
+    if(r.status>=500&&!_retry){await new Promise(z=>setTimeout(z,1200));return ask(prompt,true,signal,opts)}
     console.warn("gemini",r.status,txt);throw{code:"upstream"};
   }
   const j=await r.json();
@@ -1002,9 +1024,9 @@ async function send(text,isStart,spanish){
   if(text){meMsg={role:"me",text,pending:true};chat.msgs.push(meMsg);sfx("send");bumpActivity()}
   busy=true;setVState("thinking");renderChat();saveChat();
   const focus=focusWords(6).filter(w=>!w.basic);
-  const known=words.filter(w=>!w.basic).slice(0,300).map(w=>w.jp+(w.kana&&w.kana!==w.jp?"("+w.kana+")":"")).join("、");
+  const known=[...words].filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,60).map(w=>w.jp).join("、");
   const scene=SCENES.find(s=>s[0]===chat.scene)||SCENES[0];
-  const hist=chat.msgs.filter(m=>m.role!=="sys").slice(-16).map(m=>m.role==="me"?"ALUMNO: "+m.text:"TAMA: "+sayText(m)).join("\n");
+  const hist=chat.msgs.filter(m=>m.role!=="sys").slice(-10).map(m=>m.role==="me"?"ALUMNO: "+m.text:"TAMA: "+sayText(m)).join("\n");
   const prompt=`Eres Tama, una panda roja japonesa con mucha personalidad: simpática, ingeniosa y un poco pícara, que habla como una amiga nativa y ayuda a un alumno a practicar conversación. ${LEARNER}\n${FURI_RULE}
 Situación: ${scene[2]}.
 Vocabulario que el alumno está aprendiendo: ${known||"(todavía ninguno)"}.
@@ -1037,7 +1059,7 @@ Devuelve SOLO JSON:
 {"help_es":"","me_tokens":[],"me_es":"","feedback":null,"word_usage":[],"tokens":[{"s":"","r":"","m":""}],"romaji":"","es":""}`;
   const ac=new AbortController();replyAC={ac,meMsg,text};renderAssist();
   try{
-    const res=await ask(prompt,false,ac.signal);
+    const res=await ask(prompt,false,ac.signal,{max:1400});
     if(replyAC&&replyAC.ac===ac)replyAC=null;
     let fb=null;
     if(meMsg){meMsg.pending=false;meMsg.meTokens=cleanToks(res.me_tokens);meMsg.meEs=res.me_es||"";
@@ -1062,7 +1084,7 @@ async function hintSheet(){
   sfx("tap");
   openSheet(`<div class="grab"></div><h3 class="h2">¿Qué puedo decir?</h3><div class="stack" style="gap:8px" id="hintBody"><div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div><div class="skel" style="width:80%"></div></div>`);
   const last=[...allMsgs()].reverse().find(m=>m.role==="ai"&&(m.tokens||[]).length);
-  const known=words.filter(w=>!w.basic).slice(0,200).map(w=>w.jp).join("、");
+  const known=[...words].filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,50).map(w=>w.jp).join("、");
   try{
     const r=await ask(`${LEARNER} ${FURI_RULE} Está en una conversación en japonés. Lo último que le dijeron: «${last?sayText(last):"(nada todavía)"}». Situación: ${(SCENES.find(s=>s[0]===chat.scene)||SCENES[0])[2]}.
 Su vocabulario: ${known||"(muy poco)"}.
@@ -1085,112 +1107,256 @@ function ctxSentence(toks,j){
   while(en<toks.length-1&&!/[。！？!?]/.test(toks[en].s))en++;
   return {html:toks.slice(st,en+1).map((t,k)=>st+k===j?`<mark>${esc(t.s)}</mark>`:esc(t.s)).join(""),text:toks.slice(st,en+1).map(t=>t.s).join(""),full:toks.map(t=>t.s).join("")};
 }
+/* ============ local dictionary (offline, no AI) ============ */
+// JMdict-based list of ~3400 JLPT N5–N3 words with Spanish glosses. Gemini is only a fallback.
+const DICT={ready:false,list:[],extra:[],loading:null};
+const fold=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function mkEntry(jp,kana,es,lv,pos,user){
+  const h=kataToHira(String(kana||jp).replace(/[～〜]/g,""));
+  let ro="";try{ro=window.wanakana?wanakana.toRomaji(h):""}catch(e){}
+  return {jp,kana:kana||jp,es,lv:lv||0,pos:pos||"",user:!!user,h,ro,nro:normRo(ro),nes:fold(es),njp:normJP(jp)};
+}
+function loadDict(){
+  if(DICT.loading)return DICT.loading;
+  DICT.loading=fetch("dict-ja-es.json").then(r=>r.json()).then(arr=>{
+    DICT.list=arr.map(([jp,kana,es,lv,pos])=>mkEntry(jp,kana,es,lv,pos));
+    DICT.extra=(LS.get("dictExtra")||[]).map(e=>mkEntry(e.jp,e.kana,e.es,e.lv,e.pos,true));
+    DICT.ready=true;
+    if(tab==="vocab"){vSearch();if(!sugs)localSuggest()}
+  }).catch(e=>{console.warn("dict",e);DICT.loading=null});
+  return DICT.loading;
+}
+function rememberEntry(c){ // words found with Gemini become searchable offline next time
+  const ex=LS.get("dictExtra")||[];if(ex.some(e=>normJP(e.jp)===normJP(c.jp)))return;
+  ex.push({jp:c.jp,kana:c.kana||c.jp,es:c.es||"",pos:c.type||""});LS.set("dictExtra",ex.slice(-500));
+  DICT.extra.push(mkEntry(c.jp,c.kana,c.es,0,c.type,true));
+}
+function dictSearch(q,limit=8){
+  q=String(q||"").trim();if(!q||!DICT.ready)return[];
+  const all=DICT.extra.concat(DICT.list),res=[];
+  if(/^[a-zA-Z\s'\-ñÑáéíóúüÁÉÍÓÚÜ]+$/.test(q)){
+    const nq=normRo(q),fq=fold(q);
+    let kq="";try{kq=kataToHira(wanakana.toKana(q.toLowerCase().replace(/\s+/g,"")))}catch(e){}
+    if(/[a-z]/.test(kq))kq="";
+    for(const e of all){
+      let s=0;
+      if(nq&&e.nro===nq)s=100;
+      else if(nq.length>=2&&e.nro.startsWith(nq))s=82-Math.min(20,e.nro.length-nq.length);
+      else if(kq.length>=2&&e.h.startsWith(kq))s=76;
+      if(fq.length>=2){
+        const ws=e.nes.split(/[;,()\s/.]+/);
+        if(ws.includes(fq))s=Math.max(s,95);
+        else if(ws.some(w=>w.startsWith(fq)))s=Math.max(s,72);
+        else if(fq.length>=4&&e.nes.includes(fq))s=Math.max(s,45);
+      }
+      if(s)res.push([s+e.lv*2+(e.user?6:0)-(/[～〜]/.test(e.jp)?25:0),e]);
+    }
+  }else{
+    const nq=normJP(q);
+    for(const e of all){
+      let s=0;
+      if(e.njp===nq||e.h===nq)s=100;
+      else if(e.njp.startsWith(nq)||e.h.startsWith(nq))s=82-Math.min(20,e.h.length-nq.length);
+      else if(nq.length>=2&&e.njp.includes(nq))s=45;
+      if(s)res.push([s+e.lv*2+(e.user?6:0),e]);
+    }
+  }
+  res.sort((a,b)=>b[0]-a[0]||a[1].h.length-b[1].h.length);
+  const out=[],seen=new Set();
+  for(const[,e]of res){const k=e.jp+"|"+e.kana;if(seen.has(k))continue;seen.add(k);out.push(e);if(out.length>=limit)break}
+  return out;
+}
+function dictFind(s){if(!DICT.ready||!s)return null;const n=normJP(s);const all=DICT.extra.concat(DICT.list);return all.find(e=>e.njp===n)||all.find(e=>e.h===n)||null}
+const entryToWord=e=>({jp:e.jp,kana:e.kana,romaji:e.ro,es:e.es,type:e.pos});
+const LV=lv=>lv?`<span class="lvl">N${lv}</span>`:"";
+
+/* ---- word details from a tapped token: free first, AI only on request ---- */
 function tokenSheet(mi,j,k,silent){
   const m=msgAt(mi);const toks=m&&toksOf(m,k);const t=toks&&toks[j];if(!t)return;
   if(!silent){sfx("tap");if(voiceOn)pauseVoice(true)}
-  const w=findWord(t.s),b=findBasic(t.s);
+  loadDict();
+  const w=findWord(t.s),b=findBasic(t.s),de=dictFind(t.x&&t.x.dict||t.s)||dictFind(t.s);
   if(w&&!t.looked&&k!=="me"){t.looked=true;lookupPenalty(w)}
   const ctx=ctxSentence(toks,j),x=t.x;
-  const body=x?`<div class="sec"><span class="lbl">Traducción general</span><span class="val">${esc(x.general)}${x.dict&&x.dict!==t.s?` <span style="color:var(--muted);font-size:13px">· diccionario: <span class="jp">${esc(x.dict)}</span></span>`:""}</span></div>
-     <div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x.here)}</span></div>
-     <div class="sec"><span class="lbl">Cómo se usa</span><span class="val">${esc(x.usage)}</span></div>
-     ${x.ex_jp?`<div class="sec"><span class="lbl">Otro ejemplo</span><span class="val jp" style="font-size:17px">${furi(x.ex_jp)} <button class="mini" data-say="${esc(x.ex_jp)}">${SVG.play}</button></span><span style="font-size:13px;color:var(--muted)">${esc(x.ex_es)}</span></div>`:""}`:
-    `<div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(t.m)}</span></div>
-     <div class="sec" id="tokMore"><span class="lbl">Traducción general y uso</span><div class="skel" style="width:80%"></div><div class="skel" style="width:60%;margin-top:6px"></div></div>`;
-  openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${rubyHTML(t.s,t.r)}</div><div style="color:var(--muted)">${esc(t.r||"")}</div></div>
+  const general=x&&x.general||(de?de.es:"")||(w?w.es:"")||(b?b.es:"");
+  openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${rubyHTML(t.s,t.r)}</div><div style="color:var(--muted)">${[t.r&&t.r!==t.s?esc(t.r):"",de&&de.lv?LV(de.lv):""].filter(Boolean).join(" · ")}</div></div>
    <button class="iconbtn" data-say="${esc(t.s)}" aria-label="Escuchar">${SVG.play}</button></div>
    <div class="ctx">${ctx.html} <button class="mini" data-say="${esc(ctx.text)}">${SVG.play}</button></div>
-   <div class="stack" style="gap:8px" id="tokBody">${body}</div>
+   <div class="stack" style="gap:8px" id="tokBody">
+     <div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x&&x.here||t.m)}</span></div>
+     ${general?`<div class="sec"><span class="lbl">Traducción general</span><span class="val">${esc(general)}${x&&x.dict&&x.dict!==t.s?` <span style="color:var(--muted);font-size:13px">· diccionario: <span class="jp">${esc(x.dict)}</span></span>`:""}</span></div>`:""}
+     ${x&&x.usage?`<div class="sec"><span class="lbl">Cómo se usa</span><span class="val">${furi(x.usage)}</span></div>`:""}
+     ${x&&x.ex_jp?`<div class="sec"><span class="lbl">Otro ejemplo</span><span class="val jp" style="font-size:17px">${furi(x.ex_jp)} <button class="mini" data-say="${esc(x.ex_jp)}">${SVG.play}</button></span><span style="font-size:13px;color:var(--muted)">${esc(x.ex_es)}</span></div>`:""}
+     ${!x?`<button class="btn ghost" id="tokExplain" data-mi="${mi}" data-j="${j}" data-k="${k||""}">${SVG.dots}Cómo se usa y otro ejemplo (Tama)</button>`:""}
+   </div>
    ${w?`<div class="row"><span class="pill ${status(w)[0]}">${status(w)[1]}</span><span style="font-size:13px;color:var(--muted)">Está en tu vocabulario.</span><span class="spacer"></span><button class="btn" data-open-word="${w.id}">Ficha</button></div>`:
      b?`<div class="row"><span class="pill basic">kit básico</span></div>`:`<button class="btn primary" data-add-tok="${mi}:${j}:${k||""}">Añadir a mi vocabulario</button>`}`);
   if(!silent)speak(t.s);
-  if(!x){
-    ask(`${LEARNER} ${FURI_RULE} En la frase japonesa «${ctx.full}» aparece la palabra «${t.s}»${t.r?" (lectura "+t.r+")":""}.
-Explícasela en español:
-general: traducción general de la palabra suelta (sus significados principales, breve).
-here: qué significa exactamente en ESTA frase y por qué (1 frase).
-usage: cómo se usa normalmente (1-2 frases sencillas: con qué partículas o palabras va, matices, si es formal o coloquial).
-dict: forma de diccionario si está conjugada o es una forma derivada; si no, "".
-ex_jp: otro ejemplo corto y sencillo con esa palabra (estilo です/ます); ex_es: su traducción.
-Devuelve SOLO JSON: {"general":"","here":"","usage":"","dict":"","ex_jp":"","ex_es":""}`).then(r=>{
-      t.x={general:r.general||"",here:r.here||t.m,usage:r.usage||"",dict:r.dict||"",ex_jp:r.ex_jp||"",ex_es:r.ex_es||""};saveChat();
-      if($("#tokBody"))tokenSheet(mi,j,k,true);
-    }).catch(e=>{const el=$("#tokMore");if(el)el.innerHTML=`<span class="lbl">Traducción general y uso</span><span class="val" style="color:var(--muted)">${esc(aiErr(e))}</span>`});
-  }
+}
+async function explainToken(mi,j,k){
+  const m=msgAt(mi);const toks=m&&toksOf(m,k);const t=toks&&toks[j];if(!t)return;
+  const btn=$("#tokExplain");if(btn){btn.disabled=true;btn.innerHTML=`<span class="skel" style="width:140px;display:inline-block"></span>`}
+  const ctx=ctxSentence(toks,j);
+  try{const r=await ask(`${LEARNER} ${FURI_RULE} En «${ctx.full}» aparece «${t.s}»${t.r?" ("+t.r+")":""}. En español y muy breve:
+general: significados principales. here: qué significa en ESTA frase (1 frase). usage: cómo se usa (1-2 frases). dict: forma de diccionario si está conjugada, si no "". ex_jp: otro ejemplo corto です/ます. ex_es: traducción.
+SOLO JSON: {"general":"","here":"","usage":"","dict":"","ex_jp":"","ex_es":""}`,false,null,{max:500});
+    t.x={general:r.general||"",here:r.here||t.m,usage:r.usage||"",dict:r.dict||"",ex_jp:r.ex_jp||"",ex_es:r.ex_es||""};saveChat();
+    if($("#tokBody"))tokenSheet(mi,j,k,true);
+  }catch(e){if(btn){btn.disabled=false;btn.textContent=aiErr(e)}}
+}
+function addFromToken(mi,j,k){
+  const t=toksOf(msgAt(mi),k)[j];if(!t)return;
+  const de=dictFind(t.x&&t.x.dict)||dictFind(t.s)||dictFind(t.r);
+  let c;
+  if(de)c=entryToWord(de);
+  else{const r=t.r||t.s;let ro="";try{ro=wanakana.toRomaji(r)}catch(e){}c={jp:(t.x&&t.x.dict)||t.s,kana:r,romaji:ro,es:(t.x&&t.x.general)||t.m,type:""}}
+  addWord(c);closeSheet();renderChat(true);
 }
 
 /* ============ vocabulary ============ */
-let vocabFilter="all",cands=null,candBusy=false,sugs=null,sugBusy=false,sugSel=new Set(),vocabMsg="";
+let vocabFilter="all",sugs=null,sugSel=new Set(),aiCands=null,aiBusy=false,lastResults=[];
 function renderVocab(){
-  const mine=words.filter(w=>!w.basic),weak=mine.filter(w=>status(w)[0]==="weak").length;
-  let list=vocabFilter==="basic"?BASIC:mine.filter(w=>vocabFilter==="all"||status(w)[0]===vocabFilter);
-  if(vocabFilter!=="basic")list=[...list].sort((a,b)=>priority(b)-priority(a));
-  const prevQ=$("#addInput")?$("#addInput").value:"";
-  $("#vocabPane").innerHTML=`
-   <div class="stats"><div class="stat"><b>${mine.length}</b><span>palabras</span></div><div class="stat"><b>${dueWords().length}</b><span>para repasar</span></div><div class="stat"><b style="color:${weak?"var(--shu)":"inherit"}">${weak}</b><span>flojas</span></div></div>
-   <form class="stack" id="addForm" style="gap:8px"><h2 class="h2">Añadir palabra</h2>
-     <div class="row"><input class="field" id="addInput" autocomplete="off" autocapitalize="off" placeholder="En japonés, romaji o español: neko, gato…" value="${esc(prevQ)}">
-     <button class="btn primary" ${candBusy?"disabled":""}>${candBusy?"Buscando…":"Buscar"}</button></div>
-     ${vocabMsg?`<div class="notice">${esc(vocabMsg)}</div>`:""}
-     ${cands?`<div class="cands">${cands.length?cands.map((c,i)=>`<button type="button" class="cand" data-cand="${i}"><span class="jp">${rubyHTML(c.jp,c.kana)}</span><span class="meta"><b>${esc(c.es)}</b>${esc(c.romaji)} · ${esc(c.type||"")}</span><span class="pill new">Añadir</span></button>`).join(""):`<div class="notice">No encontré nada. Prueba con otra forma.</div>`}</div>`:""}
-   </form>
-   <div class="stack" style="gap:8px">
-     <div class="row"><h2 class="h2" style="flex:1">Sugerencias de Tama</h2><button class="btn" id="btnSug" ${sugBusy?"disabled":""}>${sugBusy?"Pensando…":sugs?"Otras":"Sugerir palabras"}</button></div>
-     ${sugs?`<div class="sugs">${sugs.map((s,i)=>`<button class="sug" data-sug="${i}" aria-pressed="${sugSel.has(i)}" style="animation-delay:${i*40}ms"><span class="jp">${rubyHTML(s.jp,s.kana)}</span><span>${esc(s.es)}</span></button>`).join("")}</div>
-       <div class="row"><button class="btn primary" id="btnSugAdd" ${sugSel.size?"":"disabled"}>Añadir ${sugSel.size||""} seleccionadas</button><span style="font-size:12px;color:var(--muted)">Toca las que quieras aprender.</span></div>`:
-       `<p style="margin:0;font-size:13px;color:var(--muted)">Palabras útiles y frecuentes relacionadas con las que ya tienes. Tú eliges cuáles añadir.</p>`}
+  if(!$("#vbox"))buildVocab();
+  vStats();vList();
+  if(DICT.ready&&!sugs)localSuggest();else renderSugs();
+  loadDict();
+}
+function buildVocab(){
+  $("#vocabPane").innerHTML=`<div id="vbox" class="stack">
+   <div class="stats" id="vStats"></div>
+   <div class="stack" style="gap:8px"><h2 class="h2">Añadir palabra</h2>
+     <div class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+       <input class="field" id="addInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Escribe: neko, gato, ねこ…" enterkeyhint="search"></div>
+     <div class="acres" id="addResults"></div>
    </div>
    <div class="stack" style="gap:8px">
-     <div class="filters">${[["all","Todas"],["weak","Flojas"],["new","Nuevas"],["learn","Aprendiendo"],["done","Dominadas"],["basic","Kit básico"]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${vocabFilter===k}">${l}</button>`).join("")}</div>
-     ${list.length?`<div class="list">${list.map(w=>{const st=w.basic?["basic","básico"]:status(w);return `<button class="item" data-open-word="${w.id}"><span class="jp">${rubyHTML(w.jp,w.kana)}</span><span class="es">${esc(w.es)}</span><span class="pill ${st[0]}">${st[1]}</span></button>`}).join("")}</div>`:
-      `<div class="empty"><div class="catbox">${catSVG()}</div><span class="jp">${mine.length?"よし！":"言葉"}</span>${mine.length?"Nada en esta categoría.":"Aún no tienes palabras. Escribe arriba la primera que estés aprendiendo, o pide sugerencias a Tama."}</div>`}
-   </div>`;
+     <div class="row"><h2 class="h2" style="flex:1">Sugerencias de Tama</h2><button class="btn" id="btnSug">Otras</button></div>
+     <div class="sugs" id="sugBox"></div>
+     <div class="row"><button class="btn primary" id="btnSugAdd" disabled>Añadir seleccionadas</button><span style="font-size:12px;color:var(--muted)">Palabras frecuentes de tu nivel, relacionadas con las tuyas.</span></div>
+   </div>
+   <div class="stack" style="gap:8px">
+     <div class="filters" id="vFilters">${[["all","Todas"],["weak","Flojas"],["new","Nuevas"],["learn","Aprendiendo"],["done","Dominadas"],["basic","Kit básico"]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${vocabFilter===k}">${l}</button>`).join("")}</div>
+     <div id="vList"></div>
+   </div></div>`;
+  const inp=$("#addInput");let tmr=null;
+  inp.addEventListener("input",()=>{clearTimeout(tmr);aiCands=null;tmr=setTimeout(vSearch,60)});
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();if(lastResults.length&&!findWord(lastResults[0].jp))addEntry(0);else if(inp.value.trim())aiLookup(inp.value.trim())}});
 }
-const CARD_FIELDS='{"jp":"","kana":"","romaji":"","es":"","type":"","ex_jp":"","ex_kana":"","ex_es":""}';
-async function lookup(q){
-  candBusy=true;cands=null;vocabMsg="";renderVocab();
-  try{const r=await ask(`${LEARNER} ${FURI_RULE} El alumno quiere añadir a su vocabulario japonés: "${q}". Puede estar escrito en japonés, romaji o español. Da de 1 a 3 candidatos (la palabra más común primero; si es inequívoca, solo 1).
-Para cada uno: jp (forma escrita habitual, SIN corchetes), kana (lectura en hiragana; katakana si es préstamo), romaji, es (significado breve), type (sustantivo, verbo, adjetivo…; para verbos añade la forma ます), ex_jp (frase de ejemplo muy sencilla estilo です/ます), ex_kana (la frase en kana), ex_es (traducción).
-Devuelve SOLO JSON: {"candidates":[${CARD_FIELDS}]}`);cands=(r.candidates||[]).filter(c=>c&&c.jp)}
-  catch(e){vocabMsg=aiErr(e);cands=null}
-  candBusy=false;renderVocab();
+function vStats(){
+  const mine=words.filter(w=>!w.basic),weak=mine.filter(w=>status(w)[0]==="weak").length;
+  const el=$("#vStats");if(el)el.innerHTML=`<div class="stat"><b>${mine.length}</b><span>palabras</span></div><div class="stat"><b>${dueWords().length}</b><span>para repasar</span></div><div class="stat"><b style="color:${weak?"var(--ai)":"inherit"}">${weak}</b><span>flojas</span></div>`;
+}
+function vList(){
+  const mine=words.filter(w=>!w.basic);
+  let list=vocabFilter==="basic"?BASIC:mine.filter(w=>vocabFilter==="all"||status(w)[0]===vocabFilter);
+  if(vocabFilter!=="basic")list=[...list].sort((a,b)=>priority(b)-priority(a));
+  const el=$("#vList");if(!el)return;
+  el.innerHTML=list.length?`<div class="list">${list.map(w=>{const st=w.basic?["basic","básico"]:status(w);return `<button class="item" data-open-word="${w.id}"><span class="jp">${rubyHTML(w.jp,w.kana)}</span><span class="es">${esc(w.es)}</span><span class="pill ${st[0]}">${st[1]}</span></button>`}).join("")}</div>`:
+    `<div class="empty"><span class="jp">${mine.length?"よし！":"言葉"}</span>${mine.length?"Nada en esta categoría.":"Aún no tienes palabras. Búscalas arriba o elige entre las sugerencias."}</div>`;
+  document.querySelectorAll("#vFilters .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.filter===vocabFilter));
+}
+function vSearch(){
+  const inp=$("#addInput"),box=$("#addResults");if(!inp||!box)return;
+  const q=inp.value.trim();
+  if(!q){box.innerHTML="";lastResults=[];return}
+  if(!DICT.ready){box.innerHTML=`<div class="notice">Cargando diccionario…</div>`;loadDict();return}
+  lastResults=dictSearch(q,7);
+  box.innerHTML=lastResults.map((e,i)=>acRow(e,i)).join("")+
+    (aiCands?aiCands.map((c,i)=>acRow(mkEntry(c.jp,c.kana,c.es,0,c.type),i,true)).join(""):"")+
+    `<button class="acmore" id="btnAILookup" ${aiBusy?"disabled":""}>${aiBusy?"Tama está buscando…":`${lastResults.length?"¿No es ninguna?":"No está en el diccionario."} Buscar «${esc(q)}» con Tama`}</button>`;
+}
+function acRow(e,i,ai){
+  const have=!!findWord(e.jp);
+  return `<button class="ac ${have?"have":""}" data-ac="${i}"${ai?' data-ai="1"':""} ${have?"disabled":""}>
+    <span class="acjp jp">${rubyHTML(e.jp,e.kana)}</span>
+    <span class="acmeta"><b>${esc(e.es)}</b><small>${esc(e.ro||"")}${e.pos?" · "+esc(e.pos):""} ${LV(e.lv)}</small></span>
+    <span class="acadd">${have?SVG.check:"+"}</span></button>`;
+}
+function addEntry(i,ai){
+  const e=ai?null:lastResults[i];
+  const c=ai?aiCands[i]:entryToWord(e);if(!c)return;
+  if(ai)rememberEntry(c);
+  if(addWord(c)){
+    const row=document.querySelector(`#addResults .ac[data-ac="${i}"]${ai?'[data-ai]':':not([data-ai])'}`);
+    if(row){row.classList.add("have","flash");row.disabled=true;row.querySelector(".acadd").innerHTML=SVG.check}
+    vStats();vList();
+  }
+}
+async function aiLookup(q){
+  if(aiBusy)return;aiBusy=true;vSearch();
+  try{const r=await ask(`${LEARNER} El alumno busca la palabra japonesa para: "${q}" (puede estar en japonés, romaji o español). Da 1 a 3 candidatos, el más común primero.
+Cada uno: jp (forma escrita habitual), kana (lectura), romaji, es (significado breve), type (sustantivo, verbo, adjetivo い/な…).
+SOLO JSON: {"candidates":[{"jp":"","kana":"","romaji":"","es":"","type":""}]}`,false,null,{max:300});
+    aiCands=(r.candidates||[]).filter(c=>c&&c.jp)}
+  catch(e){toast(aiErr(e))}
+  aiBusy=false;vSearch();
 }
 function addWord(c,silent){
   if(findWord(c.jp)){if(!silent)toast(`${c.jp} ya está en tu vocabulario`);return null}
   const w={id:uidGen(),jp:c.jp,kana:c.kana||c.jp,romaji:c.romaji||"",es:c.es||"",type:c.type||"",ex_jp:c.ex_jp||"",ex_kana:c.ex_kana||"",ex_es:c.ex_es||"",added:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,good:0,bad:0};
   words.push(w);saveWord();if(!silent){toast(`Añadida: ${w.jp}`);sfx("add")}updateBadge();return w;
 }
-async function suggest(){
-  sugBusy=true;renderVocab();
-  try{const mine=words.filter(w=>!w.basic).map(w=>w.jp).join("、");
-    const r=await ask(`${LEARNER} ${FURI_RULE} Vocabulario actual: ${mine||"(vacío)"}.
-Sugiere 8 palabras japonesas NUEVAS (que no estén en la lista) muy útiles para conversar: frecuentes, de nivel principiante y, si hay vocabulario, relacionadas con él o que permitan formar más frases con él. Mezcla sustantivos, verbos y adjetivos.
-Para cada una: jp (sin corchetes), kana, romaji, es, type, ex_jp, ex_kana, ex_es.
-Devuelve SOLO JSON: {"words":[${CARD_FIELDS}]}`);
-    sugs=(r.words||[]).filter(s=>s&&s.jp&&!findWord(s.jp));sugSel=new Set();sfx("receive")}
-  catch(e){toast(aiErr(e))}
-  sugBusy=false;renderVocab();
+/* suggestions: local, instant, no AI. Prefers the learner's level and words sharing kanji or theme with their vocabulary */
+function localSuggest(){
+  if(!DICT.ready){loadDict();return}
+  const mine=words.filter(w=>!w.basic),have=new Set(mine.map(w=>normJP(w.jp))),kan=new Set();
+  mine.forEach(w=>[...w.jp].forEach(ch=>{if(hasKanji(ch))kan.add(ch)}));
+  const maxLv=mine.length<60?5:mine.length<250?4:3;
+  const scored=[];
+  for(const e of DICT.list){
+    if(have.has(e.njp)||/[～〜]/.test(e.jp))continue;
+    let s=(e.lv===5?30:e.lv===4?18:8)+Math.random()*22;
+    let shared=0;for(const ch of e.jp)if(kan.has(ch))shared++;
+    s+=shared*14;if(e.lv<maxLv)s-=25;
+    scored.push([s,e]);
+  }
+  scored.sort((a,b)=>b[0]-a[0]);
+  const pickd=[],pos={};
+  for(const[,e]of scored){const p=e.pos||"x";if((pos[p]||0)>=3)continue;pos[p]=(pos[p]||0)+1;pickd.push(e);if(pickd.length>=8)break}
+  sugs=pickd;sugSel=new Set();renderSugs();
+}
+function renderSugs(){
+  const box=$("#sugBox");if(!box)return;
+  if(!sugs){box.innerHTML=`<div class="skel" style="width:100%"></div>`;return}
+  box.innerHTML=sugs.map((s,i)=>`<button class="sug" data-sug="${i}" aria-pressed="${sugSel.has(i)}" style="animation-delay:${i*35}ms"><span class="jp">${rubyHTML(s.jp,s.kana)}</span><span>${esc(s.es.split(";")[0])}</span></button>`).join("");
+  sugBtn();
+}
+function sugBtn(){const b=$("#btnSugAdd");if(b){b.disabled=!sugSel.size;b.textContent=sugSel.size?`Añadir ${sugSel.size}`:"Añadir seleccionadas"}}
+function toggleSug(i,el){sugSel.has(i)?sugSel.delete(i):sugSel.add(i);el.setAttribute("aria-pressed",sugSel.has(i));sfx("tap");sugBtn()}
+function addSugs(){
+  let n=0;[...sugSel].forEach(i=>{if(addWord(entryToWord(sugs[i]),true))n++});
+  toast(`${n} palabras añadidas`);sfx("add");
+  document.querySelectorAll("#sugBox .sug[aria-pressed=true]").forEach(b=>b.classList.add("gone"));
+  setTimeout(()=>{sugs=sugs.filter((_,i)=>!sugSel.has(i));sugSel=new Set();if(sugs.length<3)localSuggest();else renderSugs()},260);
+  vStats();vList();
 }
 async function explainKanji(w){
   const box=$("#kanjiBox");if(box)box.innerHTML=`<div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div>`;
-  try{const r=await ask(`${LEARNER} ${FURI_RULE} Explica los kanji de la palabra japonesa ${w.jp} (${w.kana}, "${w.es}") para ayudarle a recordarlos.
-Para cada kanji: c, meaning (en español), on (lectura on en katakana), kun (lectura kun en hiragana), parts (componentes visuales o radicales, breve), mnemonic (regla mnemotécnica corta y visual en español que una forma y significado).
-Devuelve SOLO JSON: {"kanji":[{"c":"","meaning":"","on":"","kun":"","parts":"","mnemonic":""}]}`);
+  try{const r=await ask(`Para un hispanohablante principiante, explica los kanji de ${w.jp} (${w.kana}, "${w.es}").
+Cada kanji: c, meaning (español), on (katakana), kun (hiragana), parts (componentes, breve), mnemonic (truco visual corto en español).
+SOLO JSON: {"kanji":[{"c":"","meaning":"","on":"","kun":"","parts":"","mnemonic":""}]}`,false,null,{max:600});
     w.kanjiInfo=(r.kanji||[]).filter(k=>k&&k.c);saveWord();if($("#kanjiBox"))$("#kanjiBox").innerHTML=kanjiHTML(w)}
   catch(e){if($("#kanjiBox"))$("#kanjiBox").innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
 }
+async function exampleFor(w){
+  const box=$("#exBox");if(box)box.innerHTML=`<div class="skel" style="width:90%"></div>`;
+  try{const r=await ask(`${LEARNER} ${FURI_RULE} Una frase de ejemplo corta y natural (です/ます) con ${w.jp} (${w.kana}, "${w.es}").
+SOLO JSON: {"ex_jp":"","ex_kana":"","ex_es":""}`,false,null,{max:250});
+    w.ex_jp=r.ex_jp||"";w.ex_kana=r.ex_kana||"";w.ex_es=r.ex_es||"";saveWord();wordSheet(w.id,true)}
+  catch(e){if(box)box.innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
+}
 const kanjiHTML=w=>w.kanjiInfo.map(k=>`<div class="kj"><span class="c">${esc(k.c)}</span><div><p><b>${esc(k.meaning)}</b> <small>${esc(k.kun)} · ${esc(k.on)}</small></p><p><small>${esc(k.parts)}</small></p><p>${esc(k.mnemonic)}</p></div></div>`).join("");
-function wordSheet(id){
-  const w=words.find(x=>x.id===id)||BASIC.find(x=>x.id===id);if(!w)return;sfx("tap");
+function wordSheet(id,silent){
+  const w=words.find(x=>x.id===id)||BASIC.find(x=>x.id===id);if(!w)return;if(!silent)sfx("tap");
   if(w.basic){openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${esc(w.jp)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana.split(" / ")[0])}">${SVG.play}</button></div><div style="font-size:18px;font-weight:600">${esc(w.es)}</div><span class="pill basic" style="align-self:flex-start">kit básico</span>`);return}
   const st=status(w),dueTxt=(w.due||0)<=now()?"hoy":new Date(w.due).toLocaleDateString("es-ES",{day:"numeric",month:"short"});
   openSheet(`<div class="grab"></div>
    <div class="head"><div style="flex:1"><div class="jp">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.jp)}">${SVG.play}</button></div>
    <div style="font-size:19px;font-weight:600">${esc(w.es)} <span style="font-size:13px;color:var(--muted);font-weight:400">${esc(w.type)}</span></div>
-   ${w.ex_jp?`<div class="sec"><span class="lbl">Ejemplo</span><div class="row"><span class="jp" style="font-size:18px;flex:1">${furi(w.ex_jp)}</span><button class="mini" data-say="${esc(w.ex_jp)}">${SVG.play}Escuchar</button></div><small style="color:var(--muted)">${esc(w.ex_kana)}</small><span>${esc(w.ex_es)}</span></div>`:""}
+   <div id="exBox">${w.ex_jp?`<div class="sec"><span class="lbl">Ejemplo</span><div class="row"><span class="jp" style="font-size:18px;flex:1;line-height:2">${furi(w.ex_jp)}</span><button class="mini" data-say="${esc(w.ex_jp)}">${SVG.play}Escuchar</button></div><span>${esc(w.ex_es)}</span></div>`:`<button class="btn ghost" data-example="${w.id}">${SVG.dots}Ver una frase de ejemplo (Tama)</button>`}</div>
    <dl class="kv"><dt>Estado</dt><dd><span class="pill ${st[0]}">${st[1]}</span></dd><dt>Aciertos / fallos</dt><dd>${w.good||0} / ${w.bad||0}</dd><dt>Consultada</dt><dd>${w.lookups||0} veces</dd><dt>Próximo repaso</dt><dd>${dueTxt}</dd></dl>
    ${hasKanji(w.jp)?`<div class="stack" style="gap:8px"><h3 class="h2">Kanji</h3><div class="kanji" id="kanjiBox">${w.kanjiInfo?kanjiHTML(w):`<button class="btn" data-kanji="${w.id}">Explicar sus kanji con trucos para recordarlos</button>`}</div></div>`:""}
-   <div class="row"><button class="btn" data-practice="${w.id}">Practicar en conversación</button><span class="spacer"></span><button class="btn ghost" data-del="${w.id}" style="color:var(--shu)">Eliminar</button></div>`);
+   <div class="row"><button class="btn" data-practice="${w.id}">Practicar en conversación</button><span class="spacer"></span><button class="btn ghost" data-del="${w.id}" style="color:var(--ai)">Eliminar</button></div>`);
 }
 
 /* ============ review ============ */
@@ -1323,7 +1489,6 @@ document.addEventListener("submit",async e=>{
       setTimeout(()=>{const o=$("#onb");if(o)o.remove();toast("¡Listo! Toca el micro rojo para hablar con Tama");renderAll()},900);
     }catch(err){msg.hidden=false;msg.textContent=err.code==="bad_key"?"Esa clave no funciona. Cópiala de nuevo desde AI Studio.":"No he podido comprobarla. ¿Tienes internet?";btn.disabled=false;btn.textContent="Empezar"}
     return}
-  if(e.target.id==="addForm"){e.preventDefault();const q=$("#addInput").value.trim();if(q)lookup(q)}
 });
 
 /* ============ kana input ============ */
@@ -1349,10 +1514,10 @@ function setTab(t){
   if(t!=="chat")stopSpeaking();
   if(t!=="practice"&&window.practiceLeave)practiceLeave();
   tab=t;sfx("tap");document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
-  ["chat","practice","vocab","review"].forEach(k=>$("#v-"+k).hidden=k!==t);
-  if(t==="vocab")renderVocab();if(t==="review"){rq=null;renderReview()}if(t==="chat")renderChat();if(t==="practice"&&window.renderPractice)renderPractice()}
+  ["chat","practice","vocab"].forEach(k=>$("#v-"+k).hidden=k!==t);
+  if(t==="vocab")renderVocab();if(t==="chat")renderChat();if(t==="practice"&&window.renderPractice)renderPractice()}
 function updateBadge(){const n=dueWords().length;const b=$("#dueBadge");b.hidden=!n;b.textContent=n}
-function renderAll(){renderScenes();renderChat();updateBadge();renderStreak();renderGoal();setVState(vState);if(tab==="vocab")renderVocab();if(tab==="review")renderReview()}
+function renderAll(){renderScenes();renderChat();updateBadge();renderStreak();renderGoal();setVState(vState);if(tab==="vocab")renderVocab()}
 
 /* ============ events ============ */
 document.addEventListener("pointerdown",()=>audioCtx(),{once:true});
@@ -1382,18 +1547,19 @@ document.addEventListener("click",e=>{
     if(d.act==="reveal"){m.revealed=true;sfx("flip");return renderChat(true)}
     if(d.act==="es"){m.showEs=!m.showEs;sfx("flip");return renderChat(true)}}
   if(d.t!==undefined)return tokenSheet(+d.m,+d.t,d.k);
-  if(d.addTok){const [mi,j,k]=d.addTok.split(":");const t=toksOf(msgAt(+mi),k)[+j];el.disabled=true;el.textContent="Añadiendo…";const s=(t.x&&t.x.dict)||t.s;
-    ask(`${LEARNER} ${FURI_RULE} Da la ficha de la palabra japonesa "${s}" (aparece como «${t.s}» con el sentido "${t.m}"), en forma de diccionario. Para verbos, en type añade la forma ます. Devuelve SOLO JSON: ${CARD_FIELDS}`)
-      .then(c=>{addWord(c.jp?c:{jp:s,kana:t.r||s,es:t.m});closeSheet();renderChat(true)}).catch(()=>{addWord({jp:s,kana:t.r||s,es:t.m});closeSheet();renderChat(true)});return}
+  if(d.addTok){const [mi,j,k]=d.addTok.split(":");return addFromToken(+mi,+j,k)}
+  if(el.id==="tokExplain")return explainToken(+d.mi,+d.j,d.k);
+  if(d.ac!==undefined)return addEntry(+d.ac,!!d.ai);
+  if(el.id==="btnAILookup")return aiLookup($("#addInput").value.trim());
+  if(d.example){const w=words.find(x=>x.id===d.example);if(w)exampleFor(w);return}
   if(d.openWord)return wordSheet(d.openWord);
   if(d.kanji){const w=words.find(x=>x.id===d.kanji);if(w)explainKanji(w);return}
   if(d.del){const w=words.find(x=>x.id===d.del);if(!w)return;if(el.dataset.armed){deleteWord(w);closeSheet();toast(`Eliminada: ${w.jp}`);renderAll();return}el.dataset.armed="1";el.textContent="Pulsa otra vez para eliminar";return}
   if(d.practice){const w=words.find(x=>x.id===d.practice);closeSheet();setTab("chat");if(w)send(`Quiero practicar la palabra ${w.jp}. Hazme preguntas para que la use.`);return}
-  if(d.filter){vocabFilter=d.filter;sfx("tap");return renderVocab()}
-  if(d.cand!==undefined){const c=cands[+d.cand];if(c&&addWord(c)){cands=null;if($("#addInput"))$("#addInput").value="";renderVocab()}return}
-  if(el.id==="btnSug")return suggest();
-  if(d.sug!==undefined){const i=+d.sug;sugSel.has(i)?sugSel.delete(i):sugSel.add(i);sfx("tap");return renderVocab()}
-  if(el.id==="btnSugAdd"){let n=0;[...sugSel].forEach(i=>{if(addWord(sugs[i],true))n++});sugs=sugs.filter((_,i)=>!sugSel.has(i));sugSel=new Set();toast(`${n} palabras añadidas`);sfx("add");return renderVocab()}
+  if(d.filter){vocabFilter=d.filter;sfx("tap");return vList()}
+  if(el.id==="btnSug"){sfx("flip");return localSuggest()}
+  if(d.sug!==undefined)return toggleSug(+d.sug,el);
+  if(el.id==="btnSugAdd")return addSugs();
   if(el.id==="btnShow"){rShown=true;rVerdict=rMode==="prod"?false:null;sfx("flip");renderReview();speak(rq[ri].jp);return}
   if(el.id==="btnCheck")return checkProd();
   if(el.id==="rMic"){const ri_=$("#rInput");el.classList.add("on","listening");sfx("listen");
@@ -1487,6 +1653,7 @@ function quotaSheet(){
    <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="qbig"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" class="q-bg"/><circle cx="18" cy="18" r="14" class="q-fg" pathLength="100" stroke-dasharray="${pct} 100" style="stroke:${pct>=85?"var(--ai)":pct>=60?"var(--gold)":"var(--ok)"}"/></svg><b>${u.hit?"!":pct+"%"}</b></div>
      <dl class="kv" style="flex:1"><dt>Peticiones</dt><dd>${u.req} de ~${lim}</dd><dt>Tokens</dt><dd>${u.tok.toLocaleString("es-ES")}</dd><dt>Se reinicia</dt><dd>${r?r.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+` (en ${h} h ${mn} min)`:"a medianoche de California"}</dd></dl></div>
    ${u.hit?`<div class="notice">Gemini ha dicho que has llegado al límite. Vuelve a funcionar cuando se reinicie.</div>`:""}
+   <div class="notice" style="color:var(--ink)"><b>Qué gasta Gemini:</b> cada frase en la conversación, cada tanda de 8 ejercicios con frases, y lo que le pidas a Tama expresamente (explicar una palabra, un ejemplo, los kanji, «¿Qué puedo decir?»). <b>No gastan nada:</b> el buscador y las sugerencias de palabras, el repaso, los ejercicios de palabras ni tocar palabras para ver su significado.</div>
    <p style="margin:0;font-size:13px;color:var(--muted)">Es una estimación hecha en este dispositivo. El nivel gratuito de Gemini limita sobre todo las <b>peticiones por día</b> (cada frase que dices es una; ver un significado, sugerencias o kanji también cuentan) y se reinicia a medianoche de California. Mira tu límite real en AI Studio y ponlo aquí.</p>
    <div class="row"><label for="s_limit" style="font-weight:600">Mi límite diario</label><input id="s_limit" class="field" type="number" min="10" max="100000" step="10" value="${lim}" style="flex:0 0 110px"><span style="font-size:13px;color:var(--muted)">peticiones</span></div>
    <div class="row"><a class="btn" href="https://aistudio.google.com/rate-limit" target="_blank" rel="noopener">Ver mi límite en AI Studio</a><a class="btn ghost" href="https://aistudio.google.com/usage" target="_blank" rel="noopener">Uso detallado</a></div>`);
