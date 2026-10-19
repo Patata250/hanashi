@@ -153,6 +153,7 @@ details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;
 .fb.wrong{background:var(--shu-soft)}.fb.wrong .ic{background:var(--shu)}.fb.wrong b{color:var(--shu)}
 .fb.none{background:var(--paper);border:1px dashed var(--line);color:var(--muted)}
 .fb .say-btn{margin-top:4px;align-self:flex-start}
+.bubble.streaming .jpline{opacity:.85}.bubble.streaming .jpline::after{content:"▍";animation:b 1s infinite;color:var(--ai)}
 .typing{display:flex;gap:4px;padding:14px}
 .typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
 .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
@@ -972,31 +973,41 @@ async function callModel(model,prompt,signal,opts){
   const gemma=/^gemma/.test(model),nf=settings.noJson||{};
   const gen={temperature:0.7,maxOutputTokens:(opts&&opts.max)||1500};
   if(!gemma&&!nf[model])gen.responseMimeType="application/json";
-  if(!gemma&&!settings.noThinkCfg){if(/2\.5/.test(model))gen.thinkingConfig={thinkingBudget:0};else if(/gemini-[3-9]/.test(model))gen.thinkingConfig={thinkingLevel:"low"}}
+  const tl=(settings.think||{})[model]||"minimal";
+  if(!gemma&&tl!=="none"){if(/2\.5/.test(model))gen.thinkingConfig={thinkingBudget:0};else if(/gemini-[3-9]/.test(model))gen.thinkingConfig={thinkingLevel:tl}}
   const text=gemma||nf[model]?prompt+"\n\nResponde SOLO con el objeto JSON, sin texto antes ni después y sin ```.":prompt;
   let r;
-  try{r=await fetch(`${API}/models/${model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.key},body:JSON.stringify({contents:[{role:"user",parts:[{text}]}],generationConfig:gen}),signal})}
+  const stream=!!(opts&&opts.onPartial);
+  try{r=await fetch(`${API}/models/${model}:${stream?"streamGenerateContent?alt=sse":"generateContent"}`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.key},body:JSON.stringify({contents:[{role:"user",parts:[{text}]}],generationConfig:gen}),signal})}
   catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:navigator.onLine?"upstream":"offline"}}
   if(!r.ok){
     const txt=await r.text();
     if(r.status===429)throw{code:"quota",...quotaKind(txt)};
-    if(r.status===400&&/thinking/i.test(txt)&&!settings.noThinkCfg){settings.noThinkCfg=true;saveSettings();throw{code:"again"}}
+    if(r.status===400&&/thinking/i.test(txt)&&tl!=="none"){settings.think={...(settings.think||{}),[model]:tl==="minimal"&&/gemini-[3-9]/.test(model)?"low":"none"};saveSettings();throw{code:"again"}}
     if(r.status===400&&/json mode|mime/i.test(txt)&&!nf[model]){settings.noJson={...nf,[model]:true};saveSettings();throw{code:"again"}}
     if(r.status===404)throw{code:"gone"};
     if((r.status===400&&/API key|API_KEY/i.test(txt))||r.status===401||r.status===403)throw{code:"bad_key"};
     if(r.status>=500)throw{code:"busy"};
     console.warn("gemini",model,r.status,txt);throw{code:"upstream"};
   }
-  const j=await r.json();
-  trackUsage(j.usageMetadata&&j.usageMetadata.totalTokenCount);
-  const out=((j.candidates||[])[0]?.content?.parts||[]).filter(p=>!p.thought).map(p=>p.text||"").join("");
+  let out="",usage=0;
+  const partsText=j=>((j.candidates||[])[0]?.content?.parts||[]).filter(p=>!p.thought).map(p=>p.text||"").join("");
+  if(stream&&r.body&&r.body.getReader){
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf="";
+    try{for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      let i;while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
+        if(!line.startsWith("data:"))continue;try{const j=JSON.parse(line.slice(5));out+=partsText(j);if(j.usageMetadata)usage=j.usageMetadata.totalTokenCount||usage;opts.onPartial(out)}catch(e){}}}}
+    catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:"upstream"}}
+  }else{const j=await r.json();out=partsText(j);usage=j.usageMetadata&&j.usageMetadata.totalTokenCount}
+  trackUsage(usage);
   const s=out.replace(/^```(?:json)?\s*|\s*```$/g,"").trim();
   try{return JSON.parse(s)}catch(e){const a=s.indexOf("{"),b=s.lastIndexOf("}");if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e2){}}throw{code:"invalid_json"}}
 }
 async function ask(prompt,_retry,signal,opts){
   if(!settings.key)throw{code:"no_key"};
   if(!navigator.onLine)throw{code:"offline"};
-  const chain=await modelChain();
+  let chain=await modelChain();
+  if(opts&&opts.fast)chain=[...chain.filter(m=>/lite/.test(m)),...chain.filter(m=>!/lite/.test(m))];
   let lastErr={code:"rate_limited"},soonest=Infinity;
   for(const model of chain){
     if(!modelReady(model)){soonest=Math.min(soonest,cool()[model]);continue}
@@ -1019,6 +1030,8 @@ async function ask(prompt,_retry,signal,opts){
 }
 const LEARNER="El alumno habla español, es principiante, lee hiragana con soltura, está aprendiendo katakana y apenas conoce kanji. Su prioridad es hablar y entender con fluidez.";
 const FURI_RULE=`LECTURAS (MUY IMPORTANTE): el alumno aún NO lee kanji. En cualquier campo de texto que contenga japonés y no sea un token (natural, note_es, help_es, ex_jp, jp de opciones, ejemplos…), escribe la lectura en hiragana entre corchetes justo después de cada palabra con kanji, así: 今日[きょう]は 天気[てんき]が いいです。 En los tokens, "r" es OBLIGATORIO siempre que "s" tenga kanji.`;
+const PART_RO={"は":"wa","へ":"e","を":"o"};
+const romajiOf=toks=>{try{return toks.map(t=>/^[、。！？!?…「」]+$/.test(t.s)?t.s:PART_RO[t.s]||wanakana.toRomaji(t.r||t.s)).join(" ").replace(/ ([、。！？!?…])/g,"$1").replace(/、/g,",").replace(/。/g,".").replace(/！/g,"!").replace(/？/g,"?")}catch(e){return ""}};
 const cleanToks=a=>Array.isArray(a)?a.filter(t=>t&&typeof t.s==="string").map(t=>({s:t.s,r:t.r||"",m:t.m||""})):[];
 
 /* ============ conversation ============ */
@@ -1069,7 +1082,7 @@ function renderChat(keepScroll){
   const sc=$("#chatScroll"),prev=sc.scrollTop,atBottom=sc.scrollHeight-sc.scrollTop-sc.clientHeight<80;
   $("#msgs").innerHTML=allMsgs().map((m,i)=>msgHTML(m,i)).join("")+
    `<div class="msg me live" id="liveMsg" ${liveText?"":"hidden"}><div class="bubble"><div class="said" id="liveTxt">${esc(liveText)}</div></div></div>`+
-   (busy?`<div class="msg ai"><div class="bubble typing"><i></i><i></i><i></i></div></div>`:"")+
+   (busy?`<div class="msg ai" id="streamMsg"><div class="bubble typing"><i></i><i></i><i></i></div></div>`:"")+
    (chatError?`<div class="notice">${esc(chatError)} <button class="mini" id="btnRetry">Reenviar</button>${/cupo/.test(chatError)?` <button class="mini on" data-tabgo="practice">Practicar sin IA</button>`:""}</div>`:"");
   renderFocus();requestAnimationFrame(()=>sc.scrollTop=(keepScroll&&!atBottom)?prev:sc.scrollHeight);
 }
@@ -1175,24 +1188,35 @@ SOBRE EL ÚLTIMO MENSAJE DEL ALUMNO (si está en japonés, también romaji):
 - "word_usage": por id, las palabras PRIORITARIAS que usó: "good" si bien, "wrong" si mal (o si demuestra no entenderla).
 
 TU RESPUESTA:
-- "tokens": tu respuesta japonesa dividida en palabras, en orden, cubriendo todo el texto. s = texto exacto; r = lectura en hiragana (si s tiene kanji o katakana, si no ""); m = significado breve en español EN ESTE CONTEXTO (partículas: su función; puntuación: "").
-- "romaji" y "es" (traducción).
+- "tokens": tu respuesta japonesa dividida en palabras, en orden, cubriendo todo el texto. s = texto exacto; r = lectura en hiragana (si s tiene kanji o katakana, si no ""); m = significado MUY breve (1 a 4 palabras) en español EN ESTE CONTEXTO (partículas: su función en 2-3 palabras; puntuación: "").
+- "es": traducción al español.
+Sé conciso en todos los campos: la app necesita la respuesta rápido.
 
 Conversación hasta ahora:
 ${hist||"(vacía)"}
 
 Devuelve SOLO JSON:
-{"help_es":"","me_tokens":[],"me_es":"","feedback":null,"word_usage":[],"tokens":[{"s":"","r":"","m":""}],"romaji":"","es":""}`;
+{"help_es":"","tokens":[{"s":"","r":"","m":""}],"es":"","feedback":null,"me_es":"","me_tokens":[],"word_usage":[]}
+(Respeta este orden de campos: primero tu respuesta y después el análisis del alumno.)`;
   const ac=new AbortController();replyAC={ac,meMsg,text};renderAssist();
   try{
-    const res=await ask(prompt,false,ac.signal,{max:1400});
+    let shown="";
+    const res=await ask(prompt,false,ac.signal,{max:1400,onPartial:acc=>{
+      // show Tama's words as they arrive, before the whole answer (with feedback) is ready
+      const k=acc.indexOf('"tokens"');if(k<0)return;const seg=acc.slice(k);const end=seg.indexOf("]");
+      const txt=[...(end>=0?seg.slice(0,end):seg).matchAll(/"s"\s*:\s*"((?:[^"\\]|\\.)*)"/g)].map(m=>{try{return JSON.parse('"'+m[1]+'"')}catch(e){return ""}}).join("");
+      if(!txt||txt===shown)return;shown=txt;
+      const el=$("#streamMsg");if(!el)return;
+      if(!el.dataset.on){el.dataset.on=1;el.innerHTML=`<div class="bubble streaming"><div class="jpline" id="streamTxt"></div></div>`;tama("talk")}
+      $("#streamTxt").textContent=txt;const sc=$("#chatScroll");if(sc.scrollHeight-sc.scrollTop-sc.clientHeight<160)sc.scrollTop=sc.scrollHeight}});
     if(replyAC&&replyAC.ac===ac)replyAC=null;
     let fb=null;
     if(meMsg){meMsg.pending=false;meMsg.meTokens=cleanToks(res.me_tokens);meMsg.meEs=res.me_es||"";
       if(res.feedback&&typeof res.feedback==="object"&&res.feedback.level){fb=res.feedback;meMsg.feedback=fb;
         if(fb.level!=="perfect")session.fixes.push({said:text,natural:fb.natural,note:fb.note_es,level:fb.level})}}
     (res.word_usage||[]).forEach(u=>{const w=words.find(x=>x.id===u.id);if(w&&(u.result==="good"||u.result==="wrong"))convUsage(w,u.result)});
-    const m={role:"ai",tokens:cleanToks(res.tokens),romaji:res.romaji||"",es:res.es||"",help:res.help_es||""};
+    const toks=cleanToks(res.tokens);
+    const m={role:"ai",tokens:toks,romaji:res.romaji||romajiOf(toks),es:res.es||"",help:res.help_es||""};
     chat.msgs.push(m);busy=false;renderAssist();
     renderChat();saveChat();updateBadge();
     if(fb){sfx(fb.level);if(fb.level==="perfect"){session.combo=(session.combo||0)+1;if(session.combo%3===0){setTimeout(()=>{confetti();toast(`¡${session.combo} perfectas seguidas!`)},400)}}else session.combo=0;
@@ -1216,7 +1240,7 @@ async function hintSheet(){
 Su vocabulario: ${known||"(muy poco)"}.
 Propón 3 respuestas que podría decir, de más fácil a algo más completa, naturales y de nivel principiante (estilo です/ます), usando su vocabulario cuando sea posible.
 Para cada una: jp (como la escribiría un japonés), kana (todo en hiragana/katakana), romaji, es (traducción), tip (por qué funciona o qué estructura usa, muy breve, en español).
-Devuelve SOLO JSON: {"options":[{"jp":"","kana":"","romaji":"","es":"","tip":""}]}`);
+Devuelve SOLO JSON: {"options":[{"jp":"","kana":"","romaji":"","es":"","tip":""}]}`,false,null,{fast:true});
     const opts=(r.options||[]).filter(o=>o&&o.jp);window._hintOpts=opts;
     const b=$("#hintBody");if(!b)return;
     b.innerHTML=opts.map((o,i)=>`<div class="opt"><div class="t"><span class="jp">${furi(o.jp)}</span><small>${esc(o.romaji)}</small><div style="font-size:16px">${esc(o.es)}</div><small>${esc(o.tip)}</small></div>
@@ -1325,7 +1349,7 @@ async function explainToken(mi,j,k){
   const ctx=ctxSentence(toks,j);
   try{const r=await ask(`${LEARNER} ${FURI_RULE} En «${ctx.full}» aparece «${t.s}»${t.r?" ("+t.r+")":""}. En español y muy breve:
 general: significados principales. here: qué significa en ESTA frase (1 frase). usage: cómo se usa (1-2 frases). dict: forma de diccionario si está conjugada, si no "". ex_jp: otro ejemplo corto です/ます. ex_es: traducción.
-SOLO JSON: {"general":"","here":"","usage":"","dict":"","ex_jp":"","ex_es":""}`,false,null,{max:500});
+SOLO JSON: {"general":"","here":"","usage":"","dict":"","ex_jp":"","ex_es":""}`,false,null,{max:500,fast:true});
     t.x={general:r.general||"",here:r.here||t.m,usage:r.usage||"",dict:r.dict||"",ex_jp:r.ex_jp||"",ex_es:r.ex_es||""};saveChat();
     if($("#tokBody"))tokenSheet(mi,j,k,true);
   }catch(e){if(btn){btn.disabled=false;btn.textContent=aiErr(e)}}
@@ -1412,7 +1436,7 @@ async function aiLookup(q){
   if(aiBusy)return;aiBusy=true;vSearch();
   try{const r=await ask(`${LEARNER} El alumno busca la palabra japonesa para: "${q}" (puede estar en japonés, romaji o español). Da 1 a 3 candidatos, el más común primero.
 Cada uno: jp (forma escrita habitual), kana (lectura), romaji, es (significado breve), type (sustantivo, verbo, adjetivo い/な…).
-SOLO JSON: {"candidates":[{"jp":"","kana":"","romaji":"","es":"","type":""}]}`,false,null,{max:300});
+SOLO JSON: {"candidates":[{"jp":"","kana":"","romaji":"","es":"","type":""}]}`,false,null,{max:300,fast:true});
     aiCands=(r.candidates||[]).filter(c=>c&&c.jp)}
   catch(e){toast(aiErr(e))}
   aiBusy=false;vSearch();
@@ -1466,14 +1490,14 @@ async function explainKanji(w){
   const box=$("#kanjiBox");if(box)box.innerHTML=`<div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div>`;
   try{const r=await ask(`Para un hispanohablante principiante, explica los kanji de ${w.jp} (${w.kana}, "${w.es}").
 Cada kanji: c, meaning (español), on (katakana), kun (hiragana), parts (componentes, breve), mnemonic (truco visual corto en español).
-SOLO JSON: {"kanji":[{"c":"","meaning":"","on":"","kun":"","parts":"","mnemonic":""}]}`,false,null,{max:600});
+SOLO JSON: {"kanji":[{"c":"","meaning":"","on":"","kun":"","parts":"","mnemonic":""}]}`,false,null,{max:600,fast:true});
     w.kanjiInfo=(r.kanji||[]).filter(k=>k&&k.c);saveWord();if($("#kanjiBox"))$("#kanjiBox").innerHTML=kanjiHTML(w)}
   catch(e){if($("#kanjiBox"))$("#kanjiBox").innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
 }
 async function exampleFor(w){
   const box=$("#exBox");if(box)box.innerHTML=`<div class="skel" style="width:90%"></div>`;
   try{const r=await ask(`${LEARNER} ${FURI_RULE} Una frase de ejemplo corta y natural (です/ます) con ${w.jp} (${w.kana}, "${w.es}").
-SOLO JSON: {"ex_jp":"","ex_kana":"","ex_es":""}`,false,null,{max:250});
+SOLO JSON: {"ex_jp":"","ex_kana":"","ex_es":""}`,false,null,{max:250,fast:true});
     w.ex_jp=r.ex_jp||"";w.ex_kana=r.ex_kana||"";w.ex_es=r.ex_es||"";saveWord();wordSheet(w.id,true)}
   catch(e){if(box)box.innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
 }

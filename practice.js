@@ -154,9 +154,9 @@ let BASE=null;
 function loadBase(){if(BASE)return Promise.resolve(BASE);return fetch("ejercicios-base.json").then(r=>r.json()).then(a=>BASE=a).catch(()=>BASE=[])}
 loadBase();
 const clone=o=>JSON.parse(JSON.stringify(o));
-function bankAdd(items){
+function bankAdd(items,seen){
   const b=LS.get("pxbank")||[];const have=new Set(b.map(x=>plain(x.it.full||x.it.jp||"")));
-  items.forEach(it=>{const k=plain(it.full||it.jp||"");if(!k||have.has(k))return;have.add(k);const c=clone(it);delete c.retry;b.push({it:c,t:0})});
+  items.forEach(it=>{const k=plain(it.full||it.jp||"");if(!k||have.has(k))return;have.add(k);const c=clone(it);delete c.retry;b.push({it:c,t:seen?now():0})});
   LS.set("pxbank",b.slice(-400));
 }
 function linkWords(it){
@@ -170,7 +170,7 @@ function fromBank(n){
   const prio=new Set(focusWords(10).filter(w=>!w.basic).map(w=>w.jp));
   const cand=pool.filter(({it})=>{let t=it.type;if(t==="meaning"&&types.includes("listen")&&!types.includes("meaning"))t="listen";return types.includes(t)||(t==="meaning"&&types.includes("listen"))})
     .filter(({it})=>!recent.has(plain(it.full||it.jp||"").slice(0,40)))
-    .map(x=>{const txt=plain(x.it.full||x.it.jp||"");let sc=Math.random()*10;words.forEach(w=>{if(!w.basic&&txt.includes(w.jp))sc+=prio.has(w.jp)?12:5});if(x.src)sc-=Math.min(10,(now()-(x.src.t||0)<36e5?10:0));return [sc,x]})
+    .map(x=>{const txt=plain(x.it.full||x.it.jp||"");let sc=Math.random()*10;words.forEach(w=>{if(!w.basic&&txt.includes(w.jp))sc+=prio.has(w.jp)?12:5});if(x.src)sc+=x.src.t?(now()-x.src.t<36e5?-10:0):8;return [sc,x]})
     .sort((a,b)=>b[0]-a[0]).slice(0,n).map(([,x])=>x);
   const out=[];
   cand.forEach(({src,it})=>{let c=clone(it);delete c.words;
@@ -191,12 +191,26 @@ async function fetchBatch(){
   if(PX.busy||PX.mode==="words")return;
   if(aiResting()){PX.busy=true;try{await offlineFill(null)}finally{PX.busy=false}if(PX.active&&PX.state==="loading")next();return}
   PX.busy=true;PX.lastAICheck=now();
-  const types=typesFor(PX.mode);
+  try{
+    const items=await aiItems(typesFor(PX.mode),5,true);
+    PX.aiDown=false;
+    items.forEach((it,k)=>{
+      PX.queue.push(it);
+      if(PX.mode==="mix"&&k%3===2){const l=localItem();if(l)PX.queue.push(l)}
+      if(PX.mode==="listen"&&k%3===1){const l=localItem("wordlisten");if(l)PX.queue.push(l)}
+    });
+  }catch(e){
+    PX.aiDown=true;
+    await offlineFill(e);
+  }finally{PX.busy=false}
+  if(PX.active&&PX.state==="loading")next();
+}
+async function aiItems(types,n,seen){
   const mine=[...words].filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,70);
   const focus=focusWords(8).filter(w=>!w.basic);
   const prompt=`${LEARNER}
 ${FURI_RULE}
-Crea 8 ejercicios cortos y variados de japonés para practicar ANTES de conversar, como en una app tipo Duolingo. Tipos a usar (repártelos): ${types.join(", ")}.
+Crea ${n} ejercicios cortos y variados de japonés para practicar ANTES de conversar, como en una app tipo Duolingo. Tipos a usar (repártelos): ${types.join(", ")}.
 Vocabulario del alumno (id=palabra (significado)): ${mine.map(w=>w.id+"="+w.jp+" ("+w.es+")").join(", ")||"(aún ninguno: usa palabras muy básicas y frecuentes)"}.
 Palabras PRIORITARIAS (falladas recientemente o nuevas): ${focus.map(w=>w.id+"="+w.jp).join(", ")||"(ninguna)"}.
 Gramática que conoce: partículas は が を に で へ と の も か ね よ, です/じゃないです, verbos en 〜ます/〜ません/〜ました/〜ましょう/〜たいです, interrogativos (なに どこ いつ だれ どう いくら), これ/それ/あれ, ここ/そこ/あそこ.
@@ -214,22 +228,20 @@ meaning: {"type":"meaning","jp":"frase","options":["4 traducciones al español"]
 listen: igual que meaning (el alumno solo la oirá, sin ver el texto).
 speak: {"type":"speak","es":"frase en español","full":"frase japonesa que debe decir","kana":"la misma frase toda en hiragana/katakana","explain":"","words":[]}
 Devuelve SOLO JSON: {"items":[...]}`;
-  try{
-    const r=await ask(prompt,false,null,{max:3500});
-    const items=(r.items||[]).map(validate).filter(Boolean);
-    if(!items.length)throw{code:"invalid_json"};
-    bankAdd(items);
-    PX.aiDown=false;
-    items.forEach((it,k)=>{
-      PX.queue.push(it);
-      if(PX.mode==="mix"&&k%3===2){const l=localItem();if(l)PX.queue.push(l)}
-      if(PX.mode==="listen"&&k%3===1){const l=localItem("wordlisten");if(l)PX.queue.push(l)}
-    });
-  }catch(e){
-    PX.aiDown=true;
-    await offlineFill(e);
-  }finally{PX.busy=false}
-  if(PX.active&&PX.state==="loading")next();
+  const r=await ask(prompt,false,null,{max:2200,fast:true});
+  const items=(r.items||[]).map(validate).filter(Boolean);
+  if(!items.length)throw{code:"invalid_json"};
+  bankAdd(items,seen);
+  return items;
+}
+/* while you look at the Practice home, quietly prepare a few personalised exercises so the next session starts with them */
+let prefetching=false;
+async function prefetch(){
+  if(prefetching||PX.active||aiResting())return;
+  const b=LS.get("pxbank")||[],fresh=b.filter(x=>!x.t).length,last=LS.get("pxpre")||0;
+  if(fresh>=8||now()-last<20*6e4)return;
+  prefetching=true;LS.set("pxpre",now());
+  try{await aiItems(typesFor("mix"),6,false)}catch(e){}finally{prefetching=false}
 }
 function ensureAhead(){
   if(PX.mode==="review")return;
@@ -247,8 +259,15 @@ function start(mode){
   PX.round={n:0,good:0,words:new Set()};
   if(mode==="verbs"){if(!DICT.ready){PX.state="loading";render();loadDict().then(()=>{if(PX.active&&PX.mode==="verbs"){ensureAhead();next()}});return}sfx("flip");ensureAhead();return next()}
   if(mode==="review"){PX.queue=reviewQueue();PX.total=PX.queue.length;if(!PX.total){PX.active=false;toast("No tienes nada pendiente de repasar.");return render()}sfx("flip");return next()}
-  if(mode==="mix"||mode==="words"){for(let k=0;k<2;k++){const l=localItem();if(l)PX.queue.push(l)}}
-  sfx("flip");ensureAhead();next();
+  if(mode==="words"){for(let k=0;k<2;k++){const l=localItem();if(l)PX.queue.push(l)}sfx("flip");ensureAhead();return next()}
+  // sentence modes: start at once with saved/built-in exercises and let Gemini prepare more in the background
+  sfx("flip");
+  const go=()=>{if(!PX.active||PX.mode!==mode)return;
+    const first=fromBank(mode==="mix"?3:4);
+    first.forEach((it,k)=>{PX.queue.push(it);if(mode==="mix"&&k===0){const l=localItem();if(l)PX.queue.push(l)}});
+    if(!PX.queue.length)for(let k=0;k<3;k++){const l=localItem();if(l)PX.queue.push(l)}
+    fetchBatch();next()};
+  if(BASE)go();else{PX.state="loading";render();loadBase().then(go)}
 }
 function stop(){PX.active=false;stopListen&&stopListen(true);stopSpeaking();renderPractice()}
 function next(){
@@ -411,6 +430,7 @@ function renderHome(){
     ${!settings.key?`<div class="notice">Sin clave de Gemini practicas con las frases que trae la app, tus palabras y los verbos.</div>`:""}
   </div>`;
   placeCat("");
+  setTimeout(prefetch,1500);
 }
 function selectOpt(k){
   const c=PX.cur;PX.sel=k;sfx("tap");
