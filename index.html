@@ -43,7 +43,7 @@
   --washi:none;
   --seigaiha:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23e53935' stroke-opacity='.09' stroke-width='1.2'%3E%3Cpath d='M0 20a20 20 0 0 1 40 0M6 20a14 14 0 0 1 28 0M12 20a8 8 0 0 1 16 0M-20 10a20 20 0 0 1 40 0M-14 10a14 14 0 0 1 28 0M-8 10a8 8 0 0 1 16 0M20 10a20 20 0 0 1 40 0M26 10a14 14 0 0 1 28 0M32 10a8 8 0 0 1 16 0'/%3E%3C/g%3E%3C/svg%3E")}}
 html,body{height:100%;margin:0}
-body{background:var(--bg) var(--washi);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{background:var(--bg) var(--washi);color:var(--ink);font-family:var(--f-ui);font-size:17px;line-height:1.5;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -59,13 +59,13 @@ a{color:var(--ai)}
 header.top{display:flex;align-items:center;gap:10px;padding-block:10px}
 .logo{width:36px;height:36px;flex:none;transform:rotate(-4deg);filter:drop-shadow(0 2px 4px rgba(120,20,20,.18))}
 .onb .onb-logo{width:44px;height:44px;position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));transform:rotate(-4deg)}
-.hanko{width:32px;height:32px;border-radius:7px;background:var(--ai);color:#fff;display:grid;place-items:center;font-family:var(--f-disp);font-weight:800;font-size:19px;transform:rotate(-4deg);flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}
-.brand{font-family:var(--f-disp);font-weight:800;font-size:21px;letter-spacing:.04em;line-height:1}
+.hanko{width:32px;height:32px;border-radius:7px;background:var(--ai);color:#fff;display:grid;place-items:center;font-family:var(--f-disp);font-weight:800;font-size:21px;transform:rotate(-4deg);flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}
+.brand{font-family:var(--f-disp);font-weight:800;font-size:23px;letter-spacing:.04em;line-height:1}
 .spacer{flex:1}
-.streak{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;color:var(--shu);background:var(--shu-soft);border-radius:999px;padding:4px 10px}
+.streak{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;color:var(--shu);background:var(--shu-soft);border-radius:999px;padding:4px 10px}
 .streak svg{width:15px;height:15px}
 .streak.off{color:var(--muted);background:var(--paper);border:1px solid var(--line)}
-.iconbtn{border:1px solid var(--line);background:var(--paper);border-radius:10px;height:36px;min-width:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600}
+.iconbtn{border:1px solid var(--line);background:var(--paper);border-radius:10px;height:36px;min-width:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600}
 .iconbtn svg{width:18px;height:18px}
 
 main{flex:1;min-height:0;position:relative}
@@ -73,28 +73,28 @@ main{flex:1;min-height:0;position:relative}
 .scroll{flex:1;overflow-y:auto;min-height:0;padding-block:12px 16px}
 
 nav.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.tabs button{border:0;background:none;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:12px;font-weight:600}
-nav.tabs button .k{font-family:var(--f-disp);font-weight:800;font-size:20px;line-height:1.15}
+nav.tabs button{border:0;background:none;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:14px;font-weight:600}
+nav.tabs button .k{font-family:var(--f-disp);font-weight:800;font-size:22px;line-height:1.15}
 nav.tabs button[aria-selected="true"]{color:var(--ink)}
 nav.tabs button[aria-selected="true"] .k{color:var(--ai)}
-.badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--ai);color:#fff;font-size:11px;line-height:18px;margin-left:3px}
+.badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--ai);color:#fff;font-size:14px;line-height:18px;margin-left:3px}
 
 /* Tama strip */
 .tama{display:flex;align-items:flex-end;gap:10px;padding-block:6px 0;background:var(--seigaiha) repeat-x bottom/40px 20px;border-bottom:1px solid var(--line);position:relative}
 .tama .catbox{width:98px;height:98px;flex:none;margin-bottom:-6px}
 .say{flex:1;min-width:0;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:8px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:5px;position:relative}
-.say .line{font-size:14px;font-weight:600;min-height:1.4em}
-.goal{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.say .line{font-size:16px;font-weight:600;min-height:1.4em}
+.goal{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
 .goal .bar{flex:1;height:5px;border-radius:3px;background:var(--line);overflow:hidden}
 .goal .bar i{display:block;height:100%;background:var(--gold);border-radius:3px;transition:width .4s}
 .goal.done .bar i{background:var(--ok)}
 .scenes{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:8px}
 .scenes::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:15px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
 .chip svg{width:14px;height:14px}
 .chip[aria-pressed="true"]{background:var(--ai);border-color:var(--ai);color:var(--on-ai)}
-.focus{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted);padding-bottom:10px}
-.focus .w{font-family:var(--f-jp);font-size:13px;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:1px 7px}
+.focus{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;color:var(--muted);padding-bottom:10px}
+.focus .w{font-family:var(--f-jp);font-size:15px;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:1px 7px}
 .focus .w.new{background:var(--ai-soft);color:var(--ai)}
 
 /* mascot (red panda) — animated by tama-rig.js */
@@ -114,38 +114,39 @@ nav.tabs button[aria-selected="true"] .k{color:var(--ai)}
 .bubble{border-radius:18px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
 .msg.ai .bubble{border-top-left-radius:5px}
 .msg.me .bubble{background:var(--me-bg);border-color:var(--me-bg);color:var(--me-fg);border-top-right-radius:5px;box-shadow:none}
-.msg.me .said{font-family:var(--f-jp);font-size:17px}
+.msg.me .said{font-family:var(--f-jp);font-size:19px}
 .msg.me .written{margin-top:6px;padding-top:6px;border-top:1px solid var(--me-line)}
-.msg.me .written .jpline{font-size:17px;line-height:2}
+.msg.me .written .jpline{font-size:19px;line-height:2}
 .msg.me .written rt{color:var(--me-sub)}
 .msg.me .written .tok.newish{text-decoration-color:#f0c46a}.msg.me .written .tok.known{text-decoration-color:#a8d58a}
 .msg.me .written .tok:hover,.msg.me .written .tok:active{background:rgba(255,255,255,.15)}
-.msg.me .metr{font-size:14px;color:var(--me-sub)}
+.msg.me .metr{font-size:16px;color:var(--me-sub)}
 
-.jpline{font-family:var(--f-jp);font-size:20px;line-height:2.15;word-break:break-word}
+.jpline{font-family:var(--f-jp);font-size:22px;line-height:2.15;word-break:break-word}
 .tok{border:0;background:none;padding:0 1px;border-radius:5px;line-height:inherit;font-size:inherit;font-family:inherit;color:inherit;transition:background-color .15s}
 .tok:hover{background:var(--ai-soft)}
 .tok:active{transform:none;background:var(--ai-soft)}
 .tok.known{text-decoration:underline;text-decoration-color:var(--ok);text-decoration-thickness:2px;text-underline-offset:6px}
 .tok.newish{text-decoration:underline dotted;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:6px}
-rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
+rt{font-size:.62em;color:var(--ink);opacity:.72;font-family:var(--f-jp)}
 
-.romaji{font-size:13px;color:var(--muted);font-style:italic}
-.trans{font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;margin-top:4px}
+.romaji{font-size:15px;color:var(--muted);font-style:italic}
+.trans{font-size:16px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;margin-top:4px}
 .hidden-text .jpline,.hidden-text .romaji{filter:blur(7px);user-select:none}
 .msgtools{display:flex;gap:6px;flex-wrap:wrap}
-.mini{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.mini{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 9px;font-size:14px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
 .mini svg{width:14px;height:14px}
 .mini.on{color:var(--ai);border-color:var(--ai)}
-.help{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);color:var(--ink);border-radius:12px;padding:8px 12px;font-size:14px}
-.sys{align-self:center;font-size:12px;font-weight:600;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 12px;animation:rise .28s ease both}
+details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--muted)}details.tut summary::-webkit-details-marker{display:none}details.tut[open] summary{margin-bottom:6px}details.tut .infobtn{width:24px;height:24px;font-size:14px}
+.help{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);color:var(--ink);border-radius:12px;padding:8px 12px;font-size:16px}
+.sys{align-self:center;font-size:14px;font-weight:600;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 12px;animation:rise .28s ease both}
 
-.fb{border-radius:14px;padding:8px 12px;font-size:13px;max-width:100%;display:flex;gap:8px;align-items:flex-start;animation:pop .35s ease both;text-align:left}
+.fb{border-radius:14px;padding:8px 12px;font-size:15px;max-width:100%;display:flex;gap:8px;align-items:flex-start;animation:pop .35s ease both;text-align:left}
 .fb .ic{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;margin-top:1px}
 .fb .ic svg{width:12px;height:12px}
 .fb .t{display:flex;flex-direction:column;gap:2px;min-width:0}
-.fb .t b{font-size:13px}
-.fb .nat{font-family:var(--f-jp);font-size:17px;line-height:2.1;color:var(--ink)}
+.fb .t b{font-size:15px}
+.fb .nat{font-family:var(--f-jp);font-size:19px;line-height:2.1;color:var(--ink)}
 .fb .note{color:var(--ink);opacity:.85}
 .fb.perfect{background:var(--ok-soft)}.fb.perfect .ic{background:var(--ok)}.fb.perfect b{color:var(--ok)}
 .fb.unnatural{background:var(--warn-soft)}.fb.unnatural .ic{background:var(--warn)}.fb.unnatural b{color:var(--warn)}
@@ -164,8 +165,8 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .composer{display:flex;gap:8px;align-items:flex-end}
 .inputwrap{flex:1;min-width:0;position:relative;display:flex;align-items:flex-end;border:1px solid var(--line);background:var(--surface);border-radius:16px}
 .inputwrap:focus-within{border-color:var(--ai)}
-.inputwrap textarea{flex:1;min-width:0;resize:none;border:0;background:none;padding:11px 4px 11px 13px;font-family:var(--f-jp);font-size:17px;line-height:1.4;max-height:120px;outline:none}
-.kana{flex:none;margin:6px;height:32px;min-width:32px;border-radius:9px;border:1px solid var(--line);background:var(--paper);font-family:var(--f-jp);font-weight:700;font-size:15px;color:var(--ai)}
+.inputwrap textarea{flex:1;min-width:0;resize:none;border:0;background:none;padding:11px 4px 11px 13px;font-family:var(--f-jp);font-size:19px;line-height:1.4;max-height:120px;outline:none}
+.kana{flex:none;margin:6px;height:32px;min-width:32px;border-radius:9px;border:1px solid var(--line);background:var(--paper);font-family:var(--f-jp);font-weight:700;font-size:17px;color:var(--ai)}
 .kana[aria-pressed="false"]{color:var(--muted);font-family:var(--f-ui)}
 .round{width:46px;height:46px;border-radius:50%;border:0;display:grid;place-items:center;flex:none}
 .round svg{width:20px;height:20px}
@@ -183,23 +184,23 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 @keyframes breathe{50%{transform:scale(.92)}}
 .lpanel{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1.5px solid var(--shu);border-radius:16px;padding:10px 12px;animation:pop .25s ease both}
 .lpanel canvas{width:100%;height:44px;display:block}
-.lptext{font-size:20px;line-height:1.5;color:var(--ink);min-height:1.5em;word-break:break-word}
+.lptext{font-size:22px;line-height:1.5;color:var(--ink);min-height:1.5em;word-break:break-word}
 .lptext:empty::before{content:"…";color:var(--muted)}
 .lpbar{height:3px;border-radius:2px;background:var(--line);overflow:hidden}
 .lpbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .1s linear}
-.lphint{font-size:12px;color:var(--muted)}
+.lphint{font-size:14px;color:var(--muted)}
 .composer.listening .inputwrap,.composer.listening .send{visibility:hidden}
 .micbtn{--lvl:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .micbtn.on.listening{transform:scale(calc(1 + var(--lvl) * .22));transition:transform .06s linear}
 .micbtn.on.listening::before{animation:none;opacity:calc(.25 + var(--lvl) * .75);transform:scale(calc(1.1 + var(--lvl) * .7));transition:transform .08s linear,opacity .08s linear}
-.notice{font-size:13px;color:var(--muted);background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+.notice{font-size:15px;color:var(--muted);background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
 
 /* Tama speaking in her bubble */
 .tama .catbox{transition:width .35s cubic-bezier(.3,1.4,.5,1),height .35s cubic-bezier(.3,1.4,.5,1)}
 .tama.speaking .catbox{width:134px;height:134px}
 .tama.speaking .say{border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft),var(--shadow)}
 .tama.speaking .goal{display:none}
-.say .line .jpline{font-size:19px;line-height:2.05}
+.say .line .jpline{font-size:21px;line-height:2.05}
 .say .line .tok{color:var(--ink)}
 /* karaoke: what is being said right now */
 .jpline.karaoke .tok,.jpline.karaoke .tk{opacity:.45;transition:opacity .18s,background-color .18s,box-shadow .18s}
@@ -209,23 +210,23 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .msg.me .jpline.karaoke .now{background:rgba(255,255,255,.24);box-shadow:0 0 0 2px rgba(255,255,255,.24);color:var(--me-fg)}
 .saying{animation:sayglow 1.1s ease-in-out infinite;border-radius:12px}
 @keyframes sayglow{0%,100%{box-shadow:0 0 0 0 var(--hl)}50%{box-shadow:0 0 0 4px var(--hl)}}
-.msg.me .said-main .jpline{font-size:19px;line-height:2}
+.msg.me .said-main .jpline{font-size:21px;line-height:2}
 .msg.me .bubble rt{color:var(--me-sub)}
-.wlbl{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--me-sub)}
+.wlbl{display:block;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--me-sub)}
 .chip.warn{border-color:var(--ai);color:var(--ai);background:var(--ai-soft)}
 /* quota ring */
 .quota{display:inline-grid;place-items:center;width:38px;height:38px;border:0;background:none;padding:0;position:relative}
 .quota svg,.qbig svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .q-bg{fill:none;stroke:var(--line);stroke-width:4}
 .q-fg{fill:none;stroke:var(--ok);stroke-width:4;stroke-linecap:round;transition:stroke-dasharray .5s ease}
-#qPct{font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;position:relative}
+#qPct{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;position:relative}
 .qbig{width:92px;height:92px;position:relative;display:grid;place-items:center;flex:none}
-.qbig b{position:relative;font-size:20px;font-variant-numeric:tabular-nums}
+.qbig b{position:relative;font-size:22px;font-variant-numeric:tabular-nums}
 /* Tama picker */
 .tpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .tchoice{display:flex;flex-direction:column;align-items:center;gap:2px;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:8px 6px;text-align:center}
 .tchoice .tc-img{width:76px;height:76px}
-.tchoice b{font-size:13px}.tchoice small{font-size:11px;color:var(--muted);line-height:1.25}
+.tchoice b{font-size:15px}.tchoice small{font-size:14px;color:var(--muted);line-height:1.25}
 .tchoice[aria-pressed="true"]{border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft)}
 .confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 
@@ -233,20 +234,20 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 /* dictionary search */
 .searchbox{position:relative;display:flex;align-items:center}
 .searchbox svg{position:absolute;left:12px;width:18px;height:18px;color:var(--muted);pointer-events:none}
-.searchbox .field{padding-left:38px;font-size:16px;border-radius:14px}
+.searchbox .field{padding-left:38px;font-size:18px;border-radius:14px}
 .acres{display:flex;flex-direction:column;gap:6px}
 .ac{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;text-align:left;width:100%;animation:rise .18s ease both}
 .ac:active{transform:scale(.98)}
-.acjp{font-size:20px;line-height:1.9;min-width:3.5em}
+.acjp{font-size:22px;line-height:1.9;min-width:3.5em}
 .acmeta{flex:1;min-width:0;display:flex;flex-direction:column}
-.acmeta b{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acmeta small{font-size:12px;color:var(--muted)}
-.acadd{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ai);color:var(--on-ai);font-size:22px;font-weight:700;line-height:1}
+.acmeta b{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acmeta small{font-size:14px;color:var(--muted)}
+.acadd{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ai);color:var(--on-ai);font-size:24px;font-weight:700;line-height:1}
 .acadd svg{width:16px;height:16px}
 .ac.have{opacity:.7}.ac.have .acadd{background:var(--ok);color:#fff}
 .ac.flash{animation:pop .35s ease both}
-.acmore{border:1px dashed var(--line);background:transparent;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--muted);text-align:left}
-.lvl{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;border-radius:5px;padding:0 5px;background:var(--ai-soft);color:var(--ai);margin-left:4px;vertical-align:1px}
+.acmore{border:1px dashed var(--line);background:transparent;border-radius:12px;padding:9px 12px;font-size:15px;font-weight:600;color:var(--muted);text-align:left}
+.lvl{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.04em;border-radius:5px;padding:0 5px;background:var(--ai-soft);color:var(--ai);margin-left:4px;vertical-align:1px}
 .sug.gone{animation:none;transform:scale(.8);opacity:0;transition:transform .25s,opacity .25s}
 
 /* ---------- practice ---------- */
@@ -257,11 +258,11 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .pxcatbig{width:150px;height:150px}
 .pxmodes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
 .pxmode{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px;text-align:left;box-shadow:var(--shadow)}
-.pxmode b{font-size:16px}.pxmode small{font-size:12px;color:var(--muted)}
+.pxmode b{font-size:18px}.pxmode small{font-size:14px;color:var(--muted)}
 .pxmode:last-child{grid-column:1/-1;background:transparent;box-shadow:none;border-style:dashed}
 .pxmode:first-child{grid-column:1/-1;background:var(--ai);border-color:var(--ai);color:var(--on-ai)}.pxmode:first-child small{color:var(--on-ai);opacity:.85}
 .pxreview{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--ai);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow)}
-.pxreview>div{flex:1;display:flex;flex-direction:column;gap:2px}.pxreview b{font-size:16px}.pxreview small{font-size:12px;color:var(--muted)}
+.pxreview>div{flex:1;display:flex;flex-direction:column;gap:2px}.pxreview b{font-size:18px}.pxreview small{font-size:14px;color:var(--muted)}
 .pxreview.done{border-color:var(--line)}
 .pxok{width:32px;height:32px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.pxok svg{width:16px;height:16px}
 .pxtop{display:flex;align-items:center;gap:10px}
@@ -273,36 +274,36 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .pxcard.enter{animation:rise .3s ease both}
 .pxhead{display:flex;align-items:center;gap:10px}
 .pxcat{width:64px;height:64px;flex:none}
-.pxlabel{font-family:var(--f-disp);font-weight:800;font-size:20px}
-.pxretry{font-size:12px;font-weight:700;color:var(--warn)}
-.pxsent{font-size:24px;line-height:2.2;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow)}
-.pxes{font-size:15px;color:var(--muted)}.pxes.big{font-size:20px;font-weight:600;color:var(--ink)}
+.pxlabel{font-family:var(--f-disp);font-weight:800;font-size:22px}
+.pxretry{font-size:14px;font-weight:700;color:var(--warn)}
+.pxsent{font-size:26px;line-height:2.2;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow)}
+.pxes{font-size:17px;color:var(--muted)}.pxes.big{font-size:22px;font-weight:600;color:var(--ink)}
 .gapbox{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--ai);margin:0 3px;text-align:center;line-height:1.6;vertical-align:baseline}
 .gapbox.on{background:var(--ai-soft);border-radius:8px 8px 0 0;padding:0 6px;animation:pop .25s ease both}
 .pxopts{display:grid;grid-template-columns:1fr;gap:8px}
 @media (min-width:520px){.pxopts{grid-template-columns:1fr 1fr}}
-.pxopt{display:flex;align-items:center;gap:10px;text-align:left;border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:14px;padding:10px 12px;font-size:16px;min-height:52px}
-.pxopt .jp{font-size:19px;line-height:1.9}
-.pxopt .kk{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);display:grid;place-items:center}
+.pxopt{display:flex;align-items:center;gap:10px;text-align:left;border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:14px;padding:10px 12px;font-size:18px;min-height:52px}
+.pxopt .jp{font-size:21px;line-height:1.9}
+.pxopt .kk{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);font-size:14px;font-weight:700;color:var(--muted);display:grid;place-items:center}
 .pxopt.sel{border-color:var(--ai);background:var(--ai-soft)}.pxopt.sel .kk{border-color:var(--ai);color:var(--ai)}
 .pxopt.good{border-color:var(--ok);background:var(--ok-soft)}.pxopt.bad{border-color:var(--ai);background:var(--shu-soft)}.pxopt.dim{opacity:.5}
 .pxopt:disabled{cursor:default}
 .buildline{min-height:66px;border-bottom:2px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:10px}
-.buildline .ph{color:var(--muted);font-size:14px;font-family:var(--f-ui)}
+.buildline .ph{color:var(--muted);font-size:16px;font-family:var(--f-ui)}
 .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.tile{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:4px 12px;font-size:19px;line-height:2;font-family:var(--f-jp)}
+.tile{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:4px 12px;font-size:21px;line-height:2;font-family:var(--f-jp)}
 .tile.new{animation:pop .2s ease both}
 .tile.ghost{background:var(--line);border-color:var(--line);color:transparent}.tile.ghost rt{color:transparent}
 .pxlisten{display:flex;align-items:center;justify-content:center;gap:12px;padding-block:6px}
 .bigplay{width:84px;height:84px;border-radius:22px;border:0;border-bottom:5px solid var(--shu);background:var(--ai);color:var(--on-ai);display:grid;place-items:center}
 .bigplay svg{width:38px;height:38px}
-.pxword{font-size:40px;text-align:center;line-height:1.9}
-.pxhint{text-align:center;font-size:22px;line-height:2.1;transition:filter .2s}.pxhint.blur{filter:blur(9px);user-select:none}
-.pxheard{text-align:center;font-size:18px;color:var(--muted)}
+.pxword{font-size:43px;text-align:center;line-height:1.9}
+.pxhint{text-align:center;font-size:24px;line-height:2.1;transition:filter .2s}.pxhint.blur{filter:blur(9px);user-select:none}
+.pxheard{text-align:center;font-size:20px;color:var(--muted)}
 .matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mcol{display:flex;flex-direction:column;gap:8px}
-.mt{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:10px;font-size:15px;min-height:54px}
-.mt .jp{font-size:20px;line-height:1.8}
+.mt{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:10px;font-size:17px;min-height:54px}
+.mt .jp{font-size:22px;line-height:1.8}
 .mt.sel{border-color:var(--ai);background:var(--ai-soft)}.mt.done{border-color:var(--ok);background:var(--ok-soft);opacity:.55}
 .mt.shake{animation:shake .4s ease;border-color:var(--ai)}
 /* centring & polish pass */
@@ -327,101 +328,111 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .pxcard{justify-content:flex-start;padding-bottom:8px}
 /* verbs */
 .vq{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
-.vdict{font-size:34px;line-height:1.75;display:inline-flex;align-items:center;gap:8px}
-.vdict.big{font-size:32px}
-.vmean{font-size:15px;color:var(--muted)}.vmean .jp{font-size:16px}
+.vdict{font-size:37px;line-height:1.75;display:inline-flex;align-items:center;gap:8px}
+.vdict.big{font-size:35px}
+.vmean{font-size:17px;color:var(--muted)}.vmean .jp{font-size:18px}
 .varrow{display:none}
 .vform{margin-top:6px;display:inline-flex;flex-direction:column;align-items:center;background:var(--ai-soft);border:1.5px solid var(--ai);color:var(--ai);border-radius:14px;padding:6px 16px}
-.vform b{font-size:20px}.vform small{font-size:12px;font-weight:700;opacity:.85}
-.pxopt small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
-.pxopt .tx b.jp{font-size:18px}
-.vtype{display:flex;justify-content:center}.vtype .field{font-size:22px;text-align:center;max-width:340px;width:100%;padding:12px}
-.ressol .typed{font-size:13px;color:var(--muted);font-family:var(--f-ui)}
+.vform b{font-size:22px}.vform small{font-size:14px;font-weight:700;opacity:.85}
+.pxopt small{display:block;font-size:14px;color:var(--muted);line-height:1.3}
+.pxopt .tx b.jp{font-size:20px}
+.vtype{display:flex;justify-content:center}.vtype .field{font-size:24px;text-align:center;max-width:340px;width:100%;padding:12px}
+.ressol .typed{font-size:15px;color:var(--muted);font-family:var(--f-ui)}
 .pxverbs{width:100%;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);text-align:left}
 .pvl{display:flex;align-items:center;gap:12px}.pvl>div{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.pvl b{font-size:16px}.pvl small,.vlv small{font-size:12px;color:var(--muted)}
+.pvl b{font-size:18px}.pvl small,.vlv small{font-size:14px;color:var(--muted)}
 .pxverbs .row .btn{flex:1;justify-content:center}.pxverbs .row .btn.ghost{flex:none}
-.vn{flex:none;width:38px;height:38px;border-radius:12px;background:var(--ai);color:var(--on-ai);display:grid;place-items:center;font-weight:800;font-size:17px}
+.vn{flex:none;width:38px;height:38px;border-radius:12px;background:var(--ai);color:var(--on-ai);display:grid;place-items:center;font-weight:800;font-size:19px}
 .vbar{display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}.vbar i{display:block;height:100%;background:var(--ok);border-radius:3px;transition:width .4s}
 .vlevels{display:flex;flex-direction:column;gap:6px;margin-block:8px}
 .vlv{display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:9px 12px}
-.vlv .vt{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}.vlv b{font-size:15px}
-.vlv .vn{background:var(--line);color:var(--ink);width:32px;height:32px;font-size:15px;border-radius:10px}
+.vlv .vt{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}.vlv b{font-size:17px}
+.vlv .vn{background:var(--line);color:var(--ink);width:32px;height:32px;font-size:17px;border-radius:10px}
 .vlv.on{border-color:var(--ai);background:var(--ai-soft)}.vlv.on .vn{background:var(--ai);color:var(--on-ai)}
 .vok{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.vok svg{width:14px;height:14px}
-.vcur{flex:none;font-size:11px;font-weight:800;color:var(--ai);text-transform:uppercase;letter-spacing:.04em}
+.vcur{flex:none;font-size:14px;font-weight:800;color:var(--ai);text-transform:uppercase;letter-spacing:.04em}
+.onb~.scrim{z-index:50}
+.synccard{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 14px}
+.synccard>div{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.synccard small{font-size:14px;color:var(--muted)}
+.syncic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--line);color:var(--muted);display:grid;place-items:center}.syncic svg{width:22px;height:22px}
+.synccard.on{border-color:var(--ok)}.synccard.on .syncic{background:var(--ok-soft);color:var(--ok)}
+.sheet:not(.showinfo) .info,.view:not(.showinfo) .info,.onb:not(.showinfo) .info{display:none!important}
+.showinfo .info{animation:rise .25s ease both}
+.infobtn{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);color:var(--muted);font:italic 700 16px/1 Georgia,serif;display:inline-grid;place-items:center;padding:0;vertical-align:middle}
+.infobtn[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.hrow{display:flex;align-items:center;gap:10px}.hrow .h2{flex:1;margin:0}
 @keyframes bump{50%{transform:scale(1.04)}}
 @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 .pxfoot{position:sticky;bottom:0;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:12px max(16px,env(safe-area-inset-left,0px));background:var(--bg);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
-.pxtip{text-align:center;font-size:13px;color:var(--muted)}
-.pxcheck,.pxnext{width:100%;justify-content:center;font-size:16px;padding:13px;border-radius:14px;border-bottom-width:4px}
+.pxtip{text-align:center;font-size:15px;color:var(--muted)}
+.pxcheck,.pxnext{width:100%;justify-content:center;font-size:18px;padding:13px;border-radius:14px;border-bottom-width:4px}
 .pxcheck:disabled{background:var(--line);border-color:var(--line);color:var(--muted)}
 .pxfoot.res{animation:up .25s cubic-bezier(.2,.8,.3,1) both;border-top:0}
 .pxfoot.ok{background:var(--ok-soft)}.pxfoot.ko{background:var(--shu-soft)}
-.restop{display:flex;align-items:center;gap:8px;font-size:18px}
+.restop{display:flex;align-items:center;gap:8px;font-size:20px}
 .resic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff}.resic svg{width:15px;height:15px}
 .pxfoot.ok .resic{background:var(--ok)}.pxfoot.ko .resic{background:var(--ai)}
 .pxfoot.ok b{color:var(--ok)}.pxfoot.ko b{color:var(--ai)}
-.ressol{font-size:19px;line-height:2}.resexp{font-size:14px}
+.ressol{font-size:21px;line-height:2}.resexp{font-size:16px}
 .pxfoot.ok .pxnext{background:var(--ok);border-color:var(--ok);color:#fff}.pxfoot.ko .pxnext{background:var(--ai);border-color:var(--ai);color:#fff}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* vocab */
-.h2{font-family:var(--f-disp);font-weight:800;font-size:18px;margin:0;letter-spacing:.02em}
+.h2{font-family:var(--f-disp);font-weight:800;font-size:20px;margin:0;letter-spacing:.02em}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
-.stat span{font-size:12px;color:var(--muted)}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:14px;color:var(--muted)}
 .stack{display:flex;flex-direction:column;gap:14px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.field{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-size:15px}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.field{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-size:17px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;font-weight:600;font-size:16px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .btn svg{width:16px;height:16px}
 .btn.primary{background:var(--ai);border-color:var(--ai);color:var(--on-ai)}
 .btn.ghost{background:transparent}
 .btn:disabled{opacity:.5}
 .cands{display:flex;flex-direction:column;gap:8px}
 .cand{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;text-align:left;width:100%;animation:rise .25s ease both}
-.cand .jp{font-size:20px}
-.cand .meta{flex:1;min-width:0;font-size:13px;color:var(--muted)}
-.cand .meta b{color:var(--ink);font-size:14px;display:block}
+.cand .jp{font-size:22px}
+.cand .meta{flex:1;min-width:0;font-size:15px;color:var(--muted)}
+.cand .meta b{color:var(--ink);font-size:16px;display:block}
 .sugs{display:flex;flex-wrap:wrap;gap:8px}
 .sug{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 10px;text-align:left;display:flex;flex-direction:column;animation:pop .3s ease both}
-.sug .jp{font-size:17px}
-.sug span{font-size:12px;color:var(--muted)}
+.sug .jp{font-size:19px}
+.sug span{font-size:14px;color:var(--muted)}
 .sug[aria-pressed="true"]{border-color:var(--ai);background:var(--ai-soft)}
 .filters{display:flex;gap:6px;flex-wrap:wrap}
 .list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
 .item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:0;border-top:1px solid var(--line);background:none;text-align:left;width:100%}
 .item:active{transform:none;background:var(--paper)}
 .item:first-child{border-top:0}
-.item .jp{font-size:19px;min-width:4.5em}
-.item .es{flex:1;min-width:0;font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.item .jp{font-size:21px;min-width:4.5em}
+.item .es{flex:1;min-width:0;font-size:16px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:14px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
 .pill.new{background:var(--ai-soft);color:var(--ai)}
 .pill.learn{background:var(--warn-soft);color:var(--warn)}
 .pill.weak{background:var(--shu-soft);color:var(--shu)}
 .pill.done{background:var(--ok-soft);color:var(--ok)}
 .pill.basic{background:var(--paper);color:var(--muted);border:1px solid var(--line)}
-.empty{text-align:center;color:var(--muted);padding:12px 16px 24px;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.empty{text-align:center;color:var(--muted);padding:12px 16px 24px;font-size:16px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .empty .catbox{width:110px;height:110px}
-.empty .jp{font-family:var(--f-disp);font-weight:800;font-size:26px;color:var(--ink)}
+.empty .jp{font-family:var(--f-disp);font-weight:800;font-size:28px;color:var(--ink)}
 
 /* review */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:var(--shadow);animation:pop .3s ease both;position:relative;overflow:hidden}
 .card::after{content:"";position:absolute;inset:auto 0 0 0;height:20px;background:var(--seigaiha) repeat-x bottom/40px 20px;pointer-events:none}
-.card .eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.card .big{font-family:var(--f-jp);font-size:40px;line-height:1.9}
-.card .es-big{font-size:24px;font-weight:600}
-.card .ex{font-size:14px;color:var(--muted)}
-.card .ex .jp{font-size:17px;color:var(--ink);display:block}
+.card .eyebrow{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card .big{font-family:var(--f-jp);font-size:43px;line-height:1.9}
+.card .es-big{font-size:26px;font-weight:600}
+.card .ex{font-size:16px;color:var(--muted)}
+.card .ex .jp{font-size:19px;color:var(--ink);display:block}
 .grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;position:relative;z-index:1}
-.grade{border:1px solid var(--line);border-radius:12px;padding:9px 4px;background:var(--surface);font-weight:700;font-size:13px;display:flex;flex-direction:column;gap:1px}
-.grade small{font-weight:500;color:var(--muted);font-size:11px}
+.grade{border:1px solid var(--line);border-radius:12px;padding:9px 4px;background:var(--surface);font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:1px}
+.grade small{font-weight:500;color:var(--muted);font-size:14px}
 .grade.g0{color:var(--shu)}.grade.g1{color:var(--warn)}.grade.g2{color:var(--ai)}.grade.g3{color:var(--ok)}
 .progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
 .progress i{display:block;height:100%;background:var(--shu);transition:width .3s}
-.verdict{font-weight:700;font-size:14px;animation:pop .3s ease both}
+.verdict{font-weight:700;font-size:16px;animation:pop .3s ease both}
 .verdict.ok{color:var(--ok)}.verdict.bad{color:var(--shu)}
 
 /* sheet */
@@ -431,48 +442,48 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .sheet{background:var(--paper) var(--washi);width:100%;max-width:760px;max-height:88%;overflow-y:auto;border-radius:20px 20px 0 0;padding-top:18px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:up .25s cubic-bezier(.2,.8,.3,1) both}
 .sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center;margin-top:-8px}
 .sheet .head{display:flex;align-items:flex-start;gap:12px}
-.sheet .head .jp{font-size:34px;line-height:1.8}
+.sheet .head .jp{font-size:37px;line-height:1.8}
 .sec{display:flex;flex-direction:column;gap:3px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.sec .lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
-.sec .val{font-size:15px}
+.sec .lbl{font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sec .val{font-size:17px}
 .sec.here{background:var(--ai-soft);border-color:transparent}
-.sec.here .val{font-size:16px;font-weight:600}
-.ctx{font-family:var(--f-jp);font-size:16px;line-height:1.9;color:var(--muted)}
+.sec.here .val{font-size:18px;font-weight:600}
+.ctx{font-family:var(--f-jp);font-size:18px;line-height:1.9;color:var(--muted)}
 .ctx mark{background:var(--warn-soft);color:var(--ink);border-radius:4px;padding:0 2px}
 .skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--line),var(--paper),var(--line));background-size:200% 100%;animation:sh 1.2s linear infinite}
 @keyframes sh{to{background-position:-200% 0}}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:16px;margin:0}
 .kv dt{color:var(--muted)}
 .kv dd{margin:0;font-variant-numeric:tabular-nums}
 .kanji{display:flex;flex-direction:column;gap:8px}
 .kj{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.kj .c{font-family:var(--f-disp);font-weight:800;font-size:36px;line-height:1}
-.kj p{margin:0;font-size:14px}
+.kj .c{font-family:var(--f-disp);font-weight:800;font-size:39px;line-height:1}
+.kj p{margin:0;font-size:16px}
 .kj small{color:var(--muted)}
 .opt{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .opt .t{flex:1;min-width:0}
-.opt .jp{font-size:18px;display:block}
+.opt .jp{font-size:20px;display:block}
 .opt small{color:var(--muted)}
 .set{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:8px;border-top:1px solid var(--line)}
 .set:first-of-type{border-top:0}
 .set label{font-weight:600}
-.set p{margin:0;font-size:12px;color:var(--muted)}
+.set p{margin:0;font-size:14px;color:var(--muted)}
 .switch{width:46px;height:28px;border-radius:14px;border:0;background:var(--line);position:relative;flex:none}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .switch[aria-checked="true"]{background:var(--ai)}
 .switch[aria-checked="true"]::after{left:21px}
-.toast{position:fixed;left:0;right:0;margin-inline:auto;width:max-content;bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:30;max-width:90%;animation:pop .25s ease both;text-align:center}
+.toast{position:fixed;left:0;right:0;margin-inline:auto;width:max-content;bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:16px;font-weight:600;z-index:30;max-width:90%;animation:pop .25s ease both;text-align:center}
 .sum li{margin-bottom:8px}
-.sum .jp{font-size:16px}
-ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.sum .jp{font-size:18px}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:16px}
 
 /* onboarding */
 .onb{position:fixed;inset:0;z-index:40;background:var(--bg) var(--washi);overflow-y:auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .onb .inner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 .onb .catbox{width:140px;height:140px;align-self:center}
-.onb h1{font-family:var(--f-disp);font-weight:800;font-size:30px;margin:0;line-height:1.3;text-align:center}
+.onb h1{font-family:var(--f-disp);font-weight:800;font-size:32px;margin:0;line-height:1.3;text-align:center}
 .onb p{margin:0}
-.onb .lead{color:var(--muted);font-size:16px;text-align:center}
+.onb .lead{color:var(--muted);font-size:18px;text-align:center}
 .onb .card-s{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
 </style>
 </head>
@@ -571,6 +582,7 @@ function furi(t){
   t=String(t??"");
   return esc(t).replace(/([\u4e00-\u9faf\u3400-\u4dbf々〆ヶ]+)\[([\u3040-\u30ffー・ ]+)\]/g,(m,k,r)=>`<ruby>${k}<rt>${r}</rt></ruby>`).replace(/\[([\u3040-\u30ffー]+)\]/g,"");
 }
+const INFO=`<button class="infobtn" data-info aria-pressed="false" aria-label="Más información" title="Más información">i</button>`;
 const plain=t=>String(t??"").replace(/\[[\u3040-\u30ffー・ ]+\]/g,"");
 /* What the voice should read: kana, never kanji (月 alone could be つき or がつ; the reading decides). */
 const KANJI_RUN=/[一-龯㐀-䶿々〆ヶ]+\[([\u3040-\u30ffー・ ]+)\]/g;
@@ -662,7 +674,7 @@ let session={good:{},bad:{},fixes:[]};
 /* ============ storage ============ */
 const LS={get(k){try{return JSON.parse(localStorage.getItem("hanashi_"+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("hanashi_"+k,JSON.stringify(v))}catch(e){toast("No se pudo guardar en este dispositivo.")}}};
 const saveWord=()=>LS.set("words",words);
-function deleteWord(w){words=words.filter(x=>x.id!==w.id);saveWord()}
+function deleteWord(w){words=words.filter(x=>x.id!==w.id);const t=LS.get("tomb")||{};t[w.id]=now();LS.set("tomb",t);saveWord()}
 const saveSettings=()=>LS.set("settings",settings);
 function saveChat(){chat.msgs=chat.msgs.slice(-40);LS.set("chat",chat)}
 function loadAll(){words=LS.get("words")||[];settings={...settings,...(LS.get("settings")||{})};chat=LS.get("chat")||chat;delete settings.mode;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}}
@@ -994,7 +1006,7 @@ function msgHTML(m,i){
       ${m.pending?"":fbHTML(m.feedback,m.text)}</div>`;
   }
   const hide=settings.audioOnly&&!m.revealed;
-  return `<div class="msg ai">${m.help?`<div class="help">${furi(m.help)}</div>`:""}
+  return `<div class="msg ai">${m.help?(m.help===WELCOME.help?`<details class="help tut"><summary><span class="infobtn" aria-hidden="true">i</span>Cómo funciona</summary>${furi(m.help)}</details>`:`<div class="help">${furi(m.help)}</div>`):""}
    ${(m.tokens||[]).length?`<div class="bubble ${hide?"hidden-text":""}">${tokLine(m.tokens,i)}
      ${settings.romaji&&m.romaji?`<div class="romaji">${esc(m.romaji)}</div>`:""}${m.showEs?`<div class="trans">${esc(m.es)}</div>`:""}</div>
    <div class="msgtools"><button class="mini" data-act="play" data-i="${i}">${SVG.play}Escuchar</button><button class="mini" data-act="slow" data-i="${i}">${SVG.slow}Despacio</button>
@@ -1154,9 +1166,9 @@ Para cada una: jp (como la escribiría un japonés), kana (todo en hiragana/kata
 Devuelve SOLO JSON: {"options":[{"jp":"","kana":"","romaji":"","es":"","tip":""}]}`);
     const opts=(r.options||[]).filter(o=>o&&o.jp);window._hintOpts=opts;
     const b=$("#hintBody");if(!b)return;
-    b.innerHTML=opts.map((o,i)=>`<div class="opt"><div class="t"><span class="jp">${furi(o.jp)}</span><small>${esc(o.romaji)}</small><div style="font-size:14px">${esc(o.es)}</div><small>${esc(o.tip)}</small></div>
+    b.innerHTML=opts.map((o,i)=>`<div class="opt"><div class="t"><span class="jp">${furi(o.jp)}</span><small>${esc(o.romaji)}</small><div style="font-size:16px">${esc(o.es)}</div><small>${esc(o.tip)}</small></div>
       <div class="stack" style="gap:6px"><button class="mini" data-say="${esc(o.kana||o.jp)}">${SVG.play}</button><button class="mini" data-use="${i}">Usar</button></div></div>`).join("")+
-      `<p style="margin:0;font-size:13px;color:var(--muted)">Escúchala, repítela en voz alta y luego dila tú. Es la mejor forma de que se te quede.</p>
+      `<p class="info" style="margin:0;font-size:15px;color:var(--muted)">Escúchala, repítela en voz alta y luego dila tú. Es la mejor forma de que se te quede.</p>
       ${wasOn?`<button class="btn primary" id="btnResumeFromHint">${SVG.mic}Seguir hablando</button>`:""}`;
   }catch(e){const b=$("#hintBody");if(b)b.innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
 }
@@ -1245,12 +1257,12 @@ function tokenSheet(mi,j,k,silent){
    <div class="ctx">${ctx.html} <button class="mini" data-say="${esc(ctx.text)}">${SVG.play}</button></div>
    <div class="stack" style="gap:8px" id="tokBody">
      <div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x&&x.here||t.m)}</span></div>
-     ${general?`<div class="sec"><span class="lbl">Traducción general</span><span class="val">${esc(general)}${x&&x.dict&&x.dict!==t.s?` <span style="color:var(--muted);font-size:13px">· diccionario: <span class="jp">${esc(x.dict)}</span></span>`:""}</span></div>`:""}
+     ${general?`<div class="sec"><span class="lbl">Traducción general</span><span class="val">${esc(general)}${x&&x.dict&&x.dict!==t.s?` <span style="color:var(--muted);font-size:15px">· diccionario: <span class="jp">${esc(x.dict)}</span></span>`:""}</span></div>`:""}
      ${x&&x.usage?`<div class="sec"><span class="lbl">Cómo se usa</span><span class="val">${furi(x.usage)}</span></div>`:""}
-     ${x&&x.ex_jp?`<div class="sec"><span class="lbl">Otro ejemplo</span><span class="val jp" style="font-size:17px">${furi(x.ex_jp)} <button class="mini" data-say="${esc(x.ex_jp)}">${SVG.play}</button></span><span style="font-size:13px;color:var(--muted)">${esc(x.ex_es)}</span></div>`:""}
+     ${x&&x.ex_jp?`<div class="sec"><span class="lbl">Otro ejemplo</span><span class="val jp" style="font-size:19px">${furi(x.ex_jp)} <button class="mini" data-say="${esc(x.ex_jp)}">${SVG.play}</button></span><span style="font-size:15px;color:var(--muted)">${esc(x.ex_es)}</span></div>`:""}
      ${!x?`<button class="btn ghost" id="tokExplain" data-mi="${mi}" data-j="${j}" data-k="${k||""}">${SVG.dots}Cómo se usa y otro ejemplo (Tama)</button>`:""}
    </div>
-   ${w?`<div class="row"><span class="pill ${status(w)[0]}">${status(w)[1]}</span><span style="font-size:13px;color:var(--muted)">Está en tu vocabulario.</span><span class="spacer"></span><button class="btn" data-open-word="${w.id}">Ficha</button></div>`:
+   ${w?`<div class="row"><span class="pill ${status(w)[0]}">${status(w)[1]}</span><span style="font-size:15px;color:var(--muted)">Está en tu vocabulario.</span><span class="spacer"></span><button class="btn" data-open-word="${w.id}">Ficha</button></div>`:
      b?`<div class="row"><span class="pill basic">kit básico</span></div>`:`<button class="btn primary" data-add-tok="${mi}:${j}:${k||""}">Añadir a mi vocabulario</button>`}`);
   if(!silent)speak(sayTok(t));
 }
@@ -1291,9 +1303,9 @@ function buildVocab(){
      <div class="acres" id="addResults"></div>
    </div>
    <div class="stack" style="gap:8px">
-     <div class="row"><h2 class="h2" style="flex:1">Sugerencias de Tama</h2><button class="btn" id="btnSug">Otras</button></div>
+     <div class="row"><h2 class="h2" style="flex:1">Sugerencias de Tama</h2>${INFO}<button class="btn" id="btnSug">Otras</button></div>
      <div class="sugs" id="sugBox"></div>
-     <div class="row"><button class="btn primary" id="btnSugAdd" disabled>Añadir seleccionadas</button><span style="font-size:12px;color:var(--muted)">Palabras frecuentes de tu nivel, relacionadas con las tuyas.</span></div>
+     <div class="row"><button class="btn primary" id="btnSugAdd" disabled>Añadir seleccionadas</button><span class="info" style="font-size:14px;color:var(--muted)">Palabras frecuentes de tu nivel, relacionadas con las tuyas. Las que no eliges salen menos para que aparezcan otras.</span></div>
    </div>
    <div class="stack" style="gap:8px">
      <div class="filters" id="vFilters">${[["all","Todas"],["weak","Flojas"],["new","Nuevas"],["learn","Aprendiendo"],["done","Dominadas"],["basic","Kit básico"]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${vocabFilter===k}">${l}</button>`).join("")}</div>
@@ -1415,12 +1427,12 @@ SOLO JSON: {"ex_jp":"","ex_kana":"","ex_es":""}`,false,null,{max:250});
 const kanjiHTML=w=>w.kanjiInfo.map(k=>`<div class="kj"><span class="c">${esc(k.c)}</span><div><p><b>${esc(k.meaning)}</b> <small>${esc(k.kun)} · ${esc(k.on)}</small></p><p><small>${esc(k.parts)}</small></p><p>${esc(k.mnemonic)}</p></div></div>`).join("");
 function wordSheet(id,silent){
   const w=words.find(x=>x.id===id)||BASIC.find(x=>x.id===id);if(!w)return;if(!silent)sfx("tap");
-  if(w.basic){openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${esc(w.jp)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana.split(" / ")[0])}">${SVG.play}</button></div><div style="font-size:18px;font-weight:600">${esc(w.es)}</div><span class="pill basic" style="align-self:flex-start">kit básico</span>`);return}
+  if(w.basic){openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${esc(w.jp)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana.split(" / ")[0])}">${SVG.play}</button></div><div style="font-size:20px;font-weight:600">${esc(w.es)}</div><span class="pill basic" style="align-self:flex-start">kit básico</span>`);return}
   const st=status(w),dueTxt=(w.due||0)<=now()?"hoy":new Date(w.due).toLocaleDateString("es-ES",{day:"numeric",month:"short"});
   openSheet(`<div class="grab"></div>
    <div class="head"><div style="flex:1"><div class="jp">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana||w.jp)}">${SVG.play}</button></div>
-   <div style="font-size:19px;font-weight:600">${esc(w.es)} <span style="font-size:13px;color:var(--muted);font-weight:400">${esc(w.type)}</span></div>
-   <div id="exBox">${w.ex_jp?`<div class="sec"><span class="lbl">Ejemplo</span><div class="row"><span class="jp" style="font-size:18px;flex:1;line-height:2">${furi(w.ex_jp)}</span><button class="mini" data-say="${esc(w.ex_jp)}">${SVG.play}Escuchar</button></div><span>${esc(w.ex_es)}</span></div>`:`<button class="btn ghost" data-example="${w.id}">${SVG.dots}Ver una frase de ejemplo (Tama)</button>`}</div>
+   <div style="font-size:21px;font-weight:600">${esc(w.es)} <span style="font-size:15px;color:var(--muted);font-weight:400">${esc(w.type)}</span></div>
+   <div id="exBox">${w.ex_jp?`<div class="sec"><span class="lbl">Ejemplo</span><div class="row"><span class="jp" style="font-size:20px;flex:1;line-height:2">${furi(w.ex_jp)}</span><button class="mini" data-say="${esc(w.ex_jp)}">${SVG.play}Escuchar</button></div><span>${esc(w.ex_es)}</span></div>`:`<button class="btn ghost" data-example="${w.id}">${SVG.dots}Ver una frase de ejemplo (Tama)</button>`}</div>
    <dl class="kv"><dt>Estado</dt><dd><span class="pill ${st[0]}">${st[1]}</span></dd><dt>Aciertos / fallos</dt><dd>${w.good||0} / ${w.bad||0}</dd><dt>Consultada</dt><dd>${w.lookups||0} veces</dd><dt>Próximo repaso</dt><dd>${dueTxt}</dd></dl>
    ${hasKanji(w.jp)?`<div class="stack" style="gap:8px"><h3 class="h2">Kanji</h3><div class="kanji" id="kanjiBox">${w.kanjiInfo?kanjiHTML(w):`<button class="btn" data-kanji="${w.id}">Explicar sus kanji con trucos para recordarlos</button>`}</div></div>`:""}
    <div class="row"><button class="btn" data-practice="${w.id}">Practicar en conversación</button><span class="spacer"></span><button class="btn ghost" data-del="${w.id}" style="color:var(--ai)">Eliminar</button></div>`);
@@ -1451,7 +1463,7 @@ function renderReview(){
     if(rDone){const c=$("#revCat .cat");if(c)c.classList.add("happy")}return}
   const pct=Math.round(ri/rq.length*100);
   const grades=`<div class="grades">${[["Fallé","otra vez"],["Difícil","pronto"],["Bien",""],["Fácil","más tarde"]].map(([a,b],g)=>`<button class="grade g${g}" data-grade="${g}">${a}<small>${b||"&nbsp;"}</small></button>`).join("")}</div>`;
-  const answer=`<div class="big">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted);font-size:14px">${esc(w.kana)} · ${esc(w.romaji)}</div>`;
+  const answer=`<div class="big">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted);font-size:16px">${esc(w.kana)} · ${esc(w.romaji)}</div>`;
   let body;
   if(rMode==="rec"||rMode==="listen"){
     body=`<span class="eyebrow">${rMode==="listen"?"Escucha: ¿qué significa?":"¿Qué significa?"}</span>
@@ -1464,8 +1476,8 @@ function renderReview(){
        <div class="row"><button class="btn primary" id="btnCheck">Comprobar</button><button class="btn ghost" id="btnShow">No me sale</button></div>`:
       `${rVerdict!==null?`<div class="verdict ${rVerdict?"ok":"bad"}">${rVerdict?"¡Correcto!":"Respuesta correcta:"}</div>`:""}${answer}<button class="mini" data-say="${esc(w.kana||w.jp)}">${SVG.play}Escuchar</button>${grades}`}`;
   }
-  $("#reviewPane").innerHTML=`<div class="row"><div class="progress" style="flex:1"><i style="width:${pct}%"></i></div><span style="font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums">${ri+1}/${rq.length}</span></div>
-   <div class="card">${body}</div><p style="margin:0;font-size:12px;color:var(--muted);text-align:center">Las palabras que fallas vuelven antes y Tama las usa más al hablar.</p>`;
+  $("#reviewPane").innerHTML=`<div class="row"><div class="progress" style="flex:1"><i style="width:${pct}%"></i></div><span style="font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums">${ri+1}/${rq.length}</span></div>
+   <div class="card">${body}</div><p class="info" style="margin:0;font-size:14px;color:var(--muted);text-align:center">Las palabras que fallas vuelven antes y Tama las usa más al hablar.</p>`;
   const ri_=$("#rInput");if(ri_){if(settings.kanaInput&&window.wanakana)wanakana.bind(ri_,{IMEMode:true,upcaseKatakana:true});ri_.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing)checkProd()})}
 }
 function checkProd(){
@@ -1476,11 +1488,12 @@ function checkProd(){
 
 /* ============ sheets ============ */
 function openSheet(html){closeSheet();const s=document.createElement("div");s.className="scrim";s.id="scrim";s.innerHTML=`<div class="sheet pad" role="dialog" aria-modal="true">${html}</div>`;document.body.appendChild(s);s.addEventListener("click",e=>{if(e.target===s||e.target.closest("[data-close]"))closeSheet()})}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-info]");if(!b)return;const sc=b.closest(".sheet,.view,.onb")||document.body;const on=sc.classList.toggle("showinfo");document.querySelectorAll("[data-info]").forEach(x=>{if(sc.contains(x))x.setAttribute("aria-pressed",on)});sfx("tap")});
 function closeSheet(){const s=$("#scrim");if(s)s.remove()}
 function settingsSheet(){
   if(voiceOn)pauseVoice(true);pickVoice();
-  const sw=(k,l,p)=>`<div class="set"><div><label for="s_${k}">${l}</label><p>${p}</p></div><button class="switch" id="s_${k}" role="switch" aria-checked="${!!settings[k]}" data-set="${k}"></button></div>`;
-  openSheet(`<div class="grab"></div><h3 class="h2">Ajustes</h3><div>
+  const sw=(k,l,p)=>`<div class="set"><div><label for="s_${k}">${l}</label><p class="info">${p}</p></div><button class="switch" id="s_${k}" role="switch" aria-checked="${!!settings[k]}" data-set="${k}"></button></div>`;
+  openSheet(`<div class="grab"></div><div class="hrow"><h3 class="h2">Ajustes</h3>${INFO}</div><div>
    ${sw("kataHelp","Ayuda con katakana","Muestra también la lectura encima del katakana.")}
    ${sw("romaji","Romaji","Transcripción en letras latinas.")}
    ${sw("kanaInput","Romaji → hiragana al escribir","Escribe «konnichiwa» y aparece こんにちは. En MAYÚSCULAS sale katakana.")}
@@ -1490,17 +1503,17 @@ function settingsSheet(){
    ${sw("sound","Sonidos","Efectos al acertar, fallar y añadir palabras.")}
    <div class="set"><div><label for="s_volVoice">Volumen de Tama</label><p id="volVoiceTxt">${Math.round(settings.volVoice*100)}%</p></div><input type="range" id="s_volVoice" min="0" max="1" step="0.05" value="${settings.volVoice}" style="width:140px"></div>
    <div class="set"><div><label for="s_volSfx">Volumen de efectos</label><p id="volSfxTxt">${Math.round(settings.volSfx*100)}%</p></div><input type="range" id="s_volSfx" min="0" max="1" step="0.05" value="${settings.volSfx}" style="width:140px"></div>
-   <div class="set"><div><label for="s_micMode">Cómo hablar</label><p>Toca el micro para conversar sin manos, o habla solo mientras lo mantienes pulsado.</p></div><select id="s_micMode" class="field" style="flex:0 0 150px"><option value="auto" ${settings.micMode!=="hold"?"selected":""}>Tocar (manos libres)</option><option value="hold" ${settings.micMode==="hold"?"selected":""}>Mantener pulsado</option></select></div>
-   <div class="set"><div><label for="s_silence">Espera cuando te callas</label><p>Tiempo de silencio antes de enviar lo que has dicho.</p></div><select id="s_silence" class="field" style="flex:0 0 110px">${[1500,2500,4000,6000,8000].map(ms=>`<option value="${ms}" ${settings.silence===ms?"selected":""}>${(ms/1000).toLocaleString("es-ES")} s</option>`).join("")}</select></div>
-   <div class="set"><div><label for="s_goal">Objetivo diario</label><p>Frases y repasos al día.</p></div><select id="s_goal" class="field" style="flex:0 0 96px">${[5,10,20,30].map(n=>`<option ${settings.goal===n?"selected":""}>${n}</option>`).join("")}</select></div>
+   <div class="set"><div><label for="s_micMode">Cómo hablar</label><p class="info">Toca el micro para conversar sin manos, o habla solo mientras lo mantienes pulsado.</p></div><select id="s_micMode" class="field" style="flex:0 0 150px"><option value="auto" ${settings.micMode!=="hold"?"selected":""}>Tocar (manos libres)</option><option value="hold" ${settings.micMode==="hold"?"selected":""}>Mantener pulsado</option></select></div>
+   <div class="set"><div><label for="s_silence">Espera cuando te callas</label><p class="info">Tiempo de silencio antes de enviar lo que has dicho.</p></div><select id="s_silence" class="field" style="flex:0 0 110px">${[1500,2500,4000,6000,8000].map(ms=>`<option value="${ms}" ${settings.silence===ms?"selected":""}>${(ms/1000).toLocaleString("es-ES")} s</option>`).join("")}</select></div>
+   <div class="set"><div><label for="s_goal">Objetivo diario</label><p class="info">Frases y repasos al día.</p></div><select id="s_goal" class="field" style="flex:0 0 96px">${[5,10,20,30].map(n=>`<option ${settings.goal===n?"selected":""}>${n}</option>`).join("")}</select></div>
    <div class="set"><div><label for="s_rate">Velocidad de la voz</label><p id="rateTxt">${Math.round(settings.rate*100)}%</p></div><input type="range" id="s_rate" min="0.5" max="1.2" step="0.05" value="${settings.rate}" style="width:140px"></div>
    <div class="set"><div><label for="s_voice">Voz japonesa</label><p>${jaVoices.length?jaVoices.length+" disponibles":"Ninguna instalada"}</p></div>
      ${jaVoices.length?`<select id="s_voice" class="field" style="flex:0 1 180px">${jaVoices.map(v=>`<option ${jaVoice&&v.name===jaVoice.name?"selected":""}>${esc(v.name)}</option>`).join("")}</select>`:`<button class="btn" id="btnVoiceHelp">Cómo instalarla</button>`}</div>
    </div>
    <button class="btn primary" data-say="こんにちは、タマです。よろしくね！" style="align-self:flex-start">${SVG.play}Probar la voz</button>
    <h3 class="h2">Tu progreso</h3>
-   <p style="margin:0;font-size:13px;color:var(--muted)">Se guarda en este dispositivo. Para pasarlo a otro, exporta aquí e importa allí.</p>
-   <div class="row"><button class="btn" id="btnExport">Exportar progreso</button><button class="btn" id="btnImport">Importar</button></div>
+   ${window.syncCardHTML?syncCardHTML():""}
+   <div class="row info"><button class="btn ghost" id="btnExport">Exportar copia</button><button class="btn ghost" id="btnImport">Importar copia</button></div>
    <h3 class="h2">Gemini</h3>
    <dl class="kv"><dt>Clave</dt><dd>${settings.key?"••••"+esc(settings.key.slice(-4)):"sin configurar"}</dd><dt>Modelo</dt><dd>${esc(settings.model||"automático")}</dd></dl>
    <div class="row"><button class="btn" id="btnChangeKey">Cambiar clave</button><button class="btn ghost" id="btnInstallHelp">Instalar como app</button></div>`);
@@ -1511,8 +1524,8 @@ function summarySheet(){
   openSheet(`<div class="grab"></div><div class="row" style="gap:12px;flex-wrap:nowrap"><div style="width:70px;height:70px;flex:none" id="sumCat">${catSVG()}</div><h3 class="h2">Resumen de la conversación</h3></div>
    ${!g.length&&!b.length&&!f.length?`<p style="margin:0;color:var(--muted)">Todavía no hay mucho que resumir. ¡Sigue hablando con Tama!</p>`:""}
    ${g.length?`<div><b style="color:var(--ok)">Usaste bien:</b> <span class="jp">${g.map(esc).join("、")}</span></div>`:""}
-   ${b.length?`<div><b style="color:var(--shu)">Para reforzar:</b> <span class="jp">${b.map(esc).join("、")}</span><br><small style="color:var(--muted)">Aparecerán antes en tus repasos.</small></div>`:""}
-   ${f.length?`<div><b>Frases para mejorar</b><ul class="sum">${f.map(x=>`<li><span style="color:var(--muted)">${esc(x.said)}</span> → <span class="jp">${furi(x.natural)}</span> <button class="mini" data-say="${esc(x.natural)}">${SVG.play}</button><br><small>${x.level==="unnatural"?"Más natural: ":"Error: "}${furi(x.note)}</small></li>`).join("")}</ul><p style="margin:0;font-size:13px;color:var(--muted)">Consejo: escucha cada frase corregida y repítela en voz alta un par de veces.</p></div>`:""}
+   ${b.length?`<div><b style="color:var(--shu)">Para reforzar:</b> <span class="jp">${b.map(esc).join("、")}</span><br><small class="info" style="color:var(--muted)">Aparecerán antes en tus repasos.</small></div>`:""}
+   ${f.length?`<div><b>Frases para mejorar</b><ul class="sum">${f.map(x=>`<li><span style="color:var(--muted)">${esc(x.said)}</span> → <span class="jp">${furi(x.natural)}</span> <button class="mini" data-say="${esc(x.natural)}">${SVG.play}</button><br><small>${x.level==="unnatural"?"Más natural: ":"Error: "}${furi(x.note)}</small></li>`).join("")}</ul><p class="info" style="margin:0;font-size:15px;color:var(--muted)">Consejo: escucha cada frase corregida y repítela en voz alta un par de veces.</p></div>`:""}
    <div class="row"><button class="btn primary" id="btnNewChat">Empezar otra conversación</button><button class="btn ghost" data-close>Seguir</button></div>`);
   const c=$("#sumCat .cat");if(c&&(g.length||f.length))c.classList.add("happy");
 }
@@ -1534,6 +1547,7 @@ function showOnboarding(){
    <img class="onb-logo" src="logo.svg" alt=""><h1>はじめまして。<br>Soy Tama.</h1>
    <p class="lead" style="margin-top:-8px">Bienvenido a <b>¿Wakarú?</b> · 分かる？ «¿lo pillas?»</p>
    <p class="lead">Voy a ayudarte a aprender japonés hablando, con las palabras que tú estás aprendiendo. Para poder conversar uso Gemini, la IA de Google, que es gratis con tu propia clave.</p>
+   <button type="button" class="btn" id="onbLogin" style="align-self:stretch;white-space:normal;justify-content:center;text-align:center">¿Ya lo usas en otro dispositivo? Inicia sesión</button>
    <div class="card-s">
      <ol class="steps"><li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con tu cuenta de Google.</li><li>Pulsa <b>Create API key</b> y cópiala.</li><li>Pégala aquí. Se guarda solo en este dispositivo.</li></ol>
      <form id="keyForm" class="stack" style="gap:8px">
@@ -1542,7 +1556,7 @@ function showOnboarding(){
        <div class="notice" id="keyMsg" hidden></div>
      </form>
    </div>
-   <p style="font-size:12px;color:var(--muted);text-align:center">El nivel gratuito de Gemini tiene un límite diario, de sobra para practicar. Google puede usar las conversaciones del nivel gratuito para mejorar sus productos.</p>
+   <p style="font-size:14px;color:var(--muted);text-align:center">El nivel gratuito de Gemini tiene un límite diario, de sobra para practicar. Google puede usar las conversaciones del nivel gratuito para mejorar sus productos.</p>
   </div>`;
   document.body.appendChild(d);
 }
@@ -1716,13 +1730,13 @@ function renderQuota(){
 function quotaSheet(){
   const u=usageToday(),lim=settings.dailyLimit,pct=u.hit?100:Math.min(100,Math.round(u.req/lim*100)),r=nextReset();
   const left=r?Math.max(0,r-now()):0,h=Math.floor(left/36e5),mn=Math.round((left%36e5)/6e4);
-  openSheet(`<div class="grab"></div><h3 class="h2">Uso de Gemini hoy</h3>
+  openSheet(`<div class="grab"></div><div class="hrow"><h3 class="h2">Uso de Gemini hoy</h3>${INFO}</div>
    <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="qbig"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" class="q-bg"/><circle cx="18" cy="18" r="14" class="q-fg" pathLength="100" stroke-dasharray="${pct} 100" style="stroke:${pct>=85?"var(--ai)":pct>=60?"var(--gold)":"var(--ok)"}"/></svg><b>${u.hit?"!":pct+"%"}</b></div>
      <dl class="kv" style="flex:1"><dt>Peticiones</dt><dd>${u.req} de ~${lim}</dd><dt>Tokens</dt><dd>${u.tok.toLocaleString("es-ES")}</dd><dt>Se reinicia</dt><dd>${r?r.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+` (en ${h} h ${mn} min)`:"a medianoche de California"}</dd></dl></div>
    ${u.hit?`<div class="notice">Gemini ha dicho que has llegado al límite. Vuelve a funcionar cuando se reinicie.</div>`:""}
-   <div class="notice" style="color:var(--ink)"><b>Qué gasta Gemini:</b> cada frase en la conversación, cada tanda de 8 ejercicios con frases, y lo que le pidas a Tama expresamente (explicar una palabra, un ejemplo, los kanji, «¿Qué puedo decir?»). <b>No gastan nada:</b> el buscador y las sugerencias de palabras, el repaso, los ejercicios de palabras ni tocar palabras para ver su significado.</div>
-   <p style="margin:0;font-size:13px;color:var(--muted)">Es una estimación hecha en este dispositivo. El nivel gratuito de Gemini limita sobre todo las <b>peticiones por día</b> (cada frase que dices es una; ver un significado, sugerencias o kanji también cuentan) y se reinicia a medianoche de California. Mira tu límite real en AI Studio y ponlo aquí.</p>
-   <div class="row"><label for="s_limit" style="font-weight:600">Mi límite diario</label><input id="s_limit" class="field" type="number" min="10" max="100000" step="10" value="${lim}" style="flex:0 0 110px"><span style="font-size:13px;color:var(--muted)">peticiones</span></div>
+   <div class="notice info" style="color:var(--ink)"><b>Qué gasta Gemini:</b> cada frase en la conversación, cada tanda de 8 ejercicios con frases, y lo que le pidas a Tama expresamente (explicar una palabra, un ejemplo, los kanji, «¿Qué puedo decir?»). <b>No gastan nada:</b> el buscador y las sugerencias de palabras, el repaso, los ejercicios de palabras ni tocar palabras para ver su significado.</div>
+   <p class="info" style="margin:0;font-size:15px;color:var(--muted)">Es una estimación hecha en este dispositivo. El nivel gratuito de Gemini limita sobre todo las <b>peticiones por día</b> (cada frase que dices es una; ver un significado, sugerencias o kanji también cuentan) y se reinicia a medianoche de California. Mira tu límite real en AI Studio y ponlo aquí.</p>
+   <div class="row"><label for="s_limit" style="font-weight:600">Mi límite diario</label><input id="s_limit" class="field" type="number" min="10" max="100000" step="10" value="${lim}" style="flex:0 0 110px"><span style="font-size:15px;color:var(--muted)">peticiones</span></div>
    <div class="row"><a class="btn" href="https://aistudio.google.com/rate-limit" target="_blank" rel="noopener">Ver mi límite en AI Studio</a><a class="btn ghost" href="https://aistudio.google.com/usage" target="_blank" rel="noopener">Uso detallado</a></div>`);
 }
 
@@ -1767,5 +1781,6 @@ if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceW
 </script>
 <script src="verbs.js"></script>
 <script src="practice.js"></script>
+<script src="sync.js"></script>
 </body>
 </html>

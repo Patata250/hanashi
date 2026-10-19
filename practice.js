@@ -108,13 +108,13 @@ function verbItem(){
 }
 function levelSheet(){
   const S=vset(),L=V().LEVELS;
-  openSheet(`<div class="grab"></div><h3 class="h2" style="text-align:center">Nivel de verbos</h3>
-   <p style="margin:0;text-align:center;color:var(--muted);font-size:14px">Empieza por arriba. Cuando aciertes de forma constante, Tama te propondrá subir.</p>
+  openSheet(`<div class="grab"></div><div class="hrow"><h3 class="h2">Nivel de verbos</h3>${INFO}</div>
+   <p class="info" style="margin:0;color:var(--muted);font-size:16px">Empieza por arriba. Cuando aciertes de forma constante, Tama te propondrá subir.</p>
    <div class="vlevels">${L.map(l=>{const st=vstat(l.n),acc=st.n?Math.round(st.good/st.n*100):0,ready=st.good>=15&&acc>=85;
      return `<button class="vlv ${S.level===l.n?"on":""}" data-vlevel="${l.n}"><span class="vn">${l.n}</span><span class="vt"><b>${l.title}</b><small>${l.sub} · <span class="jp">${l.ex}</span></small>
        <span class="vbar"><i style="width:${Math.min(100,st.good/15*100)}%"></i></span></span>${ready?`<span class="vok">${SVG.check}</span>`:S.level===l.n?`<span class="vcur">actual</span>`:""}</button>`}).join("")}</div>
-   <div class="set"><div><label for="v_mix">Repasar niveles anteriores</label><p>Mezcla un 30 % de formas ya vistas.</p></div><button class="switch" id="v_mix" role="switch" aria-checked="${S.mix}" data-vopt="mix"></button></div>
-   <div class="set"><div><label for="v_type">Escribir la respuesta</label><p>Más difícil: escribes la forma en romaji en vez de elegirla.</p></div><button class="switch" id="v_type" role="switch" aria-checked="${S.typing}" data-vopt="typing"></button></div>`);
+   <div class="set"><div><label for="v_mix">Repasar niveles anteriores</label><p class="info">Mezcla un 30 % de formas ya vistas.</p></div><button class="switch" id="v_mix" role="switch" aria-checked="${S.mix}" data-vopt="mix"></button></div>
+   <div class="set"><div><label for="v_type">Escribir la respuesta</label><p class="info">Más difícil: escribes la forma en romaji en vez de elegirla.</p></div><button class="switch" id="v_type" role="switch" aria-checked="${S.typing}" data-vopt="typing"></button></div>`);
 }
 
 /* ---------- AI batches ---------- */
@@ -340,7 +340,7 @@ function render(){
       <h2 class="h2">${PX.mode==="review"?"¡Repaso completado!":"¡Ronda completada!"}</h2>
       <div class="stats" style="width:100%"><div class="stat"><b>${PX.round.good}/${PX.round.n}</b><span>aciertos</span></div><div class="stat"><b>${acc}%</b><span>precisión</span></div><div class="stat"><b>${st.xp}</b><span>XP hoy</span></div></div>
       ${PX.mode==="verbs"?(()=>{const S=vset(),st=vstat(S.level),acc=st.n?st.good/st.n:0;return st.good>=15&&acc>=.85&&S.level<V().LEVELS.length?`<div class="pxreview"><div><b>¡Dominas «${V().LEVELS[S.level-1].title}»!</b><small>Siguiente: ${V().LEVELS[S.level].title} · <span class="jp">${V().LEVELS[S.level].ex}</span></small></div><button class="btn primary" data-vlevel="${S.level+1}" data-vgo="1">Subir de nivel</button></div>`:""})():""}
-      ${PX.round.words.size?`<p style="margin:0;color:var(--muted);font-size:14px">Has practicado: <span class="jp">${[...PX.round.words].slice(0,12).map(esc).join("、")}</span></p>`:""}
+      ${PX.round.words.size?`<p style="margin:0;color:var(--muted);font-size:16px">Has practicado: <span class="jp">${[...PX.round.words].slice(0,12).map(esc).join("、")}</span></p>`:""}
       <div class="row" style="justify-content:center">${PX.mode==="review"?(dueWords().length?`<button class="btn primary" data-pxmode="review">Repasar ${dueWords().length} más</button>`:`<button class="btn primary" data-pxmode="mix">Seguir practicando</button>`):`<button class="btn ${PX.mode==="verbs"&&(()=>{const S=vset(),st=vstat(S.level);return st.good>=15&&st.good/st.n>=.85&&S.level<V().LEVELS.length})()?"":"primary"}" id="pxMore">Otra ronda</button>`}<button class="btn" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn ghost" id="pxClose2">Terminar</button></div></div>`;
     if(acc>=80){sfx("done");confetti()}
     placeCat("happy");PX.round={n:0,good:0,words:new Set()};return}
@@ -361,10 +361,10 @@ function renderHome(){
   const {mine}=pool();
   pane.innerHTML=`<div class="pxhome">
     <div class="pxcatbig" id="pxCat"></div>
-    <h2 class="h2" style="font-size:24px">練習 · Practicar</h2>
-    <p style="margin:0;color:var(--muted);text-align:center;max-width:42ch">Ejercicios cortos con tus palabras para soltarte antes de conversar. Nunca se acaban: los que fallas vuelven, y las palabras flojas salen más.</p>
+    <div class="hrow" style="justify-content:center"><h2 class="h2" style="font-size:26px;flex:none">練習 · Practicar</h2>${INFO}</div>
+    <p class="info" style="margin:0;color:var(--muted);text-align:center;max-width:42ch">Ejercicios cortos con tus palabras para soltarte antes de conversar. Nunca se acaban: los que fallas vuelven, y las palabras flojas salen más.</p>
     <div class="stats" style="width:100%"><div class="stat"><b>${st.done}</b><span>ejercicios hoy</span></div><div class="stat"><b>${st.xp}</b><span>XP hoy</span></div><div class="stat"><b>${st.best}</b><span>mejor racha</span></div></div>
-    ${(()=>{const n=dueWords().length;return `<div class="pxreview ${n?"":"done"}"><div><b>${n?`Repaso de hoy · ${n} palabra${n>1?"s":""}`:"Repaso de hoy al día"}</b><small>${n?"Las que tocan según tu memoria: primero las que fallas.":"Vuelve más tarde: Tama te avisará con el número rojo."}</small></div>${n?`<button class="btn primary" data-pxmode="review">Repasar</button>`:`<span class="pxok">${SVG.check}</span>`}</div>`})()}
+    ${(()=>{const n=dueWords().length;return `<div class="pxreview ${n?"":"done"}"><div><b>${n?`Repaso de hoy · ${n} palabra${n>1?"s":""}`:"Repaso de hoy al día"}</b><small class="info">${n?"Las que tocan según tu memoria: primero las que fallas.":"Vuelve más tarde: Tama te avisará con el número rojo."}</small></div>${n?`<button class="btn primary" data-pxmode="review">Repasar</button>`:`<span class="pxok">${SVG.check}</span>`}</div>`})()}
     ${(()=>{const S=vset(),L=V()?V().LEVELS:[],l=L[S.level-1];if(!l)return"";const st=vstat(S.level);return `<div class="pxverbs"><div class="pvl"><span class="vn">${l.n}</span><div><b>Verbos · ${l.title}</b><small>${l.sub} · <span class="jp">${l.ex}</span></small><span class="vbar"><i style="width:${Math.min(100,st.good/15*100)}%"></i></span></div></div>
       <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="btn ghost" id="pxLevels">Nivel</button><button class="btn primary" data-pxmode="verbs">Practicar verbos</button></div></div>`})()}
     <div class="pxmodes">${MODES.map(([k,n,d])=>`<button class="pxmode" data-pxmode="${k}"><b>${n}</b><small>${d}</small></button>`).join("")}</div>
