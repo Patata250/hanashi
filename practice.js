@@ -70,6 +70,32 @@ function localItem(kind,target){
   return {type:kind,w,options:opts,answer:opts.indexOf(w),words:w.basic?[]:[w.id]};
 }
 
+/* ---------- wrong exercises: the AI sometimes makes mistakes (e.g. «20 años» with 十歳) ---------- */
+const itemKey=it=>plain(it.full||it.jp||"").replace(/[\s＿]/g,"");
+const banned=()=>new Set(LS.get("pxban")||[]);
+function reportBad(){
+  const c=PX.cur,key=itemKey(c),sn=PX.snap;
+  const ban=LS.get("pxban")||[];ban.push(key);LS.set("pxban",ban.slice(-300));
+  LS.set("pxbank",(LS.get("pxbank")||[]).filter(x=>itemKey(x.it)!==key));
+  PX.queue=PX.queue.filter((q,k)=>k<PX.i||itemKey(q)!==key);
+  if(sn){const st=pstat();Object.assign(st,sn.st);PX.combo=sn.combo;PX.round.n=sn.round.n;PX.round.good=sn.round.good;
+    sn.words.forEach(o=>{const i=words.findIndex(x=>x.id===o.id);if(i>=0)words[i]=o});saveWord();saveSettings();updateBadge()}
+  sfx("tap");toast("Gracias. No cuenta como fallo y ese ejercicio no volverá a salir.");next();
+}
+const KN={"〇":0,"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9};
+function kanjiNums(t){
+  const out=[];t=plain(t);
+  if(/はたち|二十歳/.test(t))out.push(20);
+  (t.match(/\d+/g)||[]).forEach(n=>out.push(+n));
+  (t.match(/[〇一二三四五六七八九十百千]+/g)||[]).forEach(seq=>{let total=0,cur=0;
+    for(const ch of seq){if(ch in KN)cur=KN[ch];else{const m=ch==="十"?10:ch==="百"?100:1000;total+=(cur||1)*m;cur=0}}out.push(total+cur)});
+  return out;
+}
+const ES_NUM={uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,veinte:20,treinta:30,cuarenta:40,cincuenta:50,cien:100,mil:1000};
+function esNums(t){t=fold(t);const out=(t.match(/\d+/g)||[]).map(Number);Object.entries(ES_NUM).forEach(([w,n])=>{if(new RegExp("\\b"+w+"\\b").test(t)&&n>=2)out.push(n)});return out}
+// every number said in Spanish must appear in the Japanese sentence
+function numbersAgree(jp,es){const e=esNums(es);if(!e.length)return true;const j=new Set(kanjiNums(jp));return e.every(n=>j.has(n))}
+
 /* ---------- tap a word after answering: local analysis, no AI ---------- */
 const PARTS=[["ませんでした","pasado negativo educado («no …»)"],["じゃないです","«no es»"],["ではありません","«no es» (formal)"],["ましょう","«¡hagamos…!» (invitación)"],
  ["ています","acción en curso o estado («estoy …ndo»)"],["たいです","«quiero …»"],["ました","pasado educado"],["ません","negativo educado"],["でした","«era / estaba» (pasado de です)"],
@@ -173,6 +199,9 @@ function typesFor(mode){
 }
 function validate(x){
   if(!x||typeof x!=="object")return null;
+  {const k=itemKey(x);if(k&&banned().has(k))return null;
+   const jp=x.full||x.jp||"",es=x.es||(Array.isArray(x.options)&&(x.type==="meaning"||x.type==="listen")?x.options[+x.answer]:"")||"";
+   if(jp&&es&&!numbersAgree(jp,es))return null}
   const t=x.type;x.words=Array.isArray(x.words)?x.words.filter(id=>words.some(w=>w.id===id)):[];
   if(t==="gap"||t==="particle"){
     if(typeof x.jp!=="string"||!/＿|_/.test(x.jp)||!Array.isArray(x.options)||x.options.length<2)return null;
@@ -263,6 +292,7 @@ Reglas:
 - Frases cortas (3 a 8 palabras), naturales, estilo です/ます, útiles en una conversación real. Situaciones variadas.
 - Usa sobre todo su vocabulario y la gramática que conoce; como mucho 1 palabra nueva por frase. Que cada ejercicio practique al menos una palabra PRIORITARIA si es posible, y pon los ids de las palabras del alumno que aparecen en "words".
 - No repitas ninguna de estas frases recientes: ${PX.recent.slice(-15).join(" / ")||"(ninguna)"}.
+- Antes de responder, REVISA cada ejercicio: la frase japonesa y la española deben decir EXACTAMENTE lo mismo (números, edades, horas, personas, tiempos verbales). 20 años = 二十歳 (はたち), no 十歳. Si dudas, usa una frase más sencilla.
 - Las opciones incorrectas deben ser plausibles pero claramente incorrectas en esa frase (una sola respuesta correcta).
 - explain: 1 frase breve en español que ayude a entender la respuesta (gramática, partícula o matiz).
 Formatos:
@@ -273,7 +303,7 @@ meaning: {"type":"meaning","jp":"frase","options":["4 traducciones al español"]
 listen: igual que meaning (el alumno solo la oirá, sin ver el texto).
 speak: {"type":"speak","es":"frase en español","full":"frase japonesa que debe decir","kana":"la misma frase toda en hiragana/katakana","explain":"","words":[]}
 Devuelve SOLO JSON: {"items":[...]}`;
-  const r=await ask(prompt,false,null,{max:2200,fast:true});
+  const r=await ask(prompt,false,null,{max:2200});
   const items=(r.items||[]).map(validate).filter(Boolean);
   if(!items.length)throw{code:"invalid_json"};
   bankAdd(items,seen);
@@ -348,7 +378,9 @@ function check(forceOk){
 }
 function finish(ok){
   const c=PX.cur;PX.state=ok?"right":"wrong";
-  const st=pstat();st.done++;PX.round.n++;
+  const st=pstat();
+  PX.snap={st:{...st},combo:PX.combo,round:{n:PX.round.n,good:PX.round.good},words:(c.type==="match"?c.pairs.map(p=>p.id):(c.words||[])).map(id=>{const w=words.find(x=>x.id===id);return w?JSON.parse(JSON.stringify(w)):null}).filter(Boolean)};
+  st.done++;PX.round.n++;
   if(ok){st.good++;PX.round.good++;PX.combo++;st.xp+=10+(PX.combo>=5?5:0);if(PX.combo>st.best)st.best=PX.combo}
   else{PX.combo=0;const again={...c,retry:true};PX.queue.splice(Math.min(PX.queue.length,PX.i+3),0,again)}
   // spaced repetition: match items judge each word separately
@@ -435,7 +467,8 @@ function footer(c){
     ${c.type==="speak"&&PX.spoken?`<div class="resexp">Te he entendido: «${esc(PX.spoken)}» (${Math.round(PX.speakScore*100)}% parecido)${!ok?` <button class="mini" data-pxforce="1">Lo he dicho bien</button>`:""}</div>`:""}
     ${c.explain?`<div class="resexp">${furi(c.explain)}</div>`:""}
     ${c.es&&c.type!=="order"&&c.type!=="speak"&&(c.type==="gap"||c.type==="particle")?`<div class="resexp">${esc(c.es)}</div>`:""}
-    <button class="btn pxnext" id="pxNext">Continuar</button></div>`;
+    <button class="btn pxnext" id="pxNext">Continuar</button>
+    ${["gap","particle","order","meaning","listen","speak"].includes(c.type)?`<button class="pxbadbtn" data-pxbad="1">¿El ejercicio está mal? Avísame</button>`:""}</div>`;
 }
 function render(){
   const pane=$("#practicePane");if(!pane)return;
@@ -503,7 +536,7 @@ function renderMatch(){const g=document.querySelector("#practicePane .matchgrid"
 document.addEventListener("click",e=>{const b=e.target.closest("#pxAddWord");if(!b||!PX.wmain)return;const m=PX.wmain;
   const w=addWord({jp:m.jp,kana:m.kana,romaji:(()=>{try{return wanakana.toRomaji(m.kana)}catch(e){return ""}})(),es:m.es,type:m.pos||""});
   if(w){b.outerHTML=`<div class="row"><span class="pill learn">añadida</span></div>`;if(window.packNudge)setTimeout(()=>packNudge(w),500)}});
-window._pxAnalyze=analyzeChunk;
+window._pxAnalyze=analyzeChunk;window._pxNum=numbersAgree;
 window.renderPractice=function(){render()};
 window._px=()=>PX;
 window.practiceLeave=function(){if(PX.active){stopListen&&stopListen(true);stopSpeaking()}};
@@ -526,7 +559,8 @@ document.addEventListener("click",e=>{
   if(el.id==="pxCheck")return check();
   if(el.id==="pxNext")return next();
   if(d.pxforce){const c=PX.cur;PX.state="ask";PX.round.n--;const st=pstat();st.done--;
-    PX.queue.splice(PX.queue.findIndex((q,k)=>k>=PX.i&&q.retry&&q.full===c.full),1);return finish(true)}
+    {const k=PX.queue.findIndex((q,k)=>k>=PX.i&&q.retry&&q.full===c.full);if(k>=0)PX.queue.splice(k,1)}return finish(true)}
+  if(d.pxbad)return reportBad();
   if(d.pxopt!==undefined&&PX.state==="ask")return selectOpt(+d.pxopt);
   if(d.pxbank!==undefined&&PX.state==="ask"){const b=PX.bank[+d.pxbank];if(b.used)return;b.used=true;PX.built.push(b);PX.justAdded=true;sfx("tap");speak(b.s,1.05);return renderOrder()}
   if(d.pxbuilt!==undefined&&PX.state==="ask"){PX.justAdded=false;const b=PX.built.splice(+d.pxbuilt,1)[0];b.used=false;sfx("flip");return renderOrder()}
