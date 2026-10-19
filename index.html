@@ -358,6 +358,10 @@ details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;
 .models{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface)}
 .mrow2{display:flex;flex-direction:column;gap:4px}.mbar{position:relative;height:16px;border-radius:8px;background:var(--line);overflow:hidden}.mbar i{position:absolute;inset:0 auto 0 0;background:var(--ok);border-radius:8px}.mbar span{position:relative;display:block;text-align:right;padding-right:6px;font-size:12px;font-weight:700;line-height:16px;font-variant-numeric:tabular-nums}
 .mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-family:ui-monospace,monospace}.mst{white-space:nowrap;font-family:var(--f-ui);font-size:13px;font-weight:700;color:var(--muted)}.mst.on{color:var(--ok)}.mst.wait{color:var(--gold)}.mst.off{color:var(--ai)}
+.pxwords{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 2px;font-size:24px;line-height:2.1;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 10px;box-shadow:var(--shadow)}
+.pw{border:0;background:none;padding:0 4px;border-radius:8px;font:inherit;line-height:inherit;color:inherit;border-bottom:2px dotted var(--line);transition:background .15s}
+.pw:active,.pw:hover{background:var(--ai-soft)}
+.pxwtip{text-align:center;font-size:13px;color:var(--muted);margin-top:-6px}
 .packs{display:flex;flex-wrap:wrap;gap:8px}
 .packchip{display:inline-flex;align-items:baseline;gap:6px;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:15px}
 .packchip small{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.packchip.some{border-color:var(--gold)}.packchip.full{border-color:var(--ok);background:var(--ok-soft)}
@@ -1068,7 +1072,7 @@ async function ask(prompt,_retry,signal,opts){
   throw {...lastErr,until:soonest};
 }
 const LEARNER="El alumno habla español, es principiante, lee hiragana con soltura, está aprendiendo katakana y apenas conoce kanji. Su prioridad es hablar y entender con fluidez.";
-const FURI_RULE=`LECTURAS (MUY IMPORTANTE): el alumno aún NO lee kanji. En cualquier campo de texto que contenga japonés y no sea un token (natural, note_es, help_es, ex_jp, jp de opciones, ejemplos…), escribe la lectura en hiragana entre corchetes justo después de cada palabra con kanji, así: 今日[きょう]は 天気[てんき]が いいです。 En los tokens, "r" es OBLIGATORIO siempre que "s" tenga kanji.`;
+const FURI_RULE=`LECTURAS (MUY IMPORTANTE): el alumno aún NO lee kanji. En cualquier campo de texto que contenga japonés y no sea un token (natural, note_es, help_es, ex_jp, jp de opciones, ejemplos…), escribe la lectura en hiragana entre corchetes justo después de cada palabra con kanji, así: 今日[きょう]は 天気[てんき]が いいです。 En los tokens NO uses corchetes: "s" lleva el texto tal cual (猫) y la lectura va solo en "r" (ねこ); "r" es OBLIGATORIO siempre que "s" tenga kanji.`;
 const PART_RO={"は":"wa","へ":"e","を":"o"};
 const romajiOf=toks=>{try{return toks.map(t=>/^[、。！？!?…「」]+$/.test(t.s)?t.s:PART_RO[t.s]||wanakana.toRomaji(t.r||t.s)).join(" ").replace(/ ([、。！？!?…])/g,"$1").replace(/、/g,",").replace(/。/g,".").replace(/！/g,"!").replace(/？/g,"?")}catch(e){return ""}};
 /* "私[わたし]は 猫[ねこ]が" → tokens (meaning looked up locally when tapped) */
@@ -1076,7 +1080,10 @@ const tokensFromFuri=t=>{t=String(t||"").trim();if(!t)return [];const out=[];
   t.split(/\s+/).forEach(part=>{const m=part.match(/^(.*?)([、。！？!?…]*)$/);const w=m[1],p=m[2];
     if(w){const s=plain(w),r=w.replace(/[一-龯㐀-䶿々〆ヶ]+\[([\u3040-\u30ffー]+)\]/g,"$1");out.push({s,r:r!==s?r:"",m:""})}
     if(p)out.push({s:p,r:"",m:""})});return out};
-const cleanToks=a=>Array.isArray(a)?a.filter(t=>t&&typeof t.s==="string").map(t=>({s:t.s,r:t.r||"",m:t.m||""})):[];
+// some models (lite) put the reading inside the word: {"s":"猫[ねこ]"} → s 猫, r ねこ
+const fixTok=t=>{let s=t.s,r=t.r||"";if(/\[/.test(s)){const rr=s.replace(/[一-龯㐀-䶿々〆ヶ]+\[([\u3040-\u30ffー・ ]+)\]/g,"$1").replace(/\[[^\]]*\]/g,"");s=plain(s).replace(/\[[^\]]*\]/g,"");if(!r||/\[/.test(r))r=rr}
+  if(/\[/.test(r))r=plain(r);if(r===s)r="";return {s,r,m:t.m||""}};
+const cleanToks=a=>Array.isArray(a)?a.filter(t=>t&&typeof t.s==="string").map(fixTok):[];
 
 /* ============ conversation ============ */
 const WELCOME={role:"ai",tokens:[{s:"こんにちは",r:"",m:"hola"},{s:"！",m:""},{s:"タマ",r:"たま",m:"Tama (mi nombre)"},{s:"です",m:"soy (educado)"},{s:"。",m:""},{s:"一緒",r:"いっしょ",m:"juntos"},{s:"に",m:"partícula: forma el adverbio «juntos»"},{s:"話しましょう",r:"はなしましょう",m:"hablemos"},{s:"！",m:""}],
@@ -1257,10 +1264,10 @@ Devuelve SOLO JSON:
           if(!(settings.speakFix&&meMsg&&voiceOn)){spokeEarly=true;sfx("receive");afterAiReply(early,null)}
           return}}catch(e){}}
       const txt=[...(end>=0?seg.slice(0,end):seg).matchAll(/"s"\s*:\s*"((?:[^"\\]|\\.)*)"/g)].map(m=>{try{return JSON.parse('"'+m[1]+'"')}catch(e){return ""}}).join("");
-      if(!txt||txt===shown)return;shown=txt;
+      if(!txt||txt===shown)return;shown=txt;const show=plain(txt).replace(/\[[^\]]*$/,"");
       const el=$("#streamMsg");if(!el)return;
       if(!el.dataset.on){el.dataset.on=1;el.innerHTML=`<div class="bubble streaming"><div class="jpline" id="streamTxt"></div></div>`;tama("talk")}
-      $("#streamTxt").textContent=txt;const sc=$("#chatScroll");if(sc.scrollHeight-sc.scrollTop-sc.clientHeight<160)sc.scrollTop=sc.scrollHeight}});
+      $("#streamTxt").textContent=show;const sc=$("#chatScroll");if(sc.scrollHeight-sc.scrollTop-sc.clientHeight<160)sc.scrollTop=sc.scrollHeight}});
     if(replyAC&&replyAC.ac===ac)replyAC=null;
     let fb=null;
     if(meMsg){meMsg.pending=false;meMsg.meTokens=res.me_tokens?cleanToks(res.me_tokens):tokensFromFuri(res.me_jp);meMsg.meEs=res.me_es||"";
@@ -1563,7 +1570,7 @@ function packChips(){if(!window.PACKS)return"";
   return `<button class="packchip ${o===n?"full":o?"some":""}" data-pack="${p.id}"><b>${esc(p.title)}</b><small>${o}/${n}</small></button>`}).join("")+
   (list.length>8?`<button class="packchip more" id="packMore">${packsOpen?"Ver menos":`Ver los ${list.length}`}</button>`:"")}
 function packRow(p){const o=packOwned(p);return `<button class="acpack" data-pack="${p.id}"><span class="pk">PACK</span><span class="acmeta"><b>${esc(p.title)}</b><small>${p.items.slice(0,5).map(i=>esc(i.jp)).join("・")}${p.items.length>5?"…":""} · ${o}/${p.items.length}</small></span><span class="acadd">›</span></button>`}
-function packNudge(w){
+window.packNudge=packNudge;function packNudge(w){
   if(!window.PACKS)return;const dis=LS.get("packNo")||{};
   const p=packsFor(w).find(p=>!dis[p.id]&&packOwned(p)<p.items.length);if(!p)return;
   document.querySelectorAll(".packbar").forEach(x=>x.remove());
@@ -1983,6 +1990,7 @@ window.addEventListener("tamapoke",e=>{
 
 /* ============ boot ============ */
 loadAll();
+try{[chat.msgs,...Object.values(chat.rooms||{})].forEach(list=>(list||[]).forEach(m=>{if(m.tokens)m.tokens=m.tokens.map(fixTok);if(m.meTokens)m.meTokens=m.meTokens.map(fixTok)}))}catch(e){}
 $("#tamaCat").innerHTML=catSVG();
 applyKana();renderAll();renderQuota();renderAssist();tama("idle",pick(IDLE_LINES));
 if(!settings.key)showOnboarding();

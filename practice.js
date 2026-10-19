@@ -70,6 +70,51 @@ function localItem(kind,target){
   return {type:kind,w,options:opts,answer:opts.indexOf(w),words:w.basic?[]:[w.id]};
 }
 
+/* ---------- tap a word after answering: local analysis, no AI ---------- */
+const PARTS=[["ませんでした","pasado negativo educado («no …»)"],["じゃないです","«no es»"],["ではありません","«no es» (formal)"],["ましょう","«¡hagamos…!» (invitación)"],
+ ["ています","acción en curso o estado («estoy …ndo»)"],["たいです","«quiero …»"],["ました","pasado educado"],["ません","negativo educado"],["でした","«era / estaba» (pasado de です)"],
+ ["かった","pasado de adjetivo い"],["ている","acción en curso o estado"],["ます","terminación educada del verbo"],["です","«ser / estar» (educado)"],["たい","«quiero …»"],
+ ["から","«desde» o «porque»"],["まで","«hasta»"],["は","partícula de tema (se lee «wa»)"],["が","partícula de sujeto; con 好き, ある/いる…"],["を","objeto directo (se lee «o»)"],
+ ["に","destino, hora o lugar donde está algo"],["で","lugar donde pasa algo; medio («en autobús»)"],["へ","dirección «hacia» (se lee «e»)"],["と","«y» o «con»"],["の","«de» (une dos nombres)"],
+ ["も","«también»"],["か","pregunta («¿…?»)"],["ね","«¿verdad?»"],["よ","énfasis («te lo digo»)"],["や","«y» (entre otros)"],["て","forma て (une acciones, pide…)"]].sort((a,b)=>b[0].length-a[0].length);
+const STEM_U={"い":"う","き":"く","ぎ":"ぐ","し":"す","ち":"つ","に":"ぬ","び":"ぶ","み":"む","り":"る"};
+function lookupW(s){if(!s)return null;const w=findWord(s);if(w)return {jp:w.jp,kana:w.kana,es:w.es,mine:true};
+  const e=typeof dictFind==="function"?dictFind(s):null;if(e)return {jp:e.jp,kana:e.kana,es:e.es,lv:e.lv,pos:e.pos,entry:e};
+  const b=findBasic(s);if(b)return {jp:b.jp,kana:b.kana,es:b.es,basic:true};return null}
+function analyzeChunk(chunk){
+  let s=plain(chunk).replace(/[、。！？!?…「」『』\s]/g,"");const parts=[];let main=lookupW(s);
+  while(!main&&s){const p=PARTS.find(([x])=>s.length>x.length&&s.endsWith(x));if(!p)break;
+    parts.unshift({s:p[0],es:p[1]});s=s.slice(0,-p[0].length);
+    if(/^(ます|ました|ません|ませんでした|ましょう|たい|たいです|ています|ている|て|で)$/.test(p[0])){
+      // verb endings: rebuild the dictionary form first (行き+たい → 行く, not the noun 行き)
+      const c=[],b=s.slice(0,-1),l=s.slice(-1);
+      if(p[0]==="て"||p[0]==="ています"||p[0]==="ている"){if(l==="っ")c.push(b+"う",b+"つ",b+"る");if(l==="い")c.push(b+"く");if(l==="し")c.push(b+"す")}
+      if(p[0]==="で"){if(l==="ん")c.push(b+"む",b+"ぶ",b+"ぬ");if(l==="い")c.push(b+"ぐ")}
+      if(STEM_U[l]&&p[0]!=="で")c.push(b+STEM_U[l]);
+      if(p[0]!=="で")c.push(s+"る");
+      if(l==="し"&&p[0]!=="で"){c.push(b+"する");if(b)c.push(b)}if(s==="し")c.push("する");if(s==="き"||s==="来")c.push("来る");
+      for(const x of c){main=lookupW(x);if(main){if(p[0]==="で")parts[0]={s:"で",es:"forma て (ん+で): une acciones, pide…"};if(main.jp===b&&l==="し")main={...main,jp:main.jp+"する",kana:main.kana+"する",es:main.es};break}}
+      if(!main&&p[0]!=="で")main=lookupW(s);
+    }else main=lookupW(s);
+    if(!main&&p[0]==="かった")main=lookupW(s+"い");
+  }
+  return {main,parts};
+}
+function wordLine(t){
+  const chunks=String(t||"").replace("＿＿","").split(/\s+/).filter(Boolean);PX.wchunks=chunks;
+  return `<div class="pxwords jp">${chunks.map((c,i)=>`<button class="pw" data-pxw="${i}">${furi(c)}</button>`).join("")}</div><div class="pxwtip">Toca una palabra para ver qué significa</div>`;
+}
+function wordSheetPx(i){
+  const chunk=PX.wchunks[i];if(!chunk)return;const {main,parts}=analyzeChunk(chunk);
+  const have=main&&findWord(main.jp);
+  speak(chunk);
+  openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp" style="font-size:34px;line-height:1.9">${furi(chunk)}</div></div><button class="iconbtn" data-say="${esc(chunk)}" aria-label="Escuchar">${SVG.play}</button></div>
+   ${main?`<div class="sec"><span class="lbl">Palabra</span><span class="val"><span class="jp" style="font-size:22px">${rubyHTML(main.jp,main.kana)}</span> · ${esc(main.es)} ${main.lv?LV(main.lv):""}</span></div>`:`<div class="sec"><span class="lbl">Palabra</span><span class="val">No la encuentro en el diccionario.</span></div>`}
+   ${parts.length?`<div class="sec"><span class="lbl">Con</span>${parts.map(p=>`<span class="val"><b class="jp">${esc(p.s)}</b> — ${esc(p.es)}</span>`).join("")}</div>`:""}
+   ${main&&!main.basic?(have?`<div class="row"><span class="pill learn">en tu vocabulario</span></div>`:`<button class="btn primary" id="pxAddWord">Añadir a mi vocabulario</button>`):""}`);
+  PX.wmain=main;
+}
+
 /* ---------- verbs (local engine, no AI) ---------- */
 const V=()=>window.VERBS;
 function vset(){if(!settings.verbs)settings.verbs={level:1,mix:true,typing:false,stats:{}};return settings.verbs}
@@ -255,6 +300,7 @@ function reviewQueue(){
   return dueWords().sort((a,b)=>priority(b)-priority(a)).slice(0,20).map(w=>localItem((w.reps||0)<2?"word":pick(["reverse","wordlisten","word","reverse"]),w)).filter(Boolean);
 }
 function start(mode){
+  if(typeof loadDict==="function")loadDict();
   stopSpeaking();PX.mode=mode;PX.active=true;PX.queue=[];PX.i=0;PX.cur=null;PX.combo=0;PX.warned=false;
   PX.round={n:0,good:0,words:new Set()};
   if(mode==="verbs"){if(!DICT.ready){PX.state="loading";render();loadDict().then(()=>{if(PX.active&&PX.mode==="verbs"){ensureAhead();next()}});return}sfx("flip");ensureAhead();return next()}
@@ -337,6 +383,13 @@ function body(c){
   if(c.type==="verbid"){
     return `<div class="vq"><div class="vdict jp big">${rubyHTML(c.ans.jp,c.ans.kana)}<button class="mini" data-pxsay="verb">${SVG.play}</button></div><div class="vmean">de <span class="jp">${rubyHTML(V().norm(c.v).jp,V().norm(c.v).kana)}</span> · ${esc(String(c.v.es||"").split(";")[0])}</div></div>`+
       optList(c,f=>`<b class="jp">${esc(V().FORMS[f].label)}</b><small>${esc(V().FORMS[f].name)}</small>`);
+  }
+  if(PX.state!=="ask"&&["gap","particle","meaning","listen","order","speak"].includes(c.type)&&(c.full||c.jp)){
+    const line=wordLine(c.type==="meaning"||c.type==="listen"?c.jp:c.full);
+    if(c.type==="gap"||c.type==="particle")return `${line}${c.es?`<div class="pxes">${esc(c.es)}</div>`:""}${optList(c,s=>`<span class="jp">${furi(s)}</span>`)}`;
+    if(c.type==="meaning"||c.type==="listen")return `${line}${optList(c,esc)}`;
+    if(c.type==="order")return `<div class="pxes big">${esc(c.es)}</div>${line}`;
+    if(c.type==="speak")return `<div class="pxes big">${esc(c.es)}</div>${line}${PX.spoken?`<div class="pxheard jp">«${esc(PX.spoken)}»</div>`:""}`;
   }
   if(c.type==="gap"||c.type==="particle"){
     const fill=PX.sel!==null?`<span class="gapbox on">${furi(c.options[PX.sel])}</span>`:`<span class="gapbox"> </span>`;
@@ -447,6 +500,10 @@ function renderOrder(){
   const c=$("#pxCheck");if(c)c.disabled=!canCheck();
 }
 function renderMatch(){const g=document.querySelector("#practicePane .matchgrid");if(!g)return render();const tmp=document.createElement("div");tmp.innerHTML=body(PX.cur);g.replaceWith(tmp.firstElementChild)}
+document.addEventListener("click",e=>{const b=e.target.closest("#pxAddWord");if(!b||!PX.wmain)return;const m=PX.wmain;
+  const w=addWord({jp:m.jp,kana:m.kana,romaji:(()=>{try{return wanakana.toRomaji(m.kana)}catch(e){return ""}})(),es:m.es,type:m.pos||""});
+  if(w){b.outerHTML=`<div class="row"><span class="pill learn">añadida</span></div>`;if(window.packNudge)setTimeout(()=>packNudge(w),500)}});
+window._pxAnalyze=analyzeChunk;
 window.renderPractice=function(){render()};
 window._px=()=>PX;
 window.practiceLeave=function(){if(PX.active){stopListen&&stopListen(true);stopSpeaking()}};
@@ -479,6 +536,7 @@ document.addEventListener("click",e=>{
     const t=String(c.full||c.jp||"").replace("＿＿","");return speak(t,d.pxsay==="slow"?Math.max(.5,settings.rate-.3):null)}
   if(d.pxhint){PX.showHint=!PX.showHint;const h=document.querySelector(".pxhint");if(h)h.classList.toggle("blur",!PX.showHint);el.textContent=PX.showHint?"Ocultar":"Ver la frase";return}
   if(el.id==="pxLevels")return levelSheet();
+  if(d.pxw!==undefined){sfx("tap");return wordSheetPx(+d.pxw)}
   if(d.vlevel){const S=vset();S.level=+d.vlevel;saveSettings();sfx("add");closeSheet();if(d.vgo||PX.mode==="verbs"&&PX.active){PX.queue=PX.queue.slice(0,PX.i);return start("verbs")}return render()}
   if(d.vopt){const S=vset();S[d.vopt]=!S[d.vopt];el.setAttribute("aria-checked",S[d.vopt]);saveSettings();sfx("tap");if(PX.mode==="verbs"&&PX.active)PX.queue=PX.queue.slice(0,PX.i);return}
   if(d.pxskip){settings.pracSpeak=false;saveSettings();toast("Vale, quito los ejercicios de hablar por ahora.");PX.queue=PX.queue.filter((q,k)=>k<PX.i||q.type!=="speak");return next()}
