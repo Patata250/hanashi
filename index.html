@@ -92,6 +92,8 @@ nav.tabs button[aria-selected="true"] .k{color:var(--ai)}
 .scenes::-webkit-scrollbar{display:none}
 .chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:15px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
 .chip svg{width:14px;height:14px}
+.chip.icon{padding:5px 9px;position:sticky;left:0;z-index:2;box-shadow:6px 0 8px -2px var(--bg)}.chip.icon svg{width:16px;height:16px}
+.chip.has:not([aria-pressed="true"])::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--ai);margin-left:2px}
 .chip[aria-pressed="true"]{background:var(--ai);border-color:var(--ai);color:var(--on-ai)}
 .focus{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;color:var(--muted);padding-bottom:10px}
 .focus .w{font-family:var(--f-jp);font-size:15px;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:1px 7px}
@@ -354,6 +356,7 @@ details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;
 .vcur{flex:none;font-size:14px;font-weight:800;color:var(--ai);text-transform:uppercase;letter-spacing:.04em}
 .onb~.scrim{z-index:50}
 .models{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface)}
+.mrow2{display:flex;flex-direction:column;gap:4px}.mbar{position:relative;height:16px;border-radius:8px;background:var(--line);overflow:hidden}.mbar i{position:absolute;inset:0 auto 0 0;background:var(--ok);border-radius:8px}.mbar span{position:relative;display:block;text-align:right;padding-right:6px;font-size:12px;font-weight:700;line-height:16px;font-variant-numeric:tabular-nums}
 .mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-family:ui-monospace,monospace}.mst{white-space:nowrap;font-family:var(--f-ui);font-size:13px;font-weight:700;color:var(--muted)}.mst.on{color:var(--ok)}.mst.wait{color:var(--gold)}.mst.off{color:var(--ai)}
 .packs{display:flex;flex-wrap:wrap;gap:8px}
 .packchip{display:inline-flex;align-items:baseline;gap:6px;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:15px}
@@ -387,7 +390,7 @@ details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;
 .pxtip{text-align:center;font-size:15px;color:var(--muted)}
 .pxcheck,.pxnext{width:100%;justify-content:center;font-size:18px;padding:13px;border-radius:14px;border-bottom-width:4px}
 .pxcheck:disabled{background:var(--line);border-color:var(--line);color:var(--muted)}
-.pxfoot.res{animation:up .25s cubic-bezier(.2,.8,.3,1) both;border-top:0}
+.pxfoot.res{border-radius:22px 22px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.08);animation:up .25s cubic-bezier(.2,.8,.3,1) both;border-top:0}
 .pxfoot.ok{background:var(--ok-soft)}.pxfoot.ko{background:var(--shu-soft)}
 .restop{display:flex;align-items:center;gap:8px;font-size:20px}
 .resic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff}.resic svg{width:15px;height:15px}
@@ -687,7 +690,7 @@ const SCENES=[
 ];
 
 let words=[];
-let settings={key:"",model:"",furigana:true,kataHelp:true,romaji:false,rate:0.9,audioOnly:false,autoSpeak:true,sound:true,speakFix:true,kanaInput:true,goal:10,silence:2500,micMode:"auto",tamaStyle:"tama",volVoice:1,volSfx:.7,dailyLimit:250,usage:{day:"",req:0,tok:0,hit:false},voice:"",streak:{day:"",n:0},today:{day:"",n:0}};
+let settings={key:"",model:"",fastChat:true,rpd:20,furigana:true,kataHelp:true,romaji:false,rate:0.9,audioOnly:false,autoSpeak:true,sound:true,speakFix:true,kanaInput:true,goal:10,silence:2500,micMode:"auto",tamaStyle:"tama",volVoice:1,volSfx:.7,dailyLimit:250,usage:{day:"",req:0,tok:0,hit:false},voice:"",streak:{day:"",n:0},today:{day:"",n:0}};
 let chat={scene:"libre",msgs:[]};
 let session={good:{},bad:{},fixes:[]};
 
@@ -696,7 +699,24 @@ const LS={get(k){try{return JSON.parse(localStorage.getItem("hanashi_"+k))}catch
 const saveWord=()=>LS.set("words",words);
 function deleteWord(w){words=words.filter(x=>x.id!==w.id);const t=LS.get("tomb")||{};t[w.id]=now();LS.set("tomb",t);saveWord()}
 const saveSettings=()=>LS.set("settings",settings);
-function saveChat(){chat.msgs=chat.msgs.slice(-40);LS.set("chat",chat)}
+function saveChat(){chat.msgs=chat.msgs.slice(-40);if(!chat.rooms)chat.rooms={};chat.rooms[chat.scene]=chat.msgs;LS.set("chat",chat)}
+const roomHas=k=>((k===chat.scene?chat.msgs:(chat.rooms||{})[k])||[]).some(m=>m.role==="me");
+function switchScene(k){
+  if(chat.scene===k)return;
+  if(busy){try{replyAC&&replyAC.ac.abort()}catch(e){}replyAC=null;busy=false;chat.msgs.forEach(m=>m.pending=false)}
+  if(!chat.rooms)chat.rooms={};chat.rooms[chat.scene]=chat.msgs;
+  chat.scene=k;chat.msgs=(chat.rooms[k]||[]).filter(m=>m.role!=="sys");chatError="";
+  session={good:{},bad:{},fixes:[]};
+  sfx("flip");stopListen(true);showListenPanel(false);setLive("");saveChat();renderScenes();renderChat();renderAssist();
+  const lbl=SCENES.find(s=>s[0]===k)[1];
+  if(!chat.msgs.length)send("",true);else tama("happy",`Seguimos en «${lbl}».`,2000);
+}
+function clearChatSheet(){
+  const lbl=(SCENES.find(s=>s[0]===chat.scene)||SCENES[0])[1];
+  openSheet(`<div class="grab"></div><h3 class="h2">¿Empezar de nuevo «${esc(lbl)}»?</h3>
+   <p style="margin:0;color:var(--muted)">Se borra esta conversación. Las demás situaciones y tu vocabulario no cambian.</p>
+   <div class="row"><button class="btn primary" id="btnClearYes">Borrar y empezar</button><button class="btn ghost" data-close>Cancelar</button></div>`);
+}
 function loadAll(){words=LS.get("words")||[];settings={...settings,...(LS.get("settings")||{})};chat=LS.get("chat")||chat;delete settings.mode;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}}
 function exportData(){
   const data={app:"hanashi",version:2,exported:new Date().toISOString(),words,settings:{...settings,key:undefined,model:undefined},chat};
@@ -960,7 +980,7 @@ function buildChain(names){
   const gemma=names.filter(n=>/^gemma-/.test(n)&&/-it$/.test(n)&&ok(n)).sort((a,b)=>ver(b)-ver(a)||(parseInt((b.match(/(\d+)b/)||[])[1]||0)-parseInt((a.match(/(\d+)b/)||[])[1]||0)));
   // dedupe aliases like gemini-2.5-flash / gemini-2.5-flash-001: keep the shortest per version
   const uniq=a=>{const seen=new Set();return a.filter(n=>{const k=ver(n)+(/lite/.test(n)?"l":"");if(seen.has(k))return false;seen.add(k);return true})};
-  const chain=[...uniq(flash).slice(0,2),...uniq(lite).slice(0,2),...gemma.slice(0,2)];
+  const chain=[...uniq(flash).slice(0,3),...uniq(lite).slice(0,2),...gemma.slice(0,2)];
   return chain.length?chain:["gemini-2.5-flash","gemini-2.5-flash-lite","gemma-3-27b-it"];
 }
 async function listModels(key){
@@ -1016,7 +1036,7 @@ async function callModel(model,prompt,signal,opts){
         if(!line.startsWith("data:"))continue;try{const j=JSON.parse(line.slice(5));out+=partsText(j);if(j.usageMetadata)usage=j.usageMetadata.totalTokenCount||usage;opts.onPartial(out)}catch(e){}}}}
     catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:"upstream"}}
   }else{const j=await r.json();out=partsText(j);usage=j.usageMetadata&&j.usageMetadata.totalTokenCount}
-  trackUsage(usage);
+  trackUsage(usage,model);
   const s=out.replace(/^```(?:json)?\s*|\s*```$/g,"").trim();
   try{return JSON.parse(s)}catch(e){const a=s.indexOf("{"),b=s.lastIndexOf("}");if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e2){}}throw{code:"invalid_json"}}
 }
@@ -1025,6 +1045,8 @@ async function ask(prompt,_retry,signal,opts){
   if(!navigator.onLine)throw{code:"offline"};
   let chain=await modelChain();
   if(opts&&opts.fast)chain=[...chain.filter(m=>/lite/.test(m)),...chain.filter(m=>!/lite/.test(m))];
+  // models whose daily quota we already used up go last (a failed try costs time)
+  {const by=usageToday().by||{},rpd=settings.rpd||20;chain=[...chain.filter(m=>(by[m]||0)<rpd),...chain.filter(m=>(by[m]||0)>=rpd)]}
   let lastErr={code:"rate_limited"},soonest=Infinity;
   for(const model of chain){
     if(!modelReady(model)){soonest=Math.min(soonest,cool()[model]);continue}
@@ -1049,6 +1071,11 @@ const LEARNER="El alumno habla español, es principiante, lee hiragana con soltu
 const FURI_RULE=`LECTURAS (MUY IMPORTANTE): el alumno aún NO lee kanji. En cualquier campo de texto que contenga japonés y no sea un token (natural, note_es, help_es, ex_jp, jp de opciones, ejemplos…), escribe la lectura en hiragana entre corchetes justo después de cada palabra con kanji, así: 今日[きょう]は 天気[てんき]が いいです。 En los tokens, "r" es OBLIGATORIO siempre que "s" tenga kanji.`;
 const PART_RO={"は":"wa","へ":"e","を":"o"};
 const romajiOf=toks=>{try{return toks.map(t=>/^[、。！？!?…「」]+$/.test(t.s)?t.s:PART_RO[t.s]||wanakana.toRomaji(t.r||t.s)).join(" ").replace(/ ([、。！？!?…])/g,"$1").replace(/、/g,",").replace(/。/g,".").replace(/！/g,"!").replace(/？/g,"?")}catch(e){return ""}};
+/* "私[わたし]は 猫[ねこ]が" → tokens (meaning looked up locally when tapped) */
+const tokensFromFuri=t=>{t=String(t||"").trim();if(!t)return [];const out=[];
+  t.split(/\s+/).forEach(part=>{const m=part.match(/^(.*?)([、。！？!?…]*)$/);const w=m[1],p=m[2];
+    if(w){const s=plain(w),r=w.replace(/[一-龯㐀-䶿々〆ヶ]+\[([\u3040-\u30ffー]+)\]/g,"$1");out.push({s,r:r!==s?r:"",m:""})}
+    if(p)out.push({s:p,r:"",m:""})});return out};
 const cleanToks=a=>Array.isArray(a)?a.filter(t=>t&&typeof t.s==="string").map(t=>({s:t.s,r:t.r||"",m:t.m||""})):[];
 
 /* ============ conversation ============ */
@@ -1059,9 +1086,11 @@ const allMsgs=()=>[WELCOME,...chat.msgs];
 const msgAt=i=>i===0?WELCOME:chat.msgs[i-1];
 const sayText=m=>(m.tokens||[]).map(sayTok).join("");
 const toksOf=(m,k)=>k==="me"?(m.meTokens||[]):(m.tokens||[]);
-let busy=false,chatError="",liveText="";
+let busy=false,streamed=false,chatError="",liveText="";
 
-function renderScenes(){$("#scenes").innerHTML=SCENES.map(([k,l])=>`<button class="chip" data-scene="${k}" aria-pressed="${chat.scene===k}">${l}</button>`).join("")}
+function renderScenes(){$("#scenes").innerHTML=`<button class="chip icon" id="btnClearChat" aria-label="Empezar esta conversación de nuevo" title="Empezar de nuevo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>`+
+  SCENES.map(([k,l])=>`<button class="chip ${roomHas(k)?"has":""}" data-scene="${k}" aria-pressed="${chat.scene===k}">${l}</button>`).join("");
+  const on=$("#scenes .chip[aria-pressed=true]");if(on)on.scrollIntoView({block:"nearest",inline:"nearest"})}
 function renderFocus(){
   const f=focusWords(6).filter(w=>!w.basic);
   $("#focusBar").innerHTML=f.length?`<span>Practicando:</span>`+f.map(w=>`<span class="w ${status(w)[0]==="new"?"new":""}">${esc(w.jp)}</span>`).join(""):`<span>Añade palabras en <b>Vocabulario</b> y la conversación girará en torno a ellas.</span>`;
@@ -1099,7 +1128,7 @@ function renderChat(keepScroll){
   const sc=$("#chatScroll"),prev=sc.scrollTop,atBottom=sc.scrollHeight-sc.scrollTop-sc.clientHeight<80;
   $("#msgs").innerHTML=allMsgs().map((m,i)=>msgHTML(m,i)).join("")+
    `<div class="msg me live" id="liveMsg" ${liveText?"":"hidden"}><div class="bubble"><div class="said" id="liveTxt">${esc(liveText)}</div></div></div>`+
-   (busy?`<div class="msg ai" id="streamMsg"><div class="bubble typing"><i></i><i></i><i></i></div></div>`:"")+
+   (busy&&!streamed?`<div class="msg ai" id="streamMsg"><div class="bubble typing"><i></i><i></i><i></i></div></div>`:"")+
    (chatError?`<div class="notice">${esc(chatError)} <button class="mini" id="btnRetry">Reenviar</button>${/cupo/.test(chatError)?` <button class="mini on" data-tabgo="practice">Practicar sin IA</button>`:""}</div>`:"");
   renderFocus();requestAnimationFrame(()=>sc.scrollTop=(keepScroll&&!atBottom)?prev:sc.scrollHeight);
 }
@@ -1177,7 +1206,7 @@ async function send(text,isStart,spanish){
   text=(text||"").trim();
   if(busy)return;if(!text&&!isStart)return;
   chatError="";let meMsg=null;
-  if(text){meMsg={role:"me",text,pending:true};chat.msgs.push(meMsg);sfx("send");bumpActivity()}
+  if(text){meMsg={role:"me",text,pending:true};chat.msgs.push(meMsg);sfx("send");bumpActivity();if(chat.msgs.filter(m=>m.role==="me").length===1)renderScenes()}
   busy=true;setVState("thinking");renderChat();saveChat();
   const focus=focusWords(6).filter(w=>!w.basic);
   const known=[...words].filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,60).map(w=>w.jp).join("、");
@@ -1198,10 +1227,10 @@ Reglas:
 - Si el alumno habla en español o pregunta algo (qué significa, cómo se dice…), contesta brevemente en español en "help_es" y luego sigue la conversación en japonés.
 
 SOBRE EL ÚLTIMO MENSAJE DEL ALUMNO (si está en japonés, también romaji):
-- "me_tokens": su frase escrita como la escribiría un japonés (con los kanji habituales), sin corregir su contenido, dividida en palabras en orden: s = texto; r = lectura en hiragana (si s tiene kanji o katakana, si no ""); m = significado breve en español en ese contexto (puntuación: m "").
+- "me_jp": su frase escrita como la escribiría un japonés (con los kanji habituales), sin corregir su contenido, con un ESPACIO entre palabras y la lectura de cada kanji entre corchetes: 私[わたし]は 猫[ねこ]が 好[す]きです。
 - "me_es": traducción al español de lo que dijo.
 - "feedback": level "perfect" si es correcto Y es como lo diría un japonés en esa situación; "unnatural" si se entiende o es aceptable pero un nativo no lo diría así (palabra rara, demasiado literal, registro inadecuado, falta o sobra algo); "wrong" si tiene errores de gramática, partículas, conjugación o vocabulario. natural: cómo lo diría un japonés. note_es: explicación breve y concreta en español. Sé exigente con la naturalidad pero no penalices puntuación ni que escriba en hiragana.
-- Si el mensaje no está en japonés: me_tokens [], me_es "", feedback null.
+- Si el mensaje no está en japonés: me_jp "", me_es "", feedback null.
 - "word_usage": por id, las palabras PRIORITARIAS que usó: "good" si bien, "wrong" si mal (o si demuestra no entenderla).
 
 TU RESPUESTA:
@@ -1213,14 +1242,20 @@ Conversación hasta ahora:
 ${hist||"(vacía)"}
 
 Devuelve SOLO JSON:
-{"help_es":"","tokens":[{"s":"","r":"","m":""}],"es":"","feedback":null,"me_es":"","me_tokens":[],"word_usage":[]}
+{"help_es":"","tokens":[{"s":"","r":"","m":""}],"es":"","feedback":null,"me_es":"","me_jp":"","word_usage":[]}
 (Respeta este orden de campos: primero tu respuesta y después el análisis del alumno.)`;
   const ac=new AbortController();replyAC={ac,meMsg,text};renderAssist();
   try{
-    let shown="";
-    const res=await ask(prompt,false,ac.signal,{max:1400,onPartial:acc=>{
+    let shown="",early=null,spokeEarly=false;streamed=false;
+    const res=await ask(prompt,false,ac.signal,{max:1100,fast:settings.fastChat!==false,onPartial:acc=>{
       // show Tama's words as they arrive, before the whole answer (with feedback) is ready
-      const k=acc.indexOf('"tokens"');if(k<0)return;const seg=acc.slice(k);const end=seg.indexOf("]");
+      const k=acc.indexOf('"tokens"');if(k<0||early)return;const seg=acc.slice(k);const end=seg.indexOf("]");
+      // as soon as Tama's whole sentence has arrived, show it for real (and speak it) while the analysis of yours keeps coming
+      if(end>=0){try{const toks=cleanToks(JSON.parse(seg.slice(seg.indexOf("["),end+1)));
+        if(toks.length){const hm=acc.match(/"help_es"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+          early={role:"ai",tokens:toks,romaji:romajiOf(toks),es:"",help:hm?JSON.parse('"'+hm[1]+'"'):""};chat.msgs.push(early);streamed=true;renderChat();
+          if(!(settings.speakFix&&meMsg&&voiceOn)){spokeEarly=true;sfx("receive");afterAiReply(early,null)}
+          return}}catch(e){}}
       const txt=[...(end>=0?seg.slice(0,end):seg).matchAll(/"s"\s*:\s*"((?:[^"\\]|\\.)*)"/g)].map(m=>{try{return JSON.parse('"'+m[1]+'"')}catch(e){return ""}}).join("");
       if(!txt||txt===shown)return;shown=txt;
       const el=$("#streamMsg");if(!el)return;
@@ -1228,21 +1263,24 @@ Devuelve SOLO JSON:
       $("#streamTxt").textContent=txt;const sc=$("#chatScroll");if(sc.scrollHeight-sc.scrollTop-sc.clientHeight<160)sc.scrollTop=sc.scrollHeight}});
     if(replyAC&&replyAC.ac===ac)replyAC=null;
     let fb=null;
-    if(meMsg){meMsg.pending=false;meMsg.meTokens=cleanToks(res.me_tokens);meMsg.meEs=res.me_es||"";
+    if(meMsg){meMsg.pending=false;meMsg.meTokens=res.me_tokens?cleanToks(res.me_tokens):tokensFromFuri(res.me_jp);meMsg.meEs=res.me_es||"";
       if(res.feedback&&typeof res.feedback==="object"&&res.feedback.level){fb=res.feedback;meMsg.feedback=fb;
         if(fb.level!=="perfect")session.fixes.push({said:text,natural:fb.natural,note:fb.note_es,level:fb.level})}}
     (res.word_usage||[]).forEach(u=>{const w=words.find(x=>x.id===u.id);if(w&&(u.result==="good"||u.result==="wrong"))convUsage(w,u.result)});
     const toks=cleanToks(res.tokens);
-    const m={role:"ai",tokens:toks,romaji:res.romaji||romajiOf(toks),es:res.es||"",help:res.help_es||""};
-    chat.msgs.push(m);busy=false;renderAssist();
+    let m;
+    if(early){m=early;if(toks.length)m.tokens=toks;m.romaji=romajiOf(m.tokens);m.es=res.es||"";m.help=res.help_es||m.help}
+    else{m={role:"ai",tokens:toks,romaji:res.romaji||romajiOf(toks),es:res.es||"",help:res.help_es||""};chat.msgs.push(m)}
+    busy=false;streamed=false;renderAssist();
     renderChat();saveChat();updateBadge();
     if(fb){sfx(fb.level);if(fb.level==="perfect"){session.combo=(session.combo||0)+1;if(session.combo%3===0){setTimeout(()=>{confetti();toast(`¡${session.combo} perfectas seguidas!`)},400)}}else session.combo=0;
       if(fb.level==="perfect")tama("happy",pick(["¡Perfecto! すごい！","¡Eso es! Así lo diría un japonés.","¡Muy bien! いいね！"]),2200);
       else if(fb.level==="unnatural")tama("oops",pick(["¡Casi! Mira cómo lo diría un japonés.","Se entiende, pero hay una forma más natural."]),2600);
       else tama("sad",pick(["Ups, revisa la corrección.","Un pequeño error, ¡no pasa nada!"]),2600)}
-    else sfx("receive");
-    setTimeout(()=>afterAiReply(m,fb),fb?700:150);
-  }catch(e){if(e&&e.code==="cancelled")return;if(replyAC&&replyAC.ac===ac)replyAC=null;renderAssist();console.warn(e);busy=false;if(meMsg)meMsg.pending=false;chatError=aiErr(e);renderChat();pauseVoice(true);tama("sad","Algo ha fallado. Mira el mensaje de abajo.",3000);if(e.code==="no_key"||e.code==="bad_key")showOnboarding()}
+    else if(!spokeEarly)sfx("receive");
+    if(!spokeEarly)setTimeout(()=>afterAiReply(m,fb),fb?700:150);
+    else if(voiceOn&&!(window.speechSynthesis&&speechSynthesis.speaking)&&!L)setTimeout(()=>{if(voiceOn&&!busy&&!L)startListening()},250);
+  }catch(e){streamed=false;if(e&&e.code==="cancelled")return;if(replyAC&&replyAC.ac===ac)replyAC=null;renderAssist();console.warn(e);busy=false;if(meMsg)meMsg.pending=false;chatError=aiErr(e);renderChat();pauseVoice(true);tama("sad","Algo ha fallado. Mira el mensaje de abajo.",3000);if(e.code==="no_key"||e.code==="bad_key")showOnboarding()}
 }
 
 /* ---- "what can I say?" ---- */
@@ -1350,7 +1388,7 @@ function tokenSheet(mi,j,k,silent){
    <button class="iconbtn" data-say="${esc(sayTok(t))}" aria-label="Escuchar">${SVG.play}</button></div>
    <div class="ctx">${ctx.html} <button class="mini" data-say="${esc(ctx.text)}">${SVG.play}</button></div>
    <div class="stack" style="gap:8px" id="tokBody">
-     <div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x&&x.here||t.m)}</span></div>
+     ${x&&x.here||t.m?`<div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x&&x.here||t.m)}</span></div>`:""}
      ${general?`<div class="sec"><span class="lbl">Traducción general</span><span class="val">${esc(general)}${x&&x.dict&&x.dict!==t.s?` <span style="color:var(--muted);font-size:15px">· diccionario: <span class="jp">${esc(x.dict)}</span></span>`:""}</span></div>`:""}
      ${x&&x.usage?`<div class="sec"><span class="lbl">Cómo se usa</span><span class="val">${furi(x.usage)}</span></div>`:""}
      ${x&&x.ex_jp?`<div class="sec"><span class="lbl">Otro ejemplo</span><span class="val jp" style="font-size:19px">${furi(x.ex_jp)} <button class="mini" data-say="${esc(x.ex_jp)}">${SVG.play}</button></span><span style="font-size:15px;color:var(--muted)">${esc(x.ex_es)}</span></div>`:""}
@@ -1654,6 +1692,7 @@ function settingsSheet(){
    ${sw("kataHelp","Ayuda con katakana","Muestra también la lectura encima del katakana.")}
    ${sw("romaji","Romaji","Transcripción en letras latinas.")}
    ${sw("kanaInput","Romaji → hiragana al escribir","Escribe «konnichiwa» y aparece こんにちは. En MAYÚSCULAS sale katakana.")}
+   ${sw("fastChat","Respuestas rápidas","Tama usa primero los modelos «lite»: contesta antes, con un japonés algo más simple. Desactívalo para correcciones más finas.")}
    ${sw("speakFix","Decir las correcciones en voz alta","Al hablar, Tama te dice la versión correcta antes de seguir.")}
    ${sw("autoSpeak","Leer respuestas en pausa","Cuando escribes, Tama también te contesta en voz alta.")}
    ${sw("audioOnly","Modo solo audio","Oculta el texto de Tama hasta que lo pidas: practica escuchando.")}
@@ -1774,9 +1813,11 @@ document.addEventListener("click",e=>{
   if(el.id==="btnResumeFromHint"){closeSheet();return resumeVoice()}
   if(d.use!==undefined){const o=(window._hintOpts||[])[+d.use];if(o){closeSheet();try{wanakana.unbind(inp)}catch(e2){}inp.value=plain(o.jp);autoGrow();applyKana();inp.focus()}return}
   if(el.id==="btnKana"){settings.kanaInput=!settings.kanaInput;saveSettings();applyKana();sfx("flip");inp.focus();return}
-  if(d.scene){if(chat.scene===d.scene)return;chat.scene=d.scene;sfx("flip");renderScenes();chat.msgs.push({role:"sys",text:"Situación: "+SCENES.find(s=>s[0]===d.scene)[1]});saveChat();stopListen(true);showListenPanel(false);setLive("");return send("",true)}
+  if(d.scene)return switchScene(d.scene);
+  if(el.id==="btnClearChat"){sfx("tap");return clearChatSheet()}
+  if(el.id==="btnClearYes"){closeSheet();if(busy){try{replyAC&&replyAC.ac.abort()}catch(e){}replyAC=null;busy=false}chat.msgs=[];chatError="";session={good:{},bad:{},fixes:[]};saveChat();renderScenes();renderChat();sfx("flip");return send("",true)}
   if(el.id==="btnEnd")return summarySheet();
-  if(el.id==="btnNewChat"){closeSheet();chat.msgs=[];session={good:{},bad:{},fixes:[]};saveChat();renderChat();return send("",true)}
+  if(el.id==="btnNewChat"){closeSheet();chat.msgs=[];renderScenes();session={good:{},bad:{},fixes:[]};saveChat();renderChat();return send("",true)}
   if(el.id==="btnRetry"){const last=chat.msgs[chat.msgs.length-1];if(last&&last.role==="me"){chat.msgs.pop();return send(last.text)}return send("",true)}
   if(d.act){const m=msgAt(+d.i);if(!m)return;
     if(d.act==="play")return speakMsg(+d.i);
@@ -1823,7 +1864,7 @@ document.addEventListener("change",e=>{
   if(e.target.id==="s_voice"){settings.voice=e.target.value;saveSettings();pickVoice();speak("こんにちは")}
   if(e.target.id==="s_goal"){settings.goal=+e.target.value;saveSettings();renderGoal()}
   if(e.target.id==="s_silence"){settings.silence=+e.target.value;saveSettings()}
-  if(e.target.id==="s_limit"){settings.dailyLimit=Math.max(10,+e.target.value||250);saveSettings();renderQuota()}
+  if(e.target.id==="s_limit"){settings.rpd=Math.max(1,+e.target.value||20);saveSettings();renderQuota()}
   if(e.target.id==="s_micMode"){settings.micMode=e.target.value;saveSettings();if(voiceOn&&settings.micMode==="hold")pauseVoice(true);toast(settings.micMode==="hold"?"Mantén pulsado el micro mientras hablas":"Toca el micro para conversar sin manos")}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
@@ -1872,31 +1913,39 @@ function cancelReply(){
 /* ============ Gemini usage ring ============ */
 function ptDay(){try{return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles"}).format(new Date())}catch(e){return dayKey()}}
 function usageToday(){const d=ptDay();if(!settings.usage||settings.usage.day!==d)settings.usage={day:d,req:0,tok:0,hit:false};return settings.usage}
-function trackUsage(tok){const u=usageToday();u.req++;u.tok+=(+tok||0);saveSettings();renderQuota()}
+function trackUsage(tok,model){const u=usageToday();u.req++;u.tok+=(+tok||0);if(model){u.by=u.by||{};u.by[model]=(u.by[model]||0)+1}saveSettings();renderQuota()}
+/* the ring shows ALL models together: each has its own daily quota (free tier: ~20 requests/day each) */
+function quotaStats(){
+  const u=usageToday(),rpd=Math.max(1,settings.rpd||20),ms=settings.models||[],c=cool(),t=now();
+  const rows=ms.map(m=>{const n=(u.by||{})[m]||0,w=(c[m]||0)-t,dead=w>36e5||n>=rpd;return {m,n,dead,wait:w>0&&!dead?w:0}});
+  const used=rows.reduce((a,r)=>a+(r.dead?rpd:Math.min(r.n,rpd)),0),cap=Math.max(1,ms.length*rpd);
+  const all=rows.length>0&&rows.every(r=>r.dead);
+  return {rows,rpd,cap,used,all,pct:all?100:Math.min(99,Math.round(used/cap*100)),left:Math.max(0,cap-used)};
+}
 function nextReset(){
   try{const parts=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/Los_Angeles",hour:"numeric",minute:"numeric",second:"numeric",hourCycle:"h23"}).formatToParts(new Date()).map(p=>[p.type,p.value]));
     const left=((24-(+parts.hour%24))*3600-(+parts.minute)*60-(+parts.second))*1000;return new Date(now()+left)}catch(e){return null}
 }
 function renderQuota(){
-  const u=usageToday(),lim=Math.max(1,settings.dailyLimit),pct=u.hit?100:Math.min(100,Math.round(u.req/lim*100));
+  const q=quotaStats(),pct=q.pct;
   const ring=$("#qRing");if(!ring)return;
   ring.setAttribute("stroke-dasharray",`${pct} 100`);
   ring.style.stroke=pct>=85?"var(--ai)":pct>=60?"var(--gold)":"var(--ok)";
-  $("#qPct").textContent=u.hit?"!":pct;
+  $("#qPct").textContent=q.all?"!":pct;
 }
 function quotaSheet(){
-  const u=usageToday(),lim=settings.dailyLimit,pct=u.hit?100:Math.min(100,Math.round(u.req/lim*100)),r=nextReset();
+  const u=usageToday(),q=quotaStats(),pct=q.pct,r=nextReset();
   const left=r?Math.max(0,r-now()):0,h=Math.floor(left/36e5),mn=Math.round((left%36e5)/6e4);
   openSheet(`<div class="grab"></div><div class="hrow"><h3 class="h2">Uso de Gemini hoy</h3>${INFO}</div>
-   <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="qbig"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" class="q-bg"/><circle cx="18" cy="18" r="14" class="q-fg" pathLength="100" stroke-dasharray="${pct} 100" style="stroke:${pct>=85?"var(--ai)":pct>=60?"var(--gold)":"var(--ok)"}"/></svg><b>${u.hit?"!":pct+"%"}</b></div>
-     <dl class="kv" style="flex:1"><dt>Peticiones</dt><dd>${u.req} de ~${lim}</dd><dt>Tokens</dt><dd>${u.tok.toLocaleString("es-ES")}</dd><dt>Se reinicia</dt><dd>${r?r.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+` (en ${h} h ${mn} min)`:"a medianoche de California"}</dd></dl></div>
-   <div class="models"><b>Modelos de reserva</b>${(settings.models||[]).map(m=>{const c=cool()[m]||0,w=c-now();
-      const st=w>0?(w>36e5?`<span class="mst off">agotado hasta mañana</span>`:`<span class="mst wait">descansa ${Math.ceil(w/6e4)} min</span>`):m===settings.model?`<span class="mst on">en uso</span>`:`<span class="mst">disponible</span>`;
-      return `<div class="mrow"><span>${esc(m)}</span>${st}</div>`}).join("")||`<div class="mrow"><span>Se eligen en la primera frase</span></div>`}
-     <small class="info">Cada modelo tiene su propio cupo gratis con la misma clave. Si el mejor se agota, Tama pasa al siguiente: los últimos («lite», «gemma») hablan algo peor, pero sirven para seguir practicando.</small></div>
+   <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="qbig"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" class="q-bg"/><circle cx="18" cy="18" r="14" class="q-fg" pathLength="100" stroke-dasharray="${pct} 100" style="stroke:${pct>=85?"var(--ai)":pct>=60?"var(--gold)":"var(--ok)"}"/></svg><b>${q.all?"!":pct+"%"}</b></div>
+     <dl class="kv" style="flex:1"><dt>Quedan</dt><dd>~${q.left} de ${q.cap} peticiones</dd><dt>Hechas hoy</dt><dd>${u.req}</dd><dt>Se reinicia</dt><dd>${r?r.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+` (en ${h} h ${mn} min)`:"a medianoche de California"}</dd></dl></div>
+   <div class="models"><b>Modelos</b>${q.rows.map(x=>{
+      const st=x.dead?`<span class="mst off">agotado hasta el reinicio</span>`:x.wait?`<span class="mst wait">descansa ${Math.ceil(x.wait/1000)} s</span>`:x.m===settings.model?`<span class="mst on">en uso</span>`:`<span class="mst">disponible</span>`;
+      return `<div class="mrow2"><div class="mrow"><span>${esc(x.m)}</span>${st}</div><div class="mbar"><i style="width:${x.dead?100:Math.min(100,x.n/q.rpd*100)}%"></i><span>${x.dead?q.rpd:x.n}/${q.rpd}</span></div></div>`}).join("")||`<div class="mrow"><span>Se eligen en la primera frase</span></div>`}
+     <small class="info">Cada modelo tiene su propio cupo gratis con la misma clave (unas 20 peticiones al día y 5–10 por minuto). Si uno se agota, Tama pasa al siguiente. «Descansa» = límite por minuto: vuelve enseguida.</small></div>
    <div class="notice info" style="color:var(--ink)"><b>Qué gasta Gemini:</b> cada frase en la conversación, cada tanda de 8 ejercicios con frases, y lo que le pidas a Tama expresamente (explicar una palabra, un ejemplo, los kanji, «¿Qué puedo decir?»). <b>No gastan nada:</b> el buscador y las sugerencias de palabras, el repaso, los ejercicios de palabras ni tocar palabras para ver su significado.</div>
    <p class="info" style="margin:0;font-size:15px;color:var(--muted)">Es una estimación hecha en este dispositivo. El nivel gratuito de Gemini limita sobre todo las <b>peticiones por día</b> (cada frase que dices es una; ver un significado, sugerencias o kanji también cuentan) y se reinicia a medianoche de California. Mira tu límite real en AI Studio y ponlo aquí.</p>
-   <div class="row"><label for="s_limit" style="font-weight:600">Mi límite diario</label><input id="s_limit" class="field" type="number" min="10" max="100000" step="10" value="${lim}" style="flex:0 0 110px"><span style="font-size:15px;color:var(--muted)">peticiones</span></div>
+   <div class="row"><label for="s_limit" style="font-weight:600">Peticiones al día por modelo</label><input id="s_limit" class="field" type="number" min="1" max="100000" step="1" value="${q.rpd}" style="flex:0 0 110px"></div>
    <div class="row"><a class="btn" href="https://aistudio.google.com/rate-limit" target="_blank" rel="noopener">Ver mi límite en AI Studio</a><a class="btn ghost" href="https://aistudio.google.com/usage" target="_blank" rel="noopener">Uso detallado</a></div>`);
 }
 
