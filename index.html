@@ -72,7 +72,7 @@ main{flex:1;min-height:0;position:relative}
 .view{position:absolute;inset:0;display:flex;flex-direction:column}
 .scroll{flex:1;overflow-y:auto;min-height:0;padding-block:12px 16px}
 
-nav.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs button{border:0;background:none;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:14px;font-weight:600}
 nav.tabs button .k{font-family:var(--f-disp);font-weight:800;font-size:22px;line-height:1.15}
 nav.tabs button[aria-selected="true"]{color:var(--ink)}
@@ -513,6 +513,72 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
 .onb p{margin:0}
 .onb .lead{color:var(--muted);font-size:18px;text-align:center}
 .onb .card-s{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+
+/* ---------- progression ---------- */
+.lvlpill{position:relative;width:38px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;flex:none}
+.lvlpill svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.lvlpill circle{fill:none;stroke-width:3.4}.lvlpill .q-bg{stroke:var(--line)}.lv-fg,.lv-fg2{stroke:var(--gold);stroke-linecap:round;transition:stroke-dasharray .6s cubic-bezier(.3,1.3,.5,1)}
+.lvlpill::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--warn-soft)}
+.lvlpill b{position:relative;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--gold)}
+.lvlpill.bump{animation:bump .45s ease}
+.xpfloat{position:fixed;transform:translateX(-50%);z-index:60;font-weight:800;font-size:15px;color:var(--gold);text-shadow:0 1px 0 var(--bg);pointer-events:none;animation:xpf 1.3s ease-out forwards}
+@keyframes xpf{0%{opacity:0;transform:translate(-50%,6px) scale(.8)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-26px) scale(1)}}
+.celebrate{position:fixed;inset:0;z-index:70;background:rgba(20,18,12,.55);display:grid;place-items:center;padding:20px;animation:fade .2s ease both}
+.cbox{background:var(--paper) var(--washi);border-radius:24px;padding:22px 22px 18px;max-width:360px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
+.cimg img{width:130px;height:130px;object-fit:contain;animation:hop 1s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.cbig{font-family:var(--f-disp);font-weight:800;font-size:64px;line-height:1;color:var(--gold)}
+.cbox h2{margin:0;font-family:var(--f-disp);font-size:26px}.cbox p{margin:0;color:var(--muted)}.cbox .btn{margin-top:8px;min-width:160px;justify-content:center}
+.pathhead{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow)}
+.lvbig{position:relative;width:96px;height:96px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.lvbig svg{position:absolute;inset:0;transform:rotate(-90deg)}.lvbig circle{fill:none;stroke-width:3}.lvbig .q-bg{stroke:var(--line)}
+.lvbig b{position:relative;font-family:var(--f-disp);font-size:38px;line-height:1}.lvbig small{position:relative;font-size:13px;color:var(--muted)}
+.pathinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.pathinfo .h2{margin:0}.pathinfo small{font-size:14px;color:var(--muted)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.xpbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--ai));border-radius:5px;transition:width .6s}
+.mul{color:var(--ai)}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pstats div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column}
+.pstats b{font-size:22px;font-variant-numeric:tabular-nums}.pstats span{font-size:13px;color:var(--muted)}
+.badges{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-block:2px}
+.bdg{flex:none;width:72px;display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.4;filter:grayscale(1)}
+.bdg span{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;background:radial-gradient(circle at 35% 30%,#ffb36b,var(--shu) 60%,#a3281f);box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+.bdg small{font-size:12px;color:var(--muted);text-align:center}.bdg.on{opacity:1;filter:none}
+.path{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;padding:16px 0 30px}
+.path::before{content:"";position:absolute;top:30px;bottom:50px;left:50%;border-left:4px dotted var(--line)}
+.pnode{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateX(var(--x))}
+.pdot{width:78px;height:78px;border-radius:50%;border:0;border-bottom:6px solid rgba(0,0,0,.18);background:var(--line);color:var(--muted);display:grid;place-items:center;font-size:15px;font-weight:700;line-height:1.1;padding:6px;box-shadow:var(--shadow)}
+.pdot .jp{font-size:14px;word-break:break-all}.pdot svg{width:34px;height:34px}
+.pnode.done .pdot{background:var(--gold);color:#fff}
+.pnode.on .pdot{background:var(--ai);color:var(--on-ai);width:92px;height:92px;box-shadow:0 0 0 8px var(--ai-soft),var(--shadow);animation:breathe 2s ease-in-out infinite}
+.pnode.on .pdot .jp{font-size:16px}
+.ptama{position:absolute;left:100%;top:-6px;width:78px;height:78px;object-fit:contain;margin-left:6px;animation:hop 1.6s ease-in-out infinite}
+.plbl{display:flex;flex-direction:column;align-items:center;text-align:center;background:var(--bg);padding:0 6px;border-radius:8px}.plbl b{font-size:15px}.plbl small{font-size:13px;color:var(--ai);font-weight:700}
+.pnode.lock .plbl b{color:var(--muted)}
+.reqs{display:flex;flex-direction:column;gap:10px}.req span{font-size:15px}.req b{font-variant-numeric:tabular-nums}.req.ok b{color:var(--ok)}.req.ok .xpbar i{background:var(--ok)}
+
+/* ---------- computer: use the whole screen ---------- */
+@media (min-width:1000px){
+  .app{max-width:none;display:grid;grid-template-columns:230px 1fr;grid-template-rows:auto 1fr;height:100%}
+  header.top{grid-column:1/-1;padding-inline:24px;border-bottom:1px solid var(--line)}
+  nav.tabs{grid-row:2;grid-column:1;display:flex;flex-direction:column;gap:6px;border-top:0;border-right:1px solid var(--line);padding:16px 12px}
+  nav.tabs button{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:14px;font-size:17px;text-align:left}
+  nav.tabs button .k{font-size:26px;width:58px;text-align:center}
+  nav.tabs button[aria-selected="true"]{background:var(--ai-soft)}
+  main{grid-row:2;grid-column:2}
+  .view .scroll.pad,.view>.pad{padding-left:max(32px,calc((100% - 980px)/2));padding-right:max(32px,calc((100% - 980px)/2))}
+  #v-chat .tama,#v-chat .scenes,#v-chat .dock{padding-left:max(32px,calc((100% - 980px)/2));padding-right:max(32px,calc((100% - 980px)/2))}
+  .msgs{max-width:980px}
+  #practicePane{max-width:760px}
+  .sheet{max-width:640px;border-radius:24px;margin-bottom:auto;margin-top:auto;max-height:86%}
+  .scrim{align-items:center}
+  .pstats{grid-template-columns:repeat(6,1fr)}
+  .packbar{left:auto;right:24px;bottom:24px}
+  .pxfoot{margin-inline:0;border-radius:22px}
+  .pxfoot:not(.res){border-top:0;background:transparent}
+  .acres,.sugs{max-width:none}
+  #vocabPane{max-width:980px}
+}
 </style>
 </head>
 <body>
@@ -522,6 +588,7 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
     <div class="brand">¿Wakarú?</div>
     <div class="spacer"></div>
     <button class="quota" id="btnQuota" aria-label="Uso de Gemini hoy"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" class="q-bg"/><circle cx="18" cy="18" r="14" class="q-fg" id="qRing" pathLength="100" stroke-dasharray="0 100"/></svg><span id="qPct">0</span></button>
+    <button class="lvlpill" id="lvlPill" aria-label="Tu nivel"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" class="q-bg"/><circle cx="18" cy="18" r="15" class="lv-fg" pathLength="100" stroke-dasharray="0 100"/></svg><b>1</b></button>
     <span class="streak off" id="streak" title="Días seguidos practicando"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 10.5 11C10.5 6.5 12 2 12 2z"/></svg><span id="streakN">0</span></span>
     <button class="iconbtn" id="btnSettings" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
   </header>
@@ -563,6 +630,7 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
     </section>
 
     <section class="view" id="v-vocab" hidden><div class="scroll pad"><div class="stack" id="vocabPane"></div></div></section>
+    <section class="view" id="v-path" hidden><div class="scroll pad"><div class="stack" id="pathPane"></div></div></section>
     <section class="view" id="v-practice" hidden><div class="scroll pad pxscroll"><div class="stack" id="practicePane"></div></div></section>
   </main>
 
@@ -570,6 +638,7 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
     <button role="tab" data-tab="chat" aria-selected="true"><span class="k">話す</span>Conversar</button>
     <button role="tab" data-tab="practice" aria-selected="false"><span class="k">練習</span><span>Practicar<span class="badge" id="dueBadge" hidden>0</span></span></button>
     <button role="tab" data-tab="vocab" aria-selected="false"><span class="k">言葉</span>Vocabulario</button>
+    <button role="tab" data-tab="path" aria-selected="false"><span class="k">道</span>Camino</button>
   </nav>
 </div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
@@ -749,8 +818,8 @@ function bumpActivity(){
   const k=dayKey(),y=dayKey(now()-DAY);
   if(settings.today.day!==k)settings.today={day:k,n:0};
   settings.today.n++;
-  if(settings.streak.day!==k){settings.streak={day:k,n:settings.streak.day===y?settings.streak.n+1:1};if(settings.streak.n>1)toast(`¡Racha de ${settings.streak.n} días!`)}
-  if(settings.today.n===settings.goal){setTimeout(()=>{sfx("done");confetti();tama("happy","¡Objetivo de hoy cumplido! お疲れ様！",3500);toast("¡Objetivo diario cumplido!")},900)}
+  if(settings.streak.day!==k){settings.streak={day:k,n:settings.streak.day===y?settings.streak.n+1:1};if(settings.streak.n>1)toast(`¡Racha de ${settings.streak.n} días!`);if(window.xpCheckStreak)setTimeout(xpCheckStreak,300)}
+  if(settings.today.n===settings.goal){if(window.gainXP)setTimeout(()=>gainXP(50,"goal",{delay:2500}),1200);setTimeout(()=>{sfx("done");confetti();tama("happy","¡Objetivo de hoy cumplido! お疲れ様！",3500);toast("¡Objetivo diario cumplido!")},900)}
   saveSettings();renderStreak();renderGoal();
 }
 function renderStreak(){const k=dayKey(),y=dayKey(now()-DAY);const alive=settings.streak.day===k||settings.streak.day===y;const n=alive?settings.streak.n:0;
@@ -771,7 +840,8 @@ function review(w,g){
   const t=now();w.ease=w.ease||2.5;w.interval=w.interval||0;w.reps=w.reps||0;
   if(g===0){w.lapses=(w.lapses||0)+1;w.bad=(w.bad||0)+1;w.reps=0;w.interval=0;w.ease=Math.max(1.3,w.ease-0.2);w.due=t+10*6e4;w.lastFail=t}
   else{w.good=(w.good||0)+1;if(w.reps===0)w.interval=[0,1,1,3][g];else if(w.reps===1)w.interval=[0,2,3,6][g];else w.interval=Math.round(w.interval*[0,1.2,w.ease,w.ease*1.3][g]*10)/10;
-    w.ease=Math.max(1.3,w.ease+[0,-0.15,0,0.1][g]);w.reps++;w.due=t+w.interval*DAY}
+    w.ease=Math.max(1.3,w.ease+[0,-0.15,0,0.1][g]);w.reps++;w.due=t+w.interval*DAY;
+    if(w.interval>=21&&!w.masteredAt){w.masteredAt=t;if(window.gainXP&&!w.basic){gainXP(20,"mastered");toast(`¡${w.jp} dominada! +20 XP`)}}}
   w.lastSeen=t;saveWord();
 }
 function convUsage(w,result){if(result==="wrong"){review(w,0);session.bad[w.id]=w.jp}else{if((w.due||0)<=now())review(w,2);else{w.good=(w.good||0)+1;w.lastSeen=now();saveWord()}session.good[w.id]=w.jp}}
@@ -1223,7 +1293,7 @@ async function send(text,isStart,spanish){
   const prompt=`Eres Tama, una panda roja japonesa con mucha personalidad: simpática, ingeniosa y un poco pícara, que habla como una amiga nativa y ayuda a un alumno a practicar conversación. ${LEARNER}\n${FURI_RULE}
 Situación: ${scene[2]}.
 Vocabulario que el alumno está aprendiendo: ${known||"(todavía ninguno)"}.
-Gramática básica que conoce: partículas は が を に で へ と の も か ね よ, です/じゃないです, verbos en 〜ます/〜ません/〜ました/〜ましょう/〜たいです, palabras interrogativas.
+Gramática que conoce (nivel ${window.learnerStage?learnerStage().lvl:1}): ${window.learnerStage?learnerStage().grammar:"partículas básicas, です, verbos en 〜ます"}. Frases de ${window.learnerStage?learnerStage().len:"3 a 8 palabras"}.
 Palabras PRIORITARIAS para practicar ahora, con su id: ${focus.map(w=>w.id+"="+w.jp+"("+w.es+")").join(", ")||"(ninguna)"}.
 ${voiceOn?"El alumno te HABLA en voz alta y su mensaje viene de un reconocedor de voz: puede tener errores de transcripción (homófonos, kanji equivocados). No le penalices por errores que claramente son de la transcripción.":"El alumno escribe con teclado convirtiendo romaji a hiragana, así que es normal que escriba todo en hiragana: no lo cuentes como error."}
 
@@ -1281,6 +1351,7 @@ Devuelve SOLO JSON:
     else{m={role:"ai",tokens:toks,romaji:res.romaji||romajiOf(toks),es:res.es||"",help:res.help_es||""};chat.msgs.push(m)}
     busy=false;streamed=false;renderAssist();
     renderChat();saveChat();updateBadge();
+    if(fb&&window.gainXP){progNote("conv");if(fb.level==="perfect")progNote("perfect");gainXP(fb.level==="perfect"?15:fb.level==="unnatural"?8:4,"conv")}
     if(fb){sfx(fb.level);if(fb.level==="perfect"){session.combo=(session.combo||0)+1;if(session.combo%3===0){setTimeout(()=>{confetti();toast(`¡${session.combo} perfectas seguidas!`)},400)}}else session.combo=0;
       if(fb.level==="perfect")tama("happy",pick(["¡Perfecto! すごい！","¡Eso es! Así lo diría un japonés.","¡Muy bien! いいね！"]),2200);
       else if(fb.level==="unnatural")tama("oops",pick(["¡Casi! Mira cómo lo diría un japonés.","Se entiende, pero hay una forma más natural."]),2600);
@@ -1516,7 +1587,7 @@ SOLO JSON: {"candidates":[{"jp":"","kana":"","romaji":"","es":"","type":""}]}`,f
 function addWord(c,silent){
   if(findWord(c.jp)){if(!silent)toast(`${c.jp} ya está en tu vocabulario`);return null}
   const w={id:uidGen(),jp:c.jp,kana:c.kana||c.jp,romaji:c.romaji||"",es:c.es||"",type:c.type||"",ex_jp:c.ex_jp||"",ex_kana:c.ex_kana||"",ex_es:c.ex_es||"",added:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,good:0,bad:0};
-  words.push(w);saveWord();if(!silent){toast(`Añadida: ${w.jp}`);sfx("add")}updateBadge();return w;
+  words.push(w);saveWord();if(!silent){toast(`Añadida: ${w.jp}`);sfx("add")}updateBadge();if(window.xpForWord)xpForWord();return w;
 }
 /* suggestions: local, instant, no AI. Prefers the learner's level and words sharing kanji or theme with their vocabulary */
 // how often each suggestion has been shown without being picked: those fade so new ones appear (forgiven after 2 weeks)
@@ -1799,7 +1870,8 @@ function setTab(t){
   if(t!=="chat")stopSpeaking();
   if(t!=="practice"&&window.practiceLeave)practiceLeave();
   tab=t;sfx("tap");document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
-  ["chat","practice","vocab"].forEach(k=>$("#v-"+k).hidden=k!==t);
+  ["chat","practice","vocab","path"].forEach(k=>$("#v-"+k).hidden=k!==t);
+  if(t==="path"&&window.renderPath)renderPath();
   if(t==="vocab")renderVocab();if(t==="chat")renderChat();if(t==="practice"&&window.renderPractice)renderPractice()}
 function updateBadge(){const n=dueWords().length;const b=$("#dueBadge");b.hidden=!n;b.textContent=n}
 function renderAll(){renderScenes();renderChat();updateBadge();renderStreak();renderGoal();setVState(vState);if(tab==="vocab")renderVocab()}
@@ -2000,6 +2072,7 @@ if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceW
 <script src="verbs.js"></script>
 <script src="packs.js"></script>
 <script src="practice.js"></script>
+<script src="progress.js"></script>
 <script src="sync.js"></script>
 </body>
 </html>

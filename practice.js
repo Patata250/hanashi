@@ -287,9 +287,9 @@ ${FURI_RULE}
 Crea ${n} ejercicios cortos y variados de japonés para practicar ANTES de conversar, como en una app tipo Duolingo. Tipos a usar (repártelos): ${types.join(", ")}.
 Vocabulario del alumno (id=palabra (significado)): ${mine.map(w=>w.id+"="+w.jp+" ("+w.es+")").join(", ")||"(aún ninguno: usa palabras muy básicas y frecuentes)"}.
 Palabras PRIORITARIAS (falladas recientemente o nuevas): ${focus.map(w=>w.id+"="+w.jp).join(", ")||"(ninguna)"}.
-Gramática que conoce: partículas は が を に で へ と の も か ね よ, です/じゃないです, verbos en 〜ます/〜ません/〜ました/〜ましょう/〜たいです, interrogativos (なに どこ いつ だれ どう いくら), これ/それ/あれ, ここ/そこ/あそこ.
+Gramática que conoce: ${window.learnerStage?learnerStage().grammar:"partículas básicas, です, 〜ます"}.
 Reglas:
-- Frases cortas (3 a 8 palabras), naturales, estilo です/ます, útiles en una conversación real. Situaciones variadas.
+- Frases de ${window.learnerStage?learnerStage().len:"3 a 8 palabras"}, naturales, estilo です/ます, útiles en una conversación real. Situaciones variadas.
 - Usa sobre todo su vocabulario y la gramática que conoce; como mucho 1 palabra nueva por frase. Que cada ejercicio practique al menos una palabra PRIORITARIA si es posible, y pon los ids de las palabras del alumno que aparecen en "words".
 - No repitas ninguna de estas frases recientes: ${PX.recent.slice(-15).join(" / ")||"(ninguna)"}.
 - Antes de responder, REVISA cada ejercicio: la frase japonesa y la española deben decir EXACTAMENTE lo mismo (números, edades, horas, personas, tiempos verbales). 20 años = 二十歳 (はたち), no 十歳. Si dudas, usa una frase más sencilla.
@@ -345,7 +345,7 @@ function start(mode){
     fetchBatch();next()};
   if(BASE)go();else{PX.state="loading";render();loadBase().then(go)}
 }
-function stop(){PX.active=false;stopListen&&stopListen(true);stopSpeaking();renderPractice()}
+function stop(){PX.active=false;stopListen&&stopListen(true);stopSpeaking();renderPractice();if(window.flushCelebrations)setTimeout(flushCelebrations,400)}
 function next(){
   stopSpeaking();
   if(PX.mode==="review"){if(PX.i>=PX.queue.length){PX.state="round";return render()}}
@@ -381,7 +381,7 @@ function finish(ok){
   const st=pstat();
   PX.snap={st:{...st},combo:PX.combo,round:{n:PX.round.n,good:PX.round.good},words:(c.type==="match"?c.pairs.map(p=>p.id):(c.words||[])).map(id=>{const w=words.find(x=>x.id===id);return w?JSON.parse(JSON.stringify(w)):null}).filter(Boolean)};
   st.done++;PX.round.n++;
-  if(ok){st.good++;PX.round.good++;PX.combo++;st.xp+=10+(PX.combo>=5?5:0);if(PX.combo>st.best)st.best=PX.combo}
+  if(ok){st.good++;PX.round.good++;PX.combo++;st.xp+=10+(PX.combo>=5?5:0);if(PX.combo>st.best)st.best=PX.combo;if(window.gainXP)gainXP(PX.combo>=5?15:10,"practice")}
   else{PX.combo=0;const again={...c,retry:true};PX.queue.splice(Math.min(PX.queue.length,PX.i+3),0,again)}
   // spaced repetition: match items judge each word separately
   if(c.type==="match"){c.pairs.forEach(p=>{if(p.basic)return;const w=words.find(x=>x.id===p.id);if(w){convUsage(w,PX.match.bad.has(p.id)?"wrong":"good");PX.round.words.add(w.jp)}})}
@@ -487,7 +487,7 @@ function render(){
       ${PX.round.words.size?`<p style="margin:0;color:var(--muted);font-size:16px">Has practicado: <span class="jp">${[...PX.round.words].slice(0,12).map(esc).join("、")}</span></p>`:""}
       <div class="row" style="justify-content:center">${PX.mode==="review"?(dueWords().length?`<button class="btn primary" data-pxmode="review">Repasar ${dueWords().length} más</button>`:`<button class="btn primary" data-pxmode="mix">Seguir practicando</button>`):`<button class="btn ${PX.mode==="verbs"&&(()=>{const S=vset(),st=vstat(S.level);return st.good>=15&&st.good/st.n>=.85&&S.level<V().LEVELS.length})()?"":"primary"}" id="pxMore">Otra ronda</button>`}<button class="btn" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn ghost" id="pxClose2">Terminar</button></div></div>`;
     if(acc>=80){sfx("done");confetti()}
-    placeCat("happy");PX.round={n:0,good:0,words:new Set()};return}
+    placeCat("happy");PX.round={n:0,good:0,words:new Set()};if(window.flushCelebrations)setTimeout(flushCelebrations,1200);return}
   const c=PX.cur;
   pane.innerHTML=`${top}
     <div class="pxcard ${PX.state} ${PX.fresh?"enter":""}"><div class="pxhead"><div class="pxcat" id="pxCat"></div>
@@ -571,7 +571,7 @@ document.addEventListener("click",e=>{
   if(d.pxhint){PX.showHint=!PX.showHint;const h=document.querySelector(".pxhint");if(h)h.classList.toggle("blur",!PX.showHint);el.textContent=PX.showHint?"Ocultar":"Ver la frase";return}
   if(el.id==="pxLevels")return levelSheet();
   if(d.pxw!==undefined){sfx("tap");return wordSheetPx(+d.pxw)}
-  if(d.vlevel){const S=vset();S.level=+d.vlevel;saveSettings();sfx("add");closeSheet();if(d.vgo||PX.mode==="verbs"&&PX.active){PX.queue=PX.queue.slice(0,PX.i);return start("verbs")}return render()}
+  if(d.vlevel){const S=vset();if(d.vgo&&window.gainXP)gainXP(100,"verbs",{noMult:true});S.level=+d.vlevel;saveSettings();sfx("add");closeSheet();if(d.vgo||PX.mode==="verbs"&&PX.active){PX.queue=PX.queue.slice(0,PX.i);return start("verbs")}return render()}
   if(d.vopt){const S=vset();S[d.vopt]=!S[d.vopt];el.setAttribute("aria-checked",S[d.vopt]);saveSettings();sfx("tap");if(PX.mode==="verbs"&&PX.active)PX.queue=PX.queue.slice(0,PX.i);return}
   if(d.pxskip){settings.pracSpeak=false;saveSettings();toast("Vale, quito los ejercicios de hablar por ahora.");PX.queue=PX.queue.filter((q,k)=>k<PX.i||q.type!=="speak");return next()}
   if(el.id==="pxMic")return speakNow();

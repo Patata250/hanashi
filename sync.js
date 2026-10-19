@@ -52,6 +52,7 @@ function mergeSettings(L,R,preferR){
   if(L.verbs||R.verbs){const a=L.verbs||{stats:{}},b=R.verbs||{stats:{}},st={};
     new Set([...Object.keys(a.stats||{}),...Object.keys(b.stats||{})]).forEach(k=>{const x=(a.stats||{})[k]||{n:0,good:0},y=(b.stats||{})[k]||{n:0,good:0};st[k]=x.n>=y.n?x:y});
     o.verbs={...(newer.verbs||a),stats:st};}
+  if(L.prog||R.prog){const a=L.prog||{},b=R.prog||{};o.prog={...(newer.prog||a),xp:Math.max(a.xp||0,b.xp||0),conv:Math.max(a.conv||0,b.conv||0),perfect:Math.max(a.perfect||0,b.perfect||0),seenLvl:Math.max(a.seenLvl||1,b.seenLvl||1),badges:[...new Set([...(a.badges||[]),...(b.badges||[])])],migrated:1}}
   o._mt=Math.max(L._mt||0,R._mt||0);
   for(const k of LOCAL_ONLY)if(k!=="_mt")o[k]=L[k];
   return o;
