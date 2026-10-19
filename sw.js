@@ -1,6 +1,6 @@
 // Hanashi service worker: keeps the app shell available offline.
-const CACHE = "hanashi-v9";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./wanakana.min.js", "./tama-rig.js", "./logo.svg", "./tama-neutral.webp", "./tama-happy.webp", "./tama-talk.webp", "./tama-listen.webp", "./tama-think.webp", "./tama-oops.webp"];
+const CACHE = "hanashi-v10";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./wanakana.min.js", "./tama-rig.js", "./practice.js", "./logo.svg", "./tama-neutral.webp", "./tama-happy.webp", "./tama-talk.webp", "./tama-listen.webp", "./tama-think.webp", "./tama-oops.webp"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

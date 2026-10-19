@@ -72,7 +72,7 @@ main{flex:1;min-height:0;position:relative}
 .view{position:absolute;inset:0;display:flex;flex-direction:column}
 .scroll{flex:1;overflow-y:auto;min-height:0;padding-block:12px 16px}
 
-nav.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs button{border:0;background:none;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:12px;font-weight:600}
 nav.tabs button .k{font-family:var(--f-disp);font-weight:800;font-size:20px;line-height:1.15}
 nav.tabs button[aria-selected="true"]{color:var(--ink)}
@@ -228,6 +228,72 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .tchoice b{font-size:13px}.tchoice small{font-size:11px;color:var(--muted);line-height:1.25}
 .tchoice[aria-pressed="true"]{border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft)}
 .confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+
+/* ---------- practice ---------- */
+.pxscroll{display:flex;flex-direction:column}
+#practicePane{flex:1;min-height:100%;gap:12px}
+.pxhome,.pxload{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-block:4px 12px}
+.pxload{flex:1;justify-content:center}
+.pxcatbig{width:150px;height:150px}
+.pxmodes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
+.pxmode{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px;text-align:left;box-shadow:var(--shadow)}
+.pxmode b{font-size:16px}.pxmode small{font-size:12px;color:var(--muted)}
+.pxmode:last-child{grid-column:1/-1;background:transparent;box-shadow:none;border-style:dashed}
+.pxmode:first-child{grid-column:1/-1;background:var(--ai);border-color:var(--ai);color:var(--on-ai)}.pxmode:first-child small{color:var(--on-ai);opacity:.85}
+.pxtop{display:flex;align-items:center;gap:10px}
+.pxtop .iconbtn svg{width:16px;height:16px}
+.pxtop .progress{height:10px;border-radius:5px}.pxtop .progress i{background:var(--ok);border-radius:5px;transition:width .4s cubic-bezier(.3,1.3,.5,1)}
+.pxcombo{display:inline-flex;align-items:center;gap:3px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted);min-width:38px}
+.pxcombo svg{width:16px;height:16px}.pxcombo.hot{color:var(--ai)}
+.pxcard{display:flex;flex-direction:column;gap:14px;flex:1}
+.pxcard.enter{animation:rise .3s ease both}
+.pxhead{display:flex;align-items:center;gap:10px}
+.pxcat{width:64px;height:64px;flex:none}
+.pxlabel{font-family:var(--f-disp);font-weight:800;font-size:20px}
+.pxretry{font-size:12px;font-weight:700;color:var(--warn)}
+.pxsent{font-size:24px;line-height:2.2;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow)}
+.pxes{font-size:15px;color:var(--muted)}.pxes.big{font-size:20px;font-weight:600;color:var(--ink)}
+.gapbox{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--ai);margin:0 3px;text-align:center;line-height:1.6;vertical-align:baseline}
+.gapbox.on{background:var(--ai-soft);border-radius:8px 8px 0 0;padding:0 6px;animation:pop .25s ease both}
+.pxopts{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:520px){.pxopts{grid-template-columns:1fr 1fr}}
+.pxopt{display:flex;align-items:center;gap:10px;text-align:left;border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:14px;padding:10px 12px;font-size:16px;min-height:52px}
+.pxopt .jp{font-size:19px;line-height:1.9}
+.pxopt .kk{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);display:grid;place-items:center}
+.pxopt.sel{border-color:var(--ai);background:var(--ai-soft)}.pxopt.sel .kk{border-color:var(--ai);color:var(--ai)}
+.pxopt.good{border-color:var(--ok);background:var(--ok-soft)}.pxopt.bad{border-color:var(--ai);background:var(--shu-soft)}.pxopt.dim{opacity:.5}
+.pxopt:disabled{cursor:default}
+.buildline{min-height:66px;border-bottom:2px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:10px}
+.buildline .ph{color:var(--muted);font-size:14px;font-family:var(--f-ui)}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:4px 12px;font-size:19px;line-height:2;font-family:var(--f-jp)}
+.tile.new{animation:pop .2s ease both}
+.tile.ghost{background:var(--line);border-color:var(--line);color:transparent}.tile.ghost rt{color:transparent}
+.pxlisten{display:flex;align-items:center;justify-content:center;gap:12px;padding-block:6px}
+.bigplay{width:84px;height:84px;border-radius:22px;border:0;border-bottom:5px solid var(--shu);background:var(--ai);color:var(--on-ai);display:grid;place-items:center}
+.bigplay svg{width:38px;height:38px}
+.pxword{font-size:40px;text-align:center;line-height:1.9}
+.pxhint{text-align:center;font-size:22px;line-height:2.1;transition:filter .2s}.pxhint.blur{filter:blur(9px);user-select:none}
+.pxheard{text-align:center;font-size:18px;color:var(--muted)}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mcol{display:flex;flex-direction:column;gap:8px}
+.mt{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:10px;font-size:15px;min-height:54px}
+.mt .jp{font-size:20px;line-height:1.8}
+.mt.sel{border-color:var(--ai);background:var(--ai-soft)}.mt.done{border-color:var(--ok);background:var(--ok-soft);opacity:.55}
+.mt.shake{animation:shake .4s ease;border-color:var(--ai)}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.pxfoot{position:sticky;bottom:0;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:12px max(16px,env(safe-area-inset-left,0px));background:var(--bg);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.pxtip{text-align:center;font-size:13px;color:var(--muted)}
+.pxcheck,.pxnext{width:100%;justify-content:center;font-size:16px;padding:13px;border-radius:14px;border-bottom-width:4px}
+.pxcheck:disabled{background:var(--line);border-color:var(--line);color:var(--muted)}
+.pxfoot.res{animation:up .25s cubic-bezier(.2,.8,.3,1) both;border-top:0}
+.pxfoot.ok{background:var(--ok-soft)}.pxfoot.ko{background:var(--shu-soft)}
+.restop{display:flex;align-items:center;gap:8px;font-size:18px}
+.resic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff}.resic svg{width:15px;height:15px}
+.pxfoot.ok .resic{background:var(--ok)}.pxfoot.ko .resic{background:var(--ai)}
+.pxfoot.ok b{color:var(--ok)}.pxfoot.ko b{color:var(--ai)}
+.ressol{font-size:19px;line-height:2}.resexp{font-size:14px}
+.pxfoot.ok .pxnext{background:var(--ok);border-color:var(--ok);color:#fff}.pxfoot.ko .pxnext{background:var(--ai);border-color:var(--ai);color:#fff}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* vocab */
@@ -388,11 +454,13 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;f
     </section>
 
     <section class="view" id="v-vocab" hidden><div class="scroll pad"><div class="stack" id="vocabPane"></div></div></section>
+    <section class="view" id="v-practice" hidden><div class="scroll pad pxscroll"><div class="stack" id="practicePane"></div></div></section>
     <section class="view" id="v-review" hidden><div class="scroll pad"><div class="stack" id="reviewPane"></div></div></section>
   </main>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="chat" aria-selected="true"><span class="k">話す</span>Conversar</button>
+    <button role="tab" data-tab="practice" aria-selected="false"><span class="k">練習</span>Practicar</button>
     <button role="tab" data-tab="vocab" aria-selected="false"><span class="k">言葉</span>Vocabulario</button>
     <button role="tab" data-tab="review" aria-selected="false"><span class="k">復習</span><span>Repasar<span class="badge" id="dueBadge" hidden>0</span></span></button>
   </nav>
@@ -1279,9 +1347,10 @@ let tab="chat";
 function setTab(t){
   if(t!=="chat"&&voiceOn)pauseVoice(true);
   if(t!=="chat")stopSpeaking();
+  if(t!=="practice"&&window.practiceLeave)practiceLeave();
   tab=t;sfx("tap");document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
-  ["chat","vocab","review"].forEach(k=>$("#v-"+k).hidden=k!==t);
-  if(t==="vocab")renderVocab();if(t==="review"){rq=null;renderReview()}if(t==="chat")renderChat()}
+  ["chat","practice","vocab","review"].forEach(k=>$("#v-"+k).hidden=k!==t);
+  if(t==="vocab")renderVocab();if(t==="review"){rq=null;renderReview()}if(t==="chat")renderChat();if(t==="practice"&&window.renderPractice)renderPractice()}
 function updateBadge(){const n=dueWords().length;const b=$("#dueBadge");b.hidden=!n;b.textContent=n}
 function renderAll(){renderScenes();renderChat();updateBadge();renderStreak();renderGoal();setVState(vState);if(tab==="vocab")renderVocab();if(tab==="review")renderReview()}
 
@@ -1462,5 +1531,6 @@ applyKana();renderAll();renderQuota();renderAssist();tama("idle",pick(IDLE_LINES
 if(!settings.key)showOnboarding();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
+<script src="practice.js"></script>
 </body>
 </html>
