@@ -352,6 +352,8 @@ details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;
 .vok{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.vok svg{width:14px;height:14px}
 .vcur{flex:none;font-size:14px;font-weight:800;color:var(--ai);text-transform:uppercase;letter-spacing:.04em}
 .onb~.scrim{z-index:50}
+.models{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-family:ui-monospace,monospace}.mst{white-space:nowrap;font-family:var(--f-ui);font-size:13px;font-weight:700;color:var(--muted)}.mst.on{color:var(--ok)}.mst.wait{color:var(--gold)}.mst.off{color:var(--ai)}
 .synccard{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 14px}
 .synccard>div{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.synccard small{font-size:14px;color:var(--muted)}
 .syncic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--line);color:var(--muted);display:grid;place-items:center}.syncic svg{width:22px;height:22px}
@@ -923,10 +925,25 @@ function aiErr(e){
   const c=e&&e.code;
   if(c==="no_key")return "Falta tu clave de Gemini. Añádela en Ajustes.";
   if(c==="bad_key")return "Tu clave de Gemini no funciona. Revísala en Ajustes.";
-  if(c==="rate_limited")return "Has llegado al límite gratuito de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).";
+  if(c==="rate_limited"){const w=e.until&&isFinite(e.until)?Math.max(0,e.until-now()):0;return w&&w<5*6e4?`Gemini está saturado un momento. Vuelve a probar en ${Math.ceil(w/1000)} s.`:"Se ha gastado el cupo gratuito de Gemini de hoy en todos los modelos. Mientras, en Practicar tienes ejercicios que no lo necesitan."}
   if(c==="offline")return "No hay conexión a internet.";
   if(c==="invalid_json")return "La respuesta llegó mal formada. Pulsa reenviar.";
   return "No he podido conectar con Gemini. Inténtalo otra vez en un momento.";
+}
+/* Several models, each with its OWN free quota on the same key: when one runs out (per minute or per day)
+   Tama switches to the next one, so a limit on the best model doesn't stop the app. */
+const ver=n=>parseFloat((n.match(/(?:gemini|gemma)-([\d.]+)/)||[])[1]||0);
+function buildChain(names){
+  const ok=n=>!/(image|tts|live|audio|thinking|exp|8b|embedding|native|computer|robotics|nano)/.test(n);
+  const byVer=a=>a.sort((x,y)=>ver(y)-ver(x)||x.length-y.length);
+  const stable=a=>{const st=a.filter(n=>!/preview/.test(n));return st.length?st:a};
+  const flash=byVer(stable(names.filter(n=>/^gemini-[\d.]+-flash(?!-lite)/.test(n)&&ok(n))));
+  const lite=byVer(stable(names.filter(n=>/^gemini-[\d.]+-flash-lite/.test(n)&&ok(n))));
+  const gemma=names.filter(n=>/^gemma-/.test(n)&&/-it$/.test(n)&&ok(n)).sort((a,b)=>ver(b)-ver(a)||(parseInt((b.match(/(\d+)b/)||[])[1]||0)-parseInt((a.match(/(\d+)b/)||[])[1]||0)));
+  // dedupe aliases like gemini-2.5-flash / gemini-2.5-flash-001: keep the shortest per version
+  const uniq=a=>{const seen=new Set();return a.filter(n=>{const k=ver(n)+(/lite/.test(n)?"l":"");if(seen.has(k))return false;seen.add(k);return true})};
+  const chain=[...uniq(flash).slice(0,2),...uniq(lite).slice(0,2),...gemma.slice(0,2)];
+  return chain.length?chain:["gemini-2.5-flash","gemini-2.5-flash-lite","gemma-3-27b-it"];
 }
 async function listModels(key){
   const r=await fetch(`${API}/models?pageSize=200`,{headers:{"x-goog-api-key":key}});
@@ -934,35 +951,71 @@ async function listModels(key){
   if(!r.ok)throw{code:"upstream"};
   const j=await r.json();
   const names=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")).map(m=>m.name.replace(/^models\//,""));
-  const flash=names.filter(n=>/^gemini-[\d.]+-flash/.test(n)&&!/(lite|image|tts|live|audio|thinking|exp|8b)/.test(n));
-  const ver=n=>parseFloat((n.match(/gemini-([\d.]+)/)||[])[1]||0);
-  const stable=flash.filter(n=>!/preview/.test(n));
-  const pool=(stable.length?stable:flash).sort((a,b)=>ver(b)-ver(a)||a.length-b.length);
-  return pool[0]||"gemini-2.5-flash";
+  settings.models=buildChain(names);settings.modelsDay=ptDay();
+  return settings.models[0];
+}
+function cool(){if(!settings.cool||settings.cool.day!==ptDay())settings.cool={day:ptDay(),until:{}};return settings.cool.until}
+const modelReady=m=>(cool()[m]||0)<=now();
+async function modelChain(){
+  if(!settings.models||!settings.models.length||settings.modelsDay!==ptDay()){
+    try{await listModels(settings.key);saveSettings()}catch(e){if(e.code==="bad_key")throw e;if(!settings.models)settings.models=buildChain([])}}
+  return settings.models;
+}
+function quotaKind(txt){
+  // Google says which quota ran out (…PerDay… / …PerMinute…) and how long to wait (retryDelay "34s")
+  let day=/PerDay|per day|daily/i.test(txt),wait=0;
+  const m=txt.match(/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/);if(m)wait=+m[1]*1000;
+  if(/PerMinute|per minute/i.test(txt))day=false;
+  return {day,wait:wait||60000};
+}
+async function callModel(model,prompt,signal,opts){
+  const gemma=/^gemma/.test(model),nf=settings.noJson||{};
+  const gen={temperature:0.7,maxOutputTokens:(opts&&opts.max)||1500};
+  if(!gemma&&!nf[model])gen.responseMimeType="application/json";
+  if(!gemma&&!settings.noThinkCfg){if(/2\.5/.test(model))gen.thinkingConfig={thinkingBudget:0};else if(/gemini-[3-9]/.test(model))gen.thinkingConfig={thinkingLevel:"low"}}
+  const text=gemma||nf[model]?prompt+"\n\nResponde SOLO con el objeto JSON, sin texto antes ni después y sin ```.":prompt;
+  let r;
+  try{r=await fetch(`${API}/models/${model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.key},body:JSON.stringify({contents:[{role:"user",parts:[{text}]}],generationConfig:gen}),signal})}
+  catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:navigator.onLine?"upstream":"offline"}}
+  if(!r.ok){
+    const txt=await r.text();
+    if(r.status===429)throw{code:"quota",...quotaKind(txt)};
+    if(r.status===400&&/thinking/i.test(txt)&&!settings.noThinkCfg){settings.noThinkCfg=true;saveSettings();throw{code:"again"}}
+    if(r.status===400&&/json mode|mime/i.test(txt)&&!nf[model]){settings.noJson={...nf,[model]:true};saveSettings();throw{code:"again"}}
+    if(r.status===404)throw{code:"gone"};
+    if((r.status===400&&/API key|API_KEY/i.test(txt))||r.status===401||r.status===403)throw{code:"bad_key"};
+    if(r.status>=500)throw{code:"busy"};
+    console.warn("gemini",model,r.status,txt);throw{code:"upstream"};
+  }
+  const j=await r.json();
+  trackUsage(j.usageMetadata&&j.usageMetadata.totalTokenCount);
+  const out=((j.candidates||[])[0]?.content?.parts||[]).filter(p=>!p.thought).map(p=>p.text||"").join("");
+  const s=out.replace(/^```(?:json)?\s*|\s*```$/g,"").trim();
+  try{return JSON.parse(s)}catch(e){const a=s.indexOf("{"),b=s.lastIndexOf("}");if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e2){}}throw{code:"invalid_json"}}
 }
 async function ask(prompt,_retry,signal,opts){
   if(!settings.key)throw{code:"no_key"};
   if(!navigator.onLine)throw{code:"offline"};
-  if(!settings.model){try{settings.model=await listModels(settings.key);saveSettings()}catch(e){if(e.code==="bad_key")throw e;settings.model="gemini-2.5-flash"}}
-  const gen={responseMimeType:"application/json",temperature:0.7,maxOutputTokens:(opts&&opts.max)||1500};
-  if(!settings.noThinkCfg){if(/2\.5/.test(settings.model))gen.thinkingConfig={thinkingBudget:0};else if(/gemini-[3-9]/.test(settings.model))gen.thinkingConfig={thinkingLevel:"low"}}
-  let r;
-  try{r=await fetch(`${API}/models/${settings.model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.key},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:gen}),signal})}
-  catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:navigator.onLine?"upstream":"offline"}}
-  if(!r.ok){
-    const txt=await r.text();
-    if(r.status===429){usageToday().hit=true;saveSettings();renderQuota();throw{code:"rate_limited"}}
-    if(r.status===400&&/thinking/i.test(txt)&&!settings.noThinkCfg&&!_retry){settings.noThinkCfg=true;saveSettings();return ask(prompt,true,signal,opts)}
-    if(r.status===404&&!_retry){settings.model="";saveSettings();return ask(prompt,true,signal,opts)}
-    if((r.status===400&&/API key|API_KEY/i.test(txt))||r.status===401||r.status===403)throw{code:"bad_key"};
-    if(r.status>=500&&!_retry){await new Promise(z=>setTimeout(z,1200));return ask(prompt,true,signal,opts)}
-    console.warn("gemini",r.status,txt);throw{code:"upstream"};
+  const chain=await modelChain();
+  let lastErr={code:"rate_limited"},soonest=Infinity;
+  for(const model of chain){
+    if(!modelReady(model)){soonest=Math.min(soonest,cool()[model]);continue}
+    for(let attempt=0;attempt<2;attempt++){
+      try{const res=await callModel(model,prompt,signal,opts);
+        if(settings.model!==model){settings.model=model;saveSettings();renderQuota()}
+        const u=usageToday();if(u.hit){u.hit=false;saveSettings();renderQuota()}
+        return res}
+      catch(e){
+        if(e.code==="again")continue;
+        if(e.code==="busy"&&attempt===0){await new Promise(z=>setTimeout(z,1200));continue}
+        if(e.code==="quota"){const until=e.day?(nextReset()?.getTime()||now()+6*36e5):now()+e.wait+1000;cool()[model]=until;saveSettings();soonest=Math.min(soonest,until);lastErr={code:"rate_limited"};break}
+        if(e.code==="gone"||e.code==="invalid_json"&&/^gemma/.test(model)){lastErr=e;cool()[model]=now()+(e.code==="gone"?864e5:5*6e4);break}
+        throw e;
+      }
+    }
   }
-  const j=await r.json();
-  trackUsage(j.usageMetadata&&j.usageMetadata.totalTokenCount);
-  const text=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");
-  const s=text.replace(/^```(?:json)?\s*|\s*```$/g,"").trim();
-  try{return JSON.parse(s)}catch(e){const a=s.indexOf("{"),b=s.lastIndexOf("}");if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e2){}}throw{code:"invalid_json"}}
+  const u=usageToday();u.hit=true;u.until=soonest;saveSettings();renderQuota();
+  throw {...lastErr,until:soonest};
 }
 const LEARNER="El alumno habla español, es principiante, lee hiragana con soltura, está aprendiendo katakana y apenas conoce kanji. Su prioridad es hablar y entender con fluidez.";
 const FURI_RULE=`LECTURAS (MUY IMPORTANTE): el alumno aún NO lee kanji. En cualquier campo de texto que contenga japonés y no sea un token (natural, note_es, help_es, ex_jp, jp de opciones, ejemplos…), escribe la lectura en hiragana entre corchetes justo después de cada palabra con kanji, así: 今日[きょう]は 天気[てんき]が いいです。 En los tokens, "r" es OBLIGATORIO siempre que "s" tenga kanji.`;
@@ -1017,7 +1070,7 @@ function renderChat(keepScroll){
   $("#msgs").innerHTML=allMsgs().map((m,i)=>msgHTML(m,i)).join("")+
    `<div class="msg me live" id="liveMsg" ${liveText?"":"hidden"}><div class="bubble"><div class="said" id="liveTxt">${esc(liveText)}</div></div></div>`+
    (busy?`<div class="msg ai"><div class="bubble typing"><i></i><i></i><i></i></div></div>`:"")+
-   (chatError?`<div class="notice">${esc(chatError)} <button class="mini" id="btnRetry">Reenviar</button></div>`:"");
+   (chatError?`<div class="notice">${esc(chatError)} <button class="mini" id="btnRetry">Reenviar</button>${/cupo/.test(chatError)?` <button class="mini on" data-tabgo="practice">Practicar sin IA</button>`:""}</div>`:"");
   renderFocus();requestAnimationFrame(()=>sc.scrollTop=(keepScroll&&!atBottom)?prev:sc.scrollHeight);
 }
 function setLive(t){liveText=t;const m=$("#liveMsg");if(!m)return;m.hidden=!t;$("#liveTxt").textContent=t;if(t){const sc=$("#chatScroll");sc.scrollTop=sc.scrollHeight}}
@@ -1565,7 +1618,7 @@ document.addEventListener("submit",async e=>{
     const k=$("#keyInput").value.trim(),msg=$("#keyMsg"),btn=$("#keySave");
     if(!k){msg.hidden=false;msg.textContent="Pega tu clave de Gemini.";return}
     btn.disabled=true;btn.textContent="Comprobando…";msg.hidden=true;
-    try{const model=await listModels(k);settings.key=k;settings.model=model;settings.noThinkCfg=false;saveSettings();
+    try{const model=await listModels(k);settings.key=k;settings.model=model;settings.cool=null;settings.noThinkCfg=false;saveSettings();
       const c=$("#onbCat .cat");if(c)c.classList.add("happy");sfx("done");
       setTimeout(()=>{const o=$("#onb");if(o)o.remove();toast("¡Listo! Toca el micro rojo para hablar con Tama");renderAll()},900);
     }catch(err){msg.hidden=false;msg.textContent=err.code==="bad_key"?"Esa clave no funciona. Cópiala de nuevo desde AI Studio.":"No he podido comprobarla. ¿Tienes internet?";btn.disabled=false;btn.textContent="Empezar"}
@@ -1733,7 +1786,10 @@ function quotaSheet(){
   openSheet(`<div class="grab"></div><div class="hrow"><h3 class="h2">Uso de Gemini hoy</h3>${INFO}</div>
    <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="qbig"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" class="q-bg"/><circle cx="18" cy="18" r="14" class="q-fg" pathLength="100" stroke-dasharray="${pct} 100" style="stroke:${pct>=85?"var(--ai)":pct>=60?"var(--gold)":"var(--ok)"}"/></svg><b>${u.hit?"!":pct+"%"}</b></div>
      <dl class="kv" style="flex:1"><dt>Peticiones</dt><dd>${u.req} de ~${lim}</dd><dt>Tokens</dt><dd>${u.tok.toLocaleString("es-ES")}</dd><dt>Se reinicia</dt><dd>${r?r.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+` (en ${h} h ${mn} min)`:"a medianoche de California"}</dd></dl></div>
-   ${u.hit?`<div class="notice">Gemini ha dicho que has llegado al límite. Vuelve a funcionar cuando se reinicie.</div>`:""}
+   <div class="models"><b>Modelos de reserva</b>${(settings.models||[]).map(m=>{const c=cool()[m]||0,w=c-now();
+      const st=w>0?(w>36e5?`<span class="mst off">agotado hasta mañana</span>`:`<span class="mst wait">descansa ${Math.ceil(w/6e4)} min</span>`):m===settings.model?`<span class="mst on">en uso</span>`:`<span class="mst">disponible</span>`;
+      return `<div class="mrow"><span>${esc(m)}</span>${st}</div>`}).join("")||`<div class="mrow"><span>Se eligen en la primera frase</span></div>`}
+     <small class="info">Cada modelo tiene su propio cupo gratis con la misma clave. Si el mejor se agota, Tama pasa al siguiente: los últimos («lite», «gemma») hablan algo peor, pero sirven para seguir practicando.</small></div>
    <div class="notice info" style="color:var(--ink)"><b>Qué gasta Gemini:</b> cada frase en la conversación, cada tanda de 8 ejercicios con frases, y lo que le pidas a Tama expresamente (explicar una palabra, un ejemplo, los kanji, «¿Qué puedo decir?»). <b>No gastan nada:</b> el buscador y las sugerencias de palabras, el repaso, los ejercicios de palabras ni tocar palabras para ver su significado.</div>
    <p class="info" style="margin:0;font-size:15px;color:var(--muted)">Es una estimación hecha en este dispositivo. El nivel gratuito de Gemini limita sobre todo las <b>peticiones por día</b> (cada frase que dices es una; ver un significado, sugerencias o kanji también cuentan) y se reinicia a medianoche de California. Mira tu límite real en AI Studio y ponlo aquí.</p>
    <div class="row"><label for="s_limit" style="font-weight:600">Mi límite diario</label><input id="s_limit" class="field" type="number" min="10" max="100000" step="10" value="${lim}" style="flex:0 0 110px"><span style="font-size:15px;color:var(--muted)">peticiones</span></div>

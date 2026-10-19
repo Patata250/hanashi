@@ -148,9 +148,48 @@ function validate(x){
   if(t==="speak"){if(!x.full||!x.es)return null;if(!x.kana)x.kana=plain(x.full);return x}
   return null;
 }
+/* ---------- exercise bank: every sentence exercise Gemini makes is kept, plus a built-in set,
+   so sentence practice keeps going with no AI (out of quota, no key, offline) ---------- */
+let BASE=null;
+function loadBase(){if(BASE)return Promise.resolve(BASE);return fetch("ejercicios-base.json").then(r=>r.json()).then(a=>BASE=a).catch(()=>BASE=[])}
+loadBase();
+const clone=o=>JSON.parse(JSON.stringify(o));
+function bankAdd(items){
+  const b=LS.get("pxbank")||[];const have=new Set(b.map(x=>plain(x.it.full||x.it.jp||"")));
+  items.forEach(it=>{const k=plain(it.full||it.jp||"");if(!k||have.has(k))return;have.add(k);const c=clone(it);delete c.retry;b.push({it:c,t:0})});
+  LS.set("pxbank",b.slice(-400));
+}
+function linkWords(it){
+  const txt=plain([it.full,it.jp,...(it.tiles||[])].join(" "));
+  const ids=new Set(it.words||[]);words.forEach(w=>{if(!w.basic&&w.jp&&txt.includes(w.jp))ids.add(w.id)});
+  it.words=[...ids];return it;
+}
+function fromBank(n){
+  const types=typesFor(PX.mode),b=LS.get("pxbank")||[],recent=new Set(PX.recent.slice(-30));
+  const pool=b.map(x=>({src:x,it:x.it})).concat((BASE||[]).map(it=>({src:null,it})));
+  const prio=new Set(focusWords(10).filter(w=>!w.basic).map(w=>w.jp));
+  const cand=pool.filter(({it})=>{let t=it.type;if(t==="meaning"&&types.includes("listen")&&!types.includes("meaning"))t="listen";return types.includes(t)||(t==="meaning"&&types.includes("listen"))})
+    .filter(({it})=>!recent.has(plain(it.full||it.jp||"").slice(0,40)))
+    .map(x=>{const txt=plain(x.it.full||x.it.jp||"");let sc=Math.random()*10;words.forEach(w=>{if(!w.basic&&txt.includes(w.jp))sc+=prio.has(w.jp)?12:5});if(x.src)sc-=Math.min(10,(now()-(x.src.t||0)<36e5?10:0));return [sc,x]})
+    .sort((a,b)=>b[0]-a[0]).slice(0,n).map(([,x])=>x);
+  const out=[];
+  cand.forEach(({src,it})=>{let c=clone(it);delete c.words;
+    if(c.type==="meaning"&&(PX.mode==="listen"||(PX.mode==="mix"&&Math.random()<.4)))c.type="listen";
+    c=validate(c);if(c){linkWords(c);out.push(c);if(src)src.t=now()}});
+  if(out.length)LS.set("pxbank",b);
+  return out;
+}
+async function offlineFill(e){
+  await loadBase();
+  const banked=fromBank(6);
+  if(PX.active&&!PX.warned){PX.warned=true;toast(banked.length?"Gemini descansa: sigo con frases guardadas y tus palabras, sin gastar nada.":(e&&e.code?aiErr(e)+" Sigo con ejercicios de palabras.":"Sigo con ejercicios de palabras."))}
+  banked.forEach((it,k)=>{PX.queue.push(it);if(PX.mode==="mix"&&k%2===1){const l=localItem();if(l)PX.queue.push(l)}});
+  if(banked.length<3)for(let k=0;k<6;k++){const l=localItem();if(l)PX.queue.push(l)}
+}
+const aiResting=()=>!settings.key||!navigator.onLine||(PX.aiDown&&now()-PX.lastAICheck<60000)||!!(settings.models&&settings.models.length&&typeof modelReady==="function"&&settings.models.every(m=>!modelReady(m)));
 async function fetchBatch(){
   if(PX.busy||PX.mode==="words")return;
-  if(PX.aiDown&&now()-PX.lastAICheck<60000)return;
+  if(aiResting()){PX.busy=true;try{await offlineFill(null)}finally{PX.busy=false}if(PX.active&&PX.state==="loading")next();return}
   PX.busy=true;PX.lastAICheck=now();
   const types=typesFor(PX.mode);
   const mine=[...words].filter(w=>!w.basic).sort((a,b)=>priority(b)-priority(a)).slice(0,70);
@@ -179,6 +218,7 @@ Devuelve SOLO JSON: {"items":[...]}`;
     const r=await ask(prompt,false,null,{max:3500});
     const items=(r.items||[]).map(validate).filter(Boolean);
     if(!items.length)throw{code:"invalid_json"};
+    bankAdd(items);
     PX.aiDown=false;
     items.forEach((it,k)=>{
       PX.queue.push(it);
@@ -187,8 +227,7 @@ Devuelve SOLO JSON: {"items":[...]}`;
     });
   }catch(e){
     PX.aiDown=true;
-    if(PX.active&&!PX.warned){PX.warned=true;toast(e&&e.code?aiErr(e)+" Sigo con ejercicios de palabras.":"Sigo con ejercicios de palabras.")}
-    for(let k=0;k<6;k++){const l=localItem();if(l)PX.queue.push(l)}
+    await offlineFill(e);
   }finally{PX.busy=false}
   if(PX.active&&PX.state==="loading")next();
 }
@@ -369,7 +408,7 @@ function renderHome(){
       <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="btn ghost" id="pxLevels">Nivel</button><button class="btn primary" data-pxmode="verbs">Practicar verbos</button></div></div>`})()}
     <div class="pxmodes">${MODES.map(([k,n,d])=>`<button class="pxmode" data-pxmode="${k}"><b>${n}</b><small>${d}</small></button>`).join("")}</div>
     ${!mine.length?`<div class="notice">Aún no tienes palabras propias: practicarás con lo básico. Añade palabras en <b>Vocabulario</b> y los ejercicios girarán en torno a ellas.</div>`:""}
-    ${!settings.key?`<div class="notice">Sin clave de Gemini solo funcionan <b>Palabras</b>, <b>Verbos</b> y el repaso.</div>`:""}
+    ${!settings.key?`<div class="notice">Sin clave de Gemini practicas con las frases que trae la app, tus palabras y los verbos.</div>`:""}
   </div>`;
   placeCat("");
 }
@@ -404,7 +443,7 @@ function speakNow(){
 document.addEventListener("click",e=>{
   const el=e.target.closest("button");if(!el||!(el.closest("#practicePane")||el.dataset.vlevel||el.dataset.vopt))return;
   const d=el.dataset;
-  if(d.pxmode){if(!["words","review","verbs"].includes(d.pxmode)&&!settings.key){showOnboarding();return}return start(d.pxmode)}
+  if(d.pxmode)return start(d.pxmode);
   if(el.id==="pxClose"||el.id==="pxClose2")return stop();
   if(el.id==="pxMore"){sfx("flip");return next()}
   if(el.id==="pxCheck")return check();
