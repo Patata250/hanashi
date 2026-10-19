@@ -305,6 +305,52 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .mt .jp{font-size:20px;line-height:1.8}
 .mt.sel{border-color:var(--ai);background:var(--ai-soft)}.mt.done{border-color:var(--ok);background:var(--ok-soft);opacity:.55}
 .mt.shake{animation:shake .4s ease;border-color:var(--ai)}
+/* centring & polish pass */
+#practicePane{width:100%;max-width:600px;margin-inline:auto}
+.pxhead{justify-content:center;gap:8px;text-align:left;margin-top:-4px}
+.pxhead .pxcat{width:60px;height:60px}
+.pxsent{text-align:center}
+.pxes{text-align:center}
+.buildline{justify-content:center}
+.pxopt{position:relative;justify-content:center;text-align:center;padding-inline:40px;transition:transform .12s,border-color .15s,background .15s}
+.pxopt .kk{position:absolute;left:12px;top:50%;transform:translateY(-50%)}
+.pxopt .tx{flex:1;min-width:0}
+.pxopt:not(:disabled):active{transform:translateY(2px);border-bottom-width:2px}
+.pxopt.good{animation:bump .35s ease}.pxopt.bad{animation:shake .4s ease}
+.tile,.mt{transition:transform .12s}.tile:not(:disabled):active,.mt:not(:disabled):active{transform:translateY(2px)}
+.mt{text-align:center}
+.pxfoot{text-align:center;align-items:center}
+.pxfoot>*{width:100%;max-width:600px}
+.restop{justify-content:center}
+.pxfoot .resexp{color:var(--ink);opacity:.85;line-height:1.5}
+.pxfoot .mini{margin-inline:auto}
+.pxcard{justify-content:flex-start;padding-bottom:8px}
+/* verbs */
+.vq{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.vdict{font-size:34px;line-height:1.75;display:inline-flex;align-items:center;gap:8px}
+.vdict.big{font-size:32px}
+.vmean{font-size:15px;color:var(--muted)}.vmean .jp{font-size:16px}
+.varrow{display:none}
+.vform{margin-top:6px;display:inline-flex;flex-direction:column;align-items:center;background:var(--ai-soft);border:1.5px solid var(--ai);color:var(--ai);border-radius:14px;padding:6px 16px}
+.vform b{font-size:20px}.vform small{font-size:12px;font-weight:700;opacity:.85}
+.pxopt small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+.pxopt .tx b.jp{font-size:18px}
+.vtype{display:flex;justify-content:center}.vtype .field{font-size:22px;text-align:center;max-width:340px;width:100%;padding:12px}
+.ressol .typed{font-size:13px;color:var(--muted);font-family:var(--f-ui)}
+.pxverbs{width:100%;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);text-align:left}
+.pvl{display:flex;align-items:center;gap:12px}.pvl>div{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.pvl b{font-size:16px}.pvl small,.vlv small{font-size:12px;color:var(--muted)}
+.pxverbs .row .btn{flex:1;justify-content:center}.pxverbs .row .btn.ghost{flex:none}
+.vn{flex:none;width:38px;height:38px;border-radius:12px;background:var(--ai);color:var(--on-ai);display:grid;place-items:center;font-weight:800;font-size:17px}
+.vbar{display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}.vbar i{display:block;height:100%;background:var(--ok);border-radius:3px;transition:width .4s}
+.vlevels{display:flex;flex-direction:column;gap:6px;margin-block:8px}
+.vlv{display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:9px 12px}
+.vlv .vt{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}.vlv b{font-size:15px}
+.vlv .vn{background:var(--line);color:var(--ink);width:32px;height:32px;font-size:15px;border-radius:10px}
+.vlv.on{border-color:var(--ai);background:var(--ai-soft)}.vlv.on .vn{background:var(--ai);color:var(--on-ai)}
+.vok{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.vok svg{width:14px;height:14px}
+.vcur{flex:none;font-size:11px;font-weight:800;color:var(--ai);text-transform:uppercase;letter-spacing:.04em}
+@keyframes bump{50%{transform:scale(1.04)}}
 @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 .pxfoot{position:sticky;bottom:0;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:12px max(16px,env(safe-area-inset-left,0px));background:var(--bg);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .pxtip{text-align:center;font-size:13px;color:var(--muted)}
@@ -415,7 +461,7 @@ rt{font-size:.5em;color:var(--muted);font-family:var(--f-jp)}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .switch[aria-checked="true"]{background:var(--ai)}
 .switch[aria-checked="true"]::after{left:21px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:30;max-width:90%;animation:pop .25s ease both;text-align:center}
+.toast{position:fixed;left:0;right:0;margin-inline:auto;width:max-content;bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:30;max-width:90%;animation:pop .25s ease both;text-align:center}
 .sum li{margin-bottom:8px}
 .sum .jp{font-size:16px}
 ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
@@ -1119,7 +1165,7 @@ function mkEntry(jp,kana,es,lv,pos,user){
 function loadDict(){
   if(DICT.loading)return DICT.loading;
   DICT.loading=fetch("dict-ja-es.json").then(r=>r.json()).then(arr=>{
-    DICT.list=arr.map(([jp,kana,es,lv,pos])=>mkEntry(jp,kana,es,lv,pos));
+    DICT.list=arr.map(([jp,kana,es,lv,pos,cls])=>{const e=mkEntry(jp,kana,es,lv,pos);if(cls)e.cls=cls;return e});
     DICT.extra=(LS.get("dictExtra")||[]).map(e=>mkEntry(e.jp,e.kana,e.es,e.lv,e.pos,true));
     DICT.ready=true;
     if(tab==="vocab"){vSearch();if(!sugs)localSuggest()}
@@ -1698,6 +1744,7 @@ applyKana();renderAll();renderQuota();renderAssist();tama("idle",pick(IDLE_LINES
 if(!settings.key)showOnboarding();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
+<script src="verbs.js"></script>
 <script src="practice.js"></script>
 </body>
 </html>

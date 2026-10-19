@@ -17,7 +17,7 @@ const MODES=[
   ["speak","Hablar","Dilo en voz alta"],
   ["words","Palabras","Sin IA, sin límite"]
 ];
-const TITLES={gap:"Completa la frase",particle:"Elige la partícula",order:"Ordena la frase",meaning:"¿Qué significa?",listen:"Escucha: ¿qué significa?",speak:"Dilo en japonés",
+const TITLES={verb:"Conjuga el verbo",verbid:"¿Qué forma es?",gap:"Completa la frase",particle:"Elige la partícula",order:"Ordena la frase",meaning:"¿Qué significa?",listen:"Escucha: ¿qué significa?",speak:"Dilo en japonés",
   word:"¿Qué significa esta palabra?",reverse:"¿Cómo se dice en japonés?",wordlisten:"Escucha la palabra",match:"Une las parejas"};
 const ROUND=10;
 // one persistent Tama for this section (moved between layouts, so its animation rig is created once)
@@ -68,6 +68,53 @@ function localItem(kind,target){
   const key=kind==="reverse"?"jp":"es";
   const opts=shuffle([w,...distract(w,3,key)]);
   return {type:kind,w,options:opts,answer:opts.indexOf(w),words:w.basic?[]:[w.id]};
+}
+
+/* ---------- verbs (local engine, no AI) ---------- */
+const V=()=>window.VERBS;
+function vset(){if(!settings.verbs)settings.verbs={level:1,mix:true,typing:false,stats:{}};return settings.verbs}
+function vstat(l){const S=vset();if(!S.stats[l])S.stats[l]={n:0,good:0};return S.stats[l]}
+function guessClass(jp,kana){
+  const k=String(kana||jp);if(/する$/.test(jp))return"x2";if(k==="くる")return"k";
+  if(!/[うくぐすつぬぶむる]$/.test(k))return"";
+  if(k.endsWith("る")&&/[いきしちにひみりぎじびぴえけせてねへめれげぜべぺ]る$/.test(k))return"i";
+  return"g";
+}
+function verbPool(){
+  const lvl=vset().level,maxLv=lvl<=4?5:lvl<=8?4:3;
+  const mine=[];
+  words.filter(w=>!w.basic).forEach(w=>{const e=dictFind(w.jp);const cls=(e&&e.cls)||"";
+    const c=cls||(/verbo/.test(w.type||"")?guessClass(w.jp,w.kana):"");if(c)mine.push({jp:w.jp,kana:w.kana,es:w.es,cls:c,wid:w.id})});
+  const base=DICT.ready?DICT.list.filter(e=>e.cls&&e.lv>=maxLv&&(e.cls!=="s"||e.lv===5)).map(e=>({jp:e.jp,kana:e.kana,es:e.es,cls:e.cls})):[];
+  return {mine,base};
+}
+function verbItem(){
+  const S=vset(),L=V().LEVELS,lvl=Math.min(S.level,L.length);
+  const cur=L[lvl-1].forms,prev=L.slice(0,lvl-1).flatMap(x=>x.forms);
+  const form=(S.mix&&prev.length&&Math.random()<.3)?pick(prev):pick(cur);
+  const {mine,base}=verbPool();
+  const v=(mine.length&&Math.random()<.55)?pick(mine):pick(base.length?base:mine);if(!v)return null;
+  const ans=V().conj(v,form),st=vstat(lvl);
+  const all=L.slice(0,lvl).flatMap(x=>x.forms);
+  // identify the form (only once there are several forms to tell apart)
+  if(all.length>=3&&Math.random()<.2){
+    const fs=shuffle([form,...shuffle(all.filter(f=>f!==form)).slice(0,3)]);
+    return {type:"verbid",v,form,ans,options:fs,answer:fs.indexOf(form),words:v.wid?[v.wid]:[],lvl};
+  }
+  const typing=S.typing||(st.good>=12&&Math.random()<.3);
+  if(typing)return {type:"verb",vmode:"type",v,form,ans,words:v.wid?[v.wid]:[],lvl};
+  const opts=shuffle([ans,...V().wrongs(v,form,3)]);
+  return {type:"verb",vmode:"choose",v,form,ans,options:opts,answer:opts.findIndex(o=>o.kana===ans.kana),words:v.wid?[v.wid]:[],lvl};
+}
+function levelSheet(){
+  const S=vset(),L=V().LEVELS;
+  openSheet(`<div class="grab"></div><h3 class="h2" style="text-align:center">Nivel de verbos</h3>
+   <p style="margin:0;text-align:center;color:var(--muted);font-size:14px">Empieza por arriba. Cuando aciertes de forma constante, Tama te propondrá subir.</p>
+   <div class="vlevels">${L.map(l=>{const st=vstat(l.n),acc=st.n?Math.round(st.good/st.n*100):0,ready=st.good>=15&&acc>=85;
+     return `<button class="vlv ${S.level===l.n?"on":""}" data-vlevel="${l.n}"><span class="vn">${l.n}</span><span class="vt"><b>${l.title}</b><small>${l.sub} · <span class="jp">${l.ex}</span></small>
+       <span class="vbar"><i style="width:${Math.min(100,st.good/15*100)}%"></i></span></span>${ready?`<span class="vok">${SVG.check}</span>`:S.level===l.n?`<span class="vcur">actual</span>`:""}</button>`}).join("")}</div>
+   <div class="set"><div><label for="v_mix">Repasar niveles anteriores</label><p>Mezcla un 30 % de formas ya vistas.</p></div><button class="switch" id="v_mix" role="switch" aria-checked="${S.mix}" data-vopt="mix"></button></div>
+   <div class="set"><div><label for="v_type">Escribir la respuesta</label><p>Más difícil: escribes la forma en romaji en vez de elegirla.</p></div><button class="switch" id="v_type" role="switch" aria-checked="${S.typing}" data-vopt="typing"></button></div>`);
 }
 
 /* ---------- AI batches ---------- */
@@ -147,6 +194,7 @@ Devuelve SOLO JSON: {"items":[...]}`;
 }
 function ensureAhead(){
   if(PX.mode==="review")return;
+  if(PX.mode==="verbs"){while(PX.queue.length-PX.i<4){const it=verbItem();if(!it)break;PX.queue.push(it)}return}
   if(PX.mode==="words"){while(PX.queue.length-PX.i<4){const l=localItem();if(!l)break;PX.queue.push(l)}return}
   if(PX.queue.length-PX.i<4)fetchBatch();
 }
@@ -158,6 +206,7 @@ function reviewQueue(){
 function start(mode){
   stopSpeaking();PX.mode=mode;PX.active=true;PX.queue=[];PX.i=0;PX.cur=null;PX.combo=0;PX.warned=false;
   PX.round={n:0,good:0,words:new Set()};
+  if(mode==="verbs"){if(!DICT.ready){PX.state="loading";render();loadDict().then(()=>{if(PX.active&&PX.mode==="verbs"){ensureAhead();next()}});return}sfx("flip");ensureAhead();return next()}
   if(mode==="review"){PX.queue=reviewQueue();PX.total=PX.queue.length;if(!PX.total){PX.active=false;toast("No tienes nada pendiente de repasar.");return render()}sfx("flip");return next()}
   if(mode==="mix"||mode==="words"){for(let k=0;k<2;k++){const l=localItem();if(l)PX.queue.push(l)}}
   sfx("flip");ensureAhead();next();
@@ -169,7 +218,7 @@ function next(){
   else if(PX.round.n>=ROUND){PX.state="round";return render()}
   ensureAhead();
   if(PX.i>=PX.queue.length){PX.state="loading";return render()}
-  PX.cur=PX.queue[PX.i++];PX.fresh=true;PX.showHint=false;PX.sel=null;PX.built=[];PX.spoken="";PX.speakScore=0;PX.state="ask";
+  PX.cur=PX.queue[PX.i++];PX.fresh=true;PX.showHint=false;PX.typed="";PX.sel=null;PX.built=[];PX.spoken="";PX.speakScore=0;PX.state="ask";
   const c=PX.cur;
   if(c.type==="order")PX.bank=shuffle([...c.tiles.map((s,k)=>({s,k,used:false})),...(c.extra||[]).map((s,k)=>({s,k:100+k,used:false}))]);
   if(c.type==="match")PX.match={left:shuffle(c.pairs),right:shuffle(c.pairs),picked:null,done:new Set(),bad:new Set(),miss:0};
@@ -178,6 +227,7 @@ function next(){
   if(c.type==="wordlisten")setTimeout(()=>speak(c.w.jp),350);
 }
 function canCheck(){const c=PX.cur;if(!c)return false;
+  if(c.type==="verb"&&c.vmode==="type"){const i=$("#pxType");return !!(i&&i.value.trim())}
   if(c.type==="order")return PX.built.length>0;
   if(c.type==="speak")return !!PX.spoken;
   if(c.type==="match")return false;
@@ -185,7 +235,8 @@ function canCheck(){const c=PX.cur;if(!c)return false;
 function check(forceOk){
   const c=PX.cur;if(!c||PX.state!=="ask")return;
   let ok=false;
-  if(["gap","particle","meaning","listen","word","reverse","wordlisten"].includes(c.type))ok=PX.sel===c.answer;
+  if(["gap","particle","meaning","listen","word","reverse","wordlisten","verbid"].includes(c.type))ok=PX.sel===c.answer;
+  else if(c.type==="verb"){if(c.vmode==="type"){const i=$("#pxType");let t=i?i.value:"";t=t.replace(/n$/,"ん");PX.typed=t;ok=normJP(t)===normJP(c.ans.kana)||normJP(t)===normJP(c.ans.jp)}else ok=PX.sel===c.answer}
   else if(c.type==="order"){const got=PX.built.map(b=>plain(b.s)).join("");ok=normJP(got)===normJP(c.tiles.map(plain).join(""))||normJP(got)===normJP(plain(c.full))}
   else if(c.type==="speak"){PX.speakScore=Math.max(sim(PX.spoken,plain(c.full)),sim(PX.spoken,c.kana||""));ok=forceOk||PX.speakScore>=.8}
   else if(c.type==="match")ok=PX.match.miss<=1;
@@ -199,13 +250,14 @@ function finish(ok){
   // spaced repetition: match items judge each word separately
   if(c.type==="match"){c.pairs.forEach(p=>{if(p.basic)return;const w=words.find(x=>x.id===p.id);if(w){convUsage(w,PX.match.bad.has(p.id)?"wrong":"good");PX.round.words.add(w.jp)}})}
   else (c.words||[]).forEach(id=>{const w=words.find(x=>x.id===id);if(w){convUsage(w,ok?"good":"wrong");PX.round.words.add(w.jp)}});
+  if(c.type==="verb"||c.type==="verbid"){const st=vstat(c.lvl);st.n++;if(ok)st.good++}
   if(c.jp||c.full)PX.recent.push(plain(c.full||c.jp).slice(0,40));
   bumpActivity();updateBadge();saveSettings();
   sfx(ok?"perfect":"wrong");
   catEl(ok?"happy":"oops");setTimeout(()=>{if(pxCat&&PX.state!=="loading"&&PX.state!=="round")catEl("")},1600);
   if(ok&&PX.combo>0&&PX.combo%5===0){confetti();toast(`¡${PX.combo} seguidas!`)}
   render();
-  const say=c.full||c.jp||(c.w&&c.w.jp);
+  const say=c.ans?c.ans.kana:c.full||c.jp||(c.w&&c.w.jp);
   if(say&&c.type!=="match")setTimeout(()=>speak(plain(String(say).replace("＿＿",""))),250);
 }
 
@@ -218,6 +270,16 @@ function optList(c,label){
 }
 function body(c){
   const fj=s=>`<span class="jp">${furi(s)}</span>`;
+  if(c.type==="verb"){
+    const F=V().FORMS[c.form],head=`<div class="vq"><div class="vdict jp">${rubyHTML(V().norm(c.v).jp,V().norm(c.v).kana)}<button class="mini" data-pxsay="verb">${SVG.play}</button></div><div class="vmean">${esc(String(c.v.es||"").split(";")[0])}</div>
+      <div class="varrow">↓</div><div class="vform"><b class="jp">${esc(F.label)}</b><small>${esc(F.name)} · «${esc(F.es)}»</small></div></div>`;
+    if(c.vmode==="type")return head+`<div class="vtype"><input class="field jp" id="pxType" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Escribe en romaji…" ${PX.state!=="ask"?"disabled":""} value="${esc(PX.typed||"")}"></div>`;
+    return head+optList(c,o=>`<span class="jp">${rubyHTML(o.jp,o.kana)}</span>`);
+  }
+  if(c.type==="verbid"){
+    return `<div class="vq"><div class="vdict jp big">${rubyHTML(c.ans.jp,c.ans.kana)}<button class="mini" data-pxsay="verb">${SVG.play}</button></div><div class="vmean">de <span class="jp">${rubyHTML(V().norm(c.v).jp,V().norm(c.v).kana)}</span> · ${esc(String(c.v.es||"").split(";")[0])}</div></div>`+
+      optList(c,f=>`<b class="jp">${esc(V().FORMS[f].label)}</b><small>${esc(V().FORMS[f].name)}</small>`);
+  }
   if(c.type==="gap"||c.type==="particle"){
     const fill=PX.sel!==null?`<span class="gapbox on">${furi(c.options[PX.sel])}</span>`:`<span class="gapbox"> </span>`;
     return `<div class="pxsent jp">${furi(c.jp).replace("＿＿",fill)}</div>${c.es?`<div class="pxes">${esc(c.es)}</div>`:""}${optList(c,fj)}`;
@@ -252,11 +314,13 @@ function footer(c){
     return `<div class="pxfoot"><button class="btn primary pxcheck" id="pxCheck" ${canCheck()?"":"disabled"}>Comprobar</button></div>`;
   }
   const ok=PX.state==="right";
-  const sol=c.type==="order"||c.type==="speak"?c.full:(c.type==="gap"||c.type==="particle")?c.full:(c.type==="meaning"||c.type==="listen")?c.options[c.answer]:c.type==="reverse"?c.w.jp:c.type==="match"?"":c.w?c.w.es:"";
+  const sol=c.type==="verb"?"":c.type==="verbid"?"":c.type==="order"||c.type==="speak"?c.full:(c.type==="gap"||c.type==="particle")?c.full:(c.type==="meaning"||c.type==="listen")?c.options[c.answer]:c.type==="reverse"?c.w.jp:c.type==="match"?"":c.w?c.w.es:"";
   const isJP=["order","speak","gap","particle","reverse"].includes(c.type);
   return `<div class="pxfoot res ${ok?"ok":"ko"}">
     <div class="restop"><span class="resic">${ok?SVG.check:SVG.x}</span><b>${ok?pick(["¡Correcto!","¡Muy bien!","¡Eso es!","すごい！","完璧！"]):"Respuesta correcta:"}</b></div>
     ${!ok&&sol?`<div class="ressol ${isJP?"jp":""}">${isJP?furi(sol):esc(sol)}</div>`:""}
+    ${c.type==="verb"?`<div class="ressol jp">${rubyHTML(c.ans.jp,c.ans.kana)}${!ok&&c.vmode==="type"&&PX.typed?` <small class="typed">escribiste «${esc(PX.typed)}»</small>`:""}</div><div class="resexp">${esc(V().explain(c.v,c.form))}</div>`:""}
+    ${c.type==="verbid"?`<div class="ressol"><b class="jp">${esc(V().FORMS[c.form].label)}</b> · ${esc(V().FORMS[c.form].name)}</div><div class="resexp">${esc(V().explain(c.v,c.form))}</div>`:""}
     ${c.type==="speak"&&PX.spoken?`<div class="resexp">Te he entendido: «${esc(PX.spoken)}» (${Math.round(PX.speakScore*100)}% parecido)${!ok?` <button class="mini" data-pxforce="1">Lo he dicho bien</button>`:""}</div>`:""}
     ${c.explain?`<div class="resexp">${furi(c.explain)}</div>`:""}
     ${c.es&&c.type!=="order"&&c.type!=="speak"&&(c.type==="gap"||c.type==="particle")?`<div class="resexp">${esc(c.es)}</div>`:""}
@@ -275,8 +339,9 @@ function render(){
     pane.innerHTML=`${top}<div class="pxload"><div class="pxcatbig" id="pxCat"></div>
       <h2 class="h2">${PX.mode==="review"?"¡Repaso completado!":"¡Ronda completada!"}</h2>
       <div class="stats" style="width:100%"><div class="stat"><b>${PX.round.good}/${PX.round.n}</b><span>aciertos</span></div><div class="stat"><b>${acc}%</b><span>precisión</span></div><div class="stat"><b>${st.xp}</b><span>XP hoy</span></div></div>
+      ${PX.mode==="verbs"?(()=>{const S=vset(),st=vstat(S.level),acc=st.n?st.good/st.n:0;return st.good>=15&&acc>=.85&&S.level<V().LEVELS.length?`<div class="pxreview"><div><b>¡Dominas «${V().LEVELS[S.level-1].title}»!</b><small>Siguiente: ${V().LEVELS[S.level].title} · <span class="jp">${V().LEVELS[S.level].ex}</span></small></div><button class="btn primary" data-vlevel="${S.level+1}" data-vgo="1">Subir de nivel</button></div>`:""})():""}
       ${PX.round.words.size?`<p style="margin:0;color:var(--muted);font-size:14px">Has practicado: <span class="jp">${[...PX.round.words].slice(0,12).map(esc).join("、")}</span></p>`:""}
-      <div class="row" style="justify-content:center">${PX.mode==="review"?(dueWords().length?`<button class="btn primary" data-pxmode="review">Repasar ${dueWords().length} más</button>`:`<button class="btn primary" data-pxmode="mix">Seguir practicando</button>`):`<button class="btn primary" id="pxMore">Otra ronda</button>`}<button class="btn" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn ghost" id="pxClose2">Terminar</button></div></div>`;
+      <div class="row" style="justify-content:center">${PX.mode==="review"?(dueWords().length?`<button class="btn primary" data-pxmode="review">Repasar ${dueWords().length} más</button>`:`<button class="btn primary" data-pxmode="mix">Seguir practicando</button>`):`<button class="btn ${PX.mode==="verbs"&&(()=>{const S=vset(),st=vstat(S.level);return st.good>=15&&st.good/st.n>=.85&&S.level<V().LEVELS.length})()?"":"primary"}" id="pxMore">Otra ronda</button>`}<button class="btn" data-tabgo="chat">Usarlas hablando con Tama</button><button class="btn ghost" id="pxClose2">Terminar</button></div></div>`;
     if(acc>=80){sfx("done");confetti()}
     placeCat("happy");PX.round={n:0,good:0,words:new Set()};return}
   const c=PX.cur;
@@ -287,6 +352,9 @@ function render(){
     ${footer(c)}`;
   PX.fresh=false;
   placeCat(PX.state==="ask"?"":undefined);
+  const ti=$("#pxType");
+  if(ti&&PX.state==="ask"){try{wanakana.bind(ti,{IMEMode:true})}catch(e){}ti.addEventListener("input",()=>{const b=$("#pxCheck");if(b)b.disabled=!canCheck()});
+    ti.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();e.stopPropagation();if(canCheck())check()}});setTimeout(()=>ti.focus({preventScroll:true}),50)}
 }
 function renderHome(){
   const st=pstat(),pane=$("#practicePane");
@@ -297,12 +365,29 @@ function renderHome(){
     <p style="margin:0;color:var(--muted);text-align:center;max-width:42ch">Ejercicios cortos con tus palabras para soltarte antes de conversar. Nunca se acaban: los que fallas vuelven, y las palabras flojas salen más.</p>
     <div class="stats" style="width:100%"><div class="stat"><b>${st.done}</b><span>ejercicios hoy</span></div><div class="stat"><b>${st.xp}</b><span>XP hoy</span></div><div class="stat"><b>${st.best}</b><span>mejor racha</span></div></div>
     ${(()=>{const n=dueWords().length;return `<div class="pxreview ${n?"":"done"}"><div><b>${n?`Repaso de hoy · ${n} palabra${n>1?"s":""}`:"Repaso de hoy al día"}</b><small>${n?"Las que tocan según tu memoria: primero las que fallas.":"Vuelve más tarde: Tama te avisará con el número rojo."}</small></div>${n?`<button class="btn primary" data-pxmode="review">Repasar</button>`:`<span class="pxok">${SVG.check}</span>`}</div>`})()}
+    ${(()=>{const S=vset(),L=V()?V().LEVELS:[],l=L[S.level-1];if(!l)return"";const st=vstat(S.level);return `<div class="pxverbs"><div class="pvl"><span class="vn">${l.n}</span><div><b>Verbos · ${l.title}</b><small>${l.sub} · <span class="jp">${l.ex}</span></small><span class="vbar"><i style="width:${Math.min(100,st.good/15*100)}%"></i></span></div></div>
+      <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="btn ghost" id="pxLevels">Nivel</button><button class="btn primary" data-pxmode="verbs">Practicar verbos</button></div></div>`})()}
     <div class="pxmodes">${MODES.map(([k,n,d])=>`<button class="pxmode" data-pxmode="${k}"><b>${n}</b><small>${d}</small></button>`).join("")}</div>
     ${!mine.length?`<div class="notice">Aún no tienes palabras propias: practicarás con lo básico. Añade palabras en <b>Vocabulario</b> y los ejercicios girarán en torno a ellas.</div>`:""}
-    ${!settings.key?`<div class="notice">Sin clave de Gemini solo funciona el modo <b>Palabras</b>.</div>`:""}
+    ${!settings.key?`<div class="notice">Sin clave de Gemini solo funcionan <b>Palabras</b>, <b>Verbos</b> y el repaso.</div>`:""}
   </div>`;
   placeCat("");
 }
+function selectOpt(k){
+  const c=PX.cur;PX.sel=k;sfx("tap");
+  document.querySelectorAll("#practicePane .pxopt").forEach((b,i)=>b.classList.toggle("sel",i===k));
+  const g=document.querySelector("#practicePane .gapbox");if(g&&(c.type==="gap"||c.type==="particle")){g.className="gapbox on";g.innerHTML=furi(c.options[k])}
+  if(c.type==="reverse")speak(c.options[k].jp);
+  if(c.type==="verb")speak(c.options[k].kana);
+  const b=$("#pxCheck");if(b)b.disabled=!canCheck();
+}
+function renderOrder(){
+  const bl=document.querySelector("#practicePane .buildline"),bk=document.querySelector("#practicePane .bank");if(!bl||!bk)return render();
+  bl.innerHTML=PX.built.map((b,k)=>`<button class="tile ${k===PX.built.length-1&&PX.justAdded?"new":""}" data-pxbuilt="${k}">${furi(b.s)}</button>`).join("")||'<span class="ph">Toca las piezas en orden</span>';
+  bk.innerHTML=PX.bank.map((b,k)=>`<button class="tile ${b.used?"ghost":""}" data-pxbank="${k}" ${b.used?"disabled":""}>${furi(b.s)}</button>`).join("");
+  const c=$("#pxCheck");if(c)c.disabled=!canCheck();
+}
+function renderMatch(){const g=document.querySelector("#practicePane .matchgrid");if(!g)return render();const tmp=document.createElement("div");tmp.innerHTML=body(PX.cur);g.replaceWith(tmp.firstElementChild)}
 window.renderPractice=function(){render()};
 window._px=()=>PX;
 window.practiceLeave=function(){if(PX.active){stopListen&&stopListen(true);stopSpeaking()}};
@@ -317,39 +402,41 @@ function speakNow(){
     onError:e=>{toast(micErrorMsg(e));settings.pracSpeak=false;saveSettings();render()}});
 }
 document.addEventListener("click",e=>{
-  const el=e.target.closest("button");if(!el||!el.closest("#practicePane"))return;
+  const el=e.target.closest("button");if(!el||!(el.closest("#practicePane")||el.dataset.vlevel||el.dataset.vopt))return;
   const d=el.dataset;
-  if(d.pxmode){if(!["words","review"].includes(d.pxmode)&&!settings.key){showOnboarding();return}return start(d.pxmode)}
+  if(d.pxmode){if(!["words","review","verbs"].includes(d.pxmode)&&!settings.key){showOnboarding();return}return start(d.pxmode)}
   if(el.id==="pxClose"||el.id==="pxClose2")return stop();
   if(el.id==="pxMore"){sfx("flip");return next()}
   if(el.id==="pxCheck")return check();
   if(el.id==="pxNext")return next();
   if(d.pxforce){const c=PX.cur;PX.state="ask";PX.round.n--;const st=pstat();st.done--;
     PX.queue.splice(PX.queue.findIndex((q,k)=>k>=PX.i&&q.retry&&q.full===c.full),1);return finish(true)}
-  if(d.pxopt!==undefined&&PX.state==="ask"){PX.sel=+d.pxopt;sfx("tap");
-    const c=PX.cur;if(c.type==="reverse")speak(c.options[PX.sel].jp);
-    return render()}
-  if(d.pxbank!==undefined&&PX.state==="ask"){const b=PX.bank[+d.pxbank];if(b.used)return;b.used=true;PX.built.push(b);PX.justAdded=true;sfx("tap");speak(plain(b.s),1.05);return render()}
-  if(d.pxbuilt!==undefined&&PX.state==="ask"){PX.justAdded=false;const b=PX.built.splice(+d.pxbuilt,1)[0];b.used=false;sfx("flip");return render()}
+  if(d.pxopt!==undefined&&PX.state==="ask")return selectOpt(+d.pxopt);
+  if(d.pxbank!==undefined&&PX.state==="ask"){const b=PX.bank[+d.pxbank];if(b.used)return;b.used=true;PX.built.push(b);PX.justAdded=true;sfx("tap");speak(plain(b.s),1.05);return renderOrder()}
+  if(d.pxbuilt!==undefined&&PX.state==="ask"){PX.justAdded=false;const b=PX.built.splice(+d.pxbuilt,1)[0];b.used=false;sfx("flip");return renderOrder()}
   if(d.pxsay){const c=PX.cur;if(!c)return;
     if(d.pxsay==="word")return speak(c.w.jp);
+    if(d.pxsay==="verb")return speak(c.type==="verbid"?c.ans.kana:V().norm(c.v).kana);
     const t=plain(c.full||c.jp||"").replace("＿＿","");return speak(t,d.pxsay==="slow"?Math.max(.5,settings.rate-.3):null)}
-  if(d.pxhint){PX.showHint=!PX.showHint;return render()}
+  if(d.pxhint){PX.showHint=!PX.showHint;const h=document.querySelector(".pxhint");if(h)h.classList.toggle("blur",!PX.showHint);el.textContent=PX.showHint?"Ocultar":"Ver la frase";return}
+  if(el.id==="pxLevels")return levelSheet();
+  if(d.vlevel){const S=vset();S.level=+d.vlevel;saveSettings();sfx("add");closeSheet();if(d.vgo||PX.mode==="verbs"&&PX.active){PX.queue=PX.queue.slice(0,PX.i);return start("verbs")}return render()}
+  if(d.vopt){const S=vset();S[d.vopt]=!S[d.vopt];el.setAttribute("aria-checked",S[d.vopt]);saveSettings();sfx("tap");if(PX.mode==="verbs"&&PX.active)PX.queue=PX.queue.slice(0,PX.i);return}
   if(d.pxskip){settings.pracSpeak=false;saveSettings();toast("Vale, quito los ejercicios de hablar por ahora.");PX.queue=PX.queue.filter((q,k)=>k<PX.i||q.type!=="speak");return next()}
   if(el.id==="pxMic")return speakNow();
   if(d.pxm){const M=PX.match,[side,id]=d.pxm.split("|");const p=PX.cur.pairs.find(x=>(x.id||x.jp)===id);
     if(side==="l")speak(p.jp);
-    if(!M.picked||M.picked.side===side){M.picked={side,p};sfx("tap");return render()}
+    if(!M.picked||M.picked.side===side){M.picked={side,p};sfx("tap");return renderMatch()}
     const other=M.picked.p;M.picked=null;
-    if(other===p){M.done.add(id);sfx("receive");if(M.done.size===PX.cur.pairs.length){render();return setTimeout(()=>check(),250)}return render()}
+    if(other===p){M.done.add(id);sfx("receive");renderMatch();if(M.done.size===PX.cur.pairs.length)setTimeout(()=>check(),300);return}
     M.miss++;M.bad.add(other.id);M.bad.add(p.id);sfx("wrong");
-    render();const btns=document.querySelectorAll(".mt");btns.forEach(b=>{if(b.dataset.pxm.endsWith("|"+id)||b.dataset.pxm.endsWith("|"+(other.id||other.jp))){b.classList.add("shake");setTimeout(()=>b.classList.remove("shake"),450)}});return}
+    renderMatch();const btns=document.querySelectorAll(".mt");btns.forEach(b=>{if(b.dataset.pxm.endsWith("|"+id)||b.dataset.pxm.endsWith("|"+(other.id||other.jp))){b.classList.add("shake");setTimeout(()=>b.classList.remove("shake"),450)}});return}
 });
 document.addEventListener("keydown",e=>{
   if(typeof tab==="undefined"||tab!=="practice"||!PX.active||$("#scrim"))return;
   if(["INPUT","TEXTAREA"].includes(document.activeElement.tagName))return;
   const c=PX.cur;if(!c)return;
-  if(PX.state==="ask"&&c.options&&ESC_KEYS.includes(e.key)){const k=+e.key-1;if(k<c.options.length){PX.sel=k;sfx("tap");render()}e.preventDefault();return}
+  if(PX.state==="ask"&&c.options&&ESC_KEYS.includes(e.key)){const k=+e.key-1;if(k<c.options.length)selectOpt(k);e.preventDefault();return}
   if(e.key==="Enter"){e.preventDefault();if(PX.state==="ask"){if(canCheck())check()}else if(PX.state==="right"||PX.state==="wrong"||PX.state==="round")next()}
 });
 // keep Practice's Tama reacting to taps like the main one
