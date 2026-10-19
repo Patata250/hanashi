@@ -355,6 +355,23 @@ details.tut{padding:6px 10px}details.tut summary{list-style:none;cursor:pointer;
 .onb~.scrim{z-index:50}
 .models{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface)}
 .mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-family:ui-monospace,monospace}.mst{white-space:nowrap;font-family:var(--f-ui);font-size:13px;font-weight:700;color:var(--muted)}.mst.on{color:var(--ok)}.mst.wait{color:var(--gold)}.mst.off{color:var(--ai)}
+.packs{display:flex;flex-wrap:wrap;gap:8px}
+.packchip{display:inline-flex;align-items:baseline;gap:6px;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:15px}
+.packchip small{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.packchip.some{border-color:var(--gold)}.packchip.full{border-color:var(--ok);background:var(--ok-soft)}
+.acpack{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1.5px dashed var(--ai);background:var(--ai-soft);border-radius:14px;padding:9px 12px}
+.acpack .pk{flex:none;font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--on-ai);background:var(--ai);border-radius:6px;padding:2px 6px}
+.acpack .acmeta{flex:1;display:flex;flex-direction:column;min-width:0}.acpack small{color:var(--muted);font-size:14px;font-family:var(--f-jp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.packbar{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:560px;margin-inline:auto;z-index:25;display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--ai);border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.18);animation:up .3s cubic-bezier(.2,.8,.3,1) both;transition:opacity .4s,transform .4s}
+.haspack .toast{bottom:calc(170px + env(safe-area-inset-bottom,0px))}
+.packchip.more{border-style:dashed;color:var(--muted);font-weight:600}
+.packbar.out{opacity:0;transform:translateY(20px)}
+.packbar>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.packbar small{font-size:13px;color:var(--muted)}.packbar b{font-size:16px}
+.packbar>div>.jp{font-size:16px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.packgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
+.pkit{position:relative;display:flex;flex-direction:column;align-items:center;gap:0;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 6px 8px;text-align:center}
+.pkit .jp{font-size:21px;line-height:1.9}.pkit small{font-size:13px;color:var(--muted);line-height:1.25}
+.pkit[aria-pressed=true]{border-color:var(--ai);background:var(--ai-soft)}
+.pkit.have{opacity:.55}.pkit i{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.pkit i svg{width:11px;height:11px}
 .synccard{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 14px}
 .synccard>div{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.synccard small{font-size:14px;color:var(--muted)}
 .syncic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--line);color:var(--muted);display:grid;place-items:center}.syncic svg{width:22px;height:22px}
@@ -1360,7 +1377,7 @@ function addFromToken(mi,j,k){
   let c;
   if(de)c=entryToWord(de);
   else{const r=t.r||t.s;let ro="";try{ro=wanakana.toRomaji(r)}catch(e){}c={jp:(t.x&&t.x.dict)||t.s,kana:r,romaji:ro,es:(t.x&&t.x.general)||t.m,type:""}}
-  addWord(c);closeSheet();renderChat(true);
+  const added=addWord(c);closeSheet();renderChat(true);if(added)setTimeout(()=>packNudge(added),600);
 }
 
 /* ============ vocabulary ============ */
@@ -1383,6 +1400,11 @@ function buildVocab(){
      <div class="row"><h2 class="h2" style="flex:1">Sugerencias de Tama</h2>${INFO}<button class="btn" id="btnSug">Otras</button></div>
      <div class="sugs" id="sugBox"></div>
      <div class="row"><button class="btn primary" id="btnSugAdd" disabled>Añadir seleccionadas</button><span class="info" style="font-size:14px;color:var(--muted)">Palabras frecuentes de tu nivel, relacionadas con las tuyas. Las que no eliges salen menos para que aparezcan otras.</span></div>
+   </div>
+   <div class="stack" style="gap:8px">
+     <div class="row"><h2 class="h2" style="flex:1">Packs</h2>${INFO}</div>
+     <p class="info" style="margin:0;font-size:15px;color:var(--muted)">Familias de palabras que se aprenden juntas. Cuando añadas una palabra de un pack, Tama te ofrecerá el resto.</p>
+     <div class="packs" id="packBox">${packChips()}</div>
    </div>
    <div class="stack" style="gap:8px">
      <div class="filters" id="vFilters">${[["all","Todas"],["weak","Flojas"],["new","Nuevas"],["learn","Aprendiendo"],["done","Dominadas"],["basic","Kit básico"]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${vocabFilter===k}">${l}</button>`).join("")}</div>
@@ -1411,7 +1433,10 @@ function vSearch(){
   if(!q){box.innerHTML="";lastResults=[];return}
   if(!DICT.ready){box.innerHTML=`<div class="notice">Cargando diccionario…</div>`;loadDict();return}
   lastResults=dictSearch(q,7);
-  box.innerHTML=lastResults.map((e,i)=>acRow(e,i)).join("")+
+  const nq=q.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248));
+  if(/^\d{1,3}$/.test(nq)&&window.PACKS){const it=PACKS.flatMap(p=>p.items).find(x=>x.es===String(+nq));if(it)lastResults=[mkEntry(it.jp,it.kana,`${it.es} (número)`,5,"número"),...lastResults.filter(e=>e.jp!==it.jp)].slice(0,7)}
+  const pk=window.PACKS?PACKS.filter(p=>(q.length>=3&&fold(p.title).includes(fold(q)))||lastResults.slice(0,2).some(e=>packsFor(e).includes(p))).slice(0,2):[];
+  box.innerHTML=lastResults.map((e,i)=>acRow(e,i)).join("")+pk.map(packRow).join("")+
     (aiCands?aiCands.map((c,i)=>acRow(mkEntry(c.jp,c.kana,c.es,0,c.type),i,true)).join(""):"")+
     `<button class="acmore" id="btnAILookup" ${aiBusy?"disabled":""}>${aiBusy?"Tama está buscando…":`${lastResults.length?"¿No es ninguna?":"No está en el diccionario."} Buscar «${esc(q)}» con Tama`}</button>`;
 }
@@ -1427,6 +1452,7 @@ function addEntry(i,ai){
   const c=ai?aiCands[i]:entryToWord(e);if(!c)return;
   if(ai)rememberEntry(c);
   if(addWord(c)){
+    packNudge(c);
     const row=document.querySelector(`#addResults .ac[data-ac="${i}"]${ai?'[data-ai]':':not([data-ai])'}`);
     if(row){row.classList.add("have","flash");row.disabled=true;row.querySelector(".acadd").innerHTML=SVG.check}
     vStats();vList();
@@ -1480,12 +1506,66 @@ function renderSugs(from=0){
 function sugBtn(){const b=$("#btnSugAdd");if(b){b.disabled=!sugSel.size;b.textContent=sugSel.size?`Añadir ${sugSel.size}`:"Añadir seleccionadas"}}
 function toggleSug(i,el){sugSel.has(i)?sugSel.delete(i):sugSel.add(i);el.setAttribute("aria-pressed",sugSel.has(i));sfx("tap");sugBtn()}
 function addSugs(){
-  let n=0;[...sugSel].forEach(i=>{if(addWord(entryToWord(sugs[i]),true))n++});
+  let n=0,first=null;[...sugSel].forEach(i=>{const w=addWord(entryToWord(sugs[i]),true);if(w){n++;if(!first&&packsFor(w).length)first=w}});
+  if(first)setTimeout(()=>packNudge(first),900);
   toast(`${n} palabras añadidas`);sfx("add");
   document.querySelectorAll("#sugBox .sug[aria-pressed=true]").forEach(b=>b.classList.add("gone"));
   setTimeout(()=>{localSuggest(sugs.filter((_,i)=>!sugSel.has(i)))},260);
   vStats();vList();
 }
+/* ---- packs ---- */
+const packOwned=p=>p.items.filter(it=>findWord(it.jp)).length;
+const PACK_GROUP={koko:"k",kore:"k",kono:"k",kochira:"k",konna:"k",kou:"k",q:"k",num10:"n",num100:"n",numbig:"n",tsu:"n",people:"n",week:"t",months:"t",dates:"t",hours:"t",rel:"t",dayparts:"t",seasons:"t",pron:"p",family:"p",opp:"a",feel:"a",move:"v",daily:"v"};
+let packsOpen=false;
+function packChips(){if(!window.PACKS)return"";
+  const rank=p=>{const o=packOwned(p),n=p.items.length;return o===n?2:o?0:1};
+  const list=PACKS.map((p,i)=>[rank(p),i,p]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(x=>x[2]);
+  const shown=packsOpen?list:list.slice(0,8);
+  return shown.map(p=>{const o=packOwned(p),n=p.items.length;
+  return `<button class="packchip ${o===n?"full":o?"some":""}" data-pack="${p.id}"><b>${esc(p.title)}</b><small>${o}/${n}</small></button>`}).join("")+
+  (list.length>8?`<button class="packchip more" id="packMore">${packsOpen?"Ver menos":`Ver los ${list.length}`}</button>`:"")}
+function packRow(p){const o=packOwned(p);return `<button class="acpack" data-pack="${p.id}"><span class="pk">PACK</span><span class="acmeta"><b>${esc(p.title)}</b><small>${p.items.slice(0,5).map(i=>esc(i.jp)).join("・")}${p.items.length>5?"…":""} · ${o}/${p.items.length}</small></span><span class="acadd">›</span></button>`}
+function packNudge(w){
+  if(!window.PACKS)return;const dis=LS.get("packNo")||{};
+  const p=packsFor(w).find(p=>!dis[p.id]&&packOwned(p)<p.items.length);if(!p)return;
+  document.querySelectorAll(".packbar").forEach(x=>x.remove());
+  const miss=p.items.filter(it=>!findWord(it.jp));
+  const d=document.createElement("div");d.className="packbar";
+  d.innerHTML=`<div><small>Va con <span class="jp">${esc(w.jp)}</span></small><b>${esc(p.title)}</b><span class="jp">${miss.slice(0,6).map(i=>esc(i.jp)).join("・")}${miss.length>6?"…":""}</span></div>
+    <button class="btn primary" data-pack="${p.id}">Ver</button><button class="iconbtn" data-packno="${p.id}" aria-label="No, gracias">${SVG.x}</button>`;
+  document.body.appendChild(d);document.body.classList.add("haspack");sfx("flip");
+  clearTimeout(packNudge.t);packNudge.t=setTimeout(()=>d.classList.add("out"),9000);setTimeout(()=>{if(d.classList.contains("out")){d.remove();document.body.classList.remove("haspack")}},9500);
+}
+let packSel=new Set();
+function packSheet(id){
+  const p=PACKS.find(x=>x.id===id);if(!p)return;document.querySelectorAll(".packbar").forEach(x=>x.remove());document.body.classList.remove("haspack");
+  packSel=new Set(p.items.map((it,i)=>findWord(it.jp)?-1:i).filter(i=>i>=0));
+  const rel=PACKS.filter(x=>x!==p&&PACK_GROUP[x.id]&&PACK_GROUP[x.id]===PACK_GROUP[p.id]);
+  openSheet(`<div class="grab"></div><div class="hrow"><h3 class="h2">${esc(p.title)}</h3></div>
+   ${p.desc?`<p style="margin:0;color:var(--muted);font-size:15px">${esc(p.desc)}</p>`:""}
+   <div class="packgrid">${p.items.map((it,i)=>{const have=!!findWord(it.jp);return `<button class="pkit ${have?"have":""}" data-pkit="${i}" aria-pressed="${packSel.has(i)}" ${have?"disabled":""}><span class="jp">${rubyHTML(it.jp,it.kana)}</span><small>${esc(it.es)}</small>${have?`<i>${SVG.check}</i>`:""}</button>`}).join("")}</div>
+   <div class="row"><button class="btn primary" id="packAdd" data-packid="${p.id}"></button><button class="btn ghost" id="packAll">Marcar todas</button></div>
+   ${rel.length?`<div class="stack" style="gap:6px"><b style="font-size:15px">Relacionados</b><div class="packs">${rel.map(x=>{const o=packOwned(x),n=x.items.length;return `<button class="packchip ${o===n?"full":o?"some":""}" data-pack="${x.id}"><b>${esc(x.title)}</b><small>${o}/${n}</small></button>`}).join("")}</div></div>`:""}`);
+  packBtn();
+}
+function packBtn(){const b=$("#packAdd");if(!b)return;b.disabled=!packSel.size;b.textContent=packSel.size?`Añadir ${packSel.size} palabra${packSel.size>1?"s":""}`:"Ya las tienes todas"}
+function packAdd(id){
+  const p=PACKS.find(x=>x.id===id);let n=0;
+  [...packSel].sort((a,b)=>a-b).forEach(i=>{const it=p.items[i];let ro="";try{ro=wanakana.toRomaji(it.kana)}catch(e){}
+    if(addWord({jp:it.jp,kana:it.kana,romaji:ro,es:it.es,type:p.type},true))n++});
+  closeSheet();sfx("done");if(n>=5)confetti();toast(`${n} palabras añadidas de «${p.title}»`);
+  if(tab==="vocab"){vStats();vList();const pb=$("#packBox");if(pb)pb.innerHTML=packChips();vSearch()}
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.pack){e.stopPropagation();sfx("tap");return packSheet(b.dataset.pack)}
+  if(b.dataset.packno){const d=LS.get("packNo")||{};d[b.dataset.packno]=now();LS.set("packNo",d);b.closest(".packbar")?.remove();document.body.classList.remove("haspack");return}
+  if(b.dataset.pkit!==undefined){const i=+b.dataset.pkit;packSel.has(i)?packSel.delete(i):packSel.add(i);b.setAttribute("aria-pressed",packSel.has(i));sfx("tap");
+    const p=PACKS.find(x=>x.id===$("#packAdd").dataset.packid);if(packSel.has(i))speak(p.items[i].kana);packBtn();return}
+  if(b.id==="packAll"){document.querySelectorAll(".pkit:not(.have)").forEach(x=>{packSel.add(+x.dataset.pkit);x.setAttribute("aria-pressed","true")});sfx("tap");return packBtn()}
+  if(b.id==="packAdd")return packAdd(b.dataset.packid);
+  if(b.id==="packMore"){packsOpen=!packsOpen;sfx("tap");$("#packBox").innerHTML=packChips();return}
+},true);
 async function explainKanji(w){
   const box=$("#kanjiBox");if(box)box.innerHTML=`<div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div>`;
   try{const r=await ask(`Para un hispanohablante principiante, explica los kanji de ${w.jp} (${w.kana}, "${w.es}").
@@ -1860,6 +1940,7 @@ if(!settings.key)showOnboarding();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 <script src="verbs.js"></script>
+<script src="packs.js"></script>
 <script src="practice.js"></script>
 <script src="sync.js"></script>
 </body>
