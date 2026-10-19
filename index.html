@@ -572,6 +572,21 @@ function furi(t){
   return esc(t).replace(/([\u4e00-\u9faf\u3400-\u4dbf々〆ヶ]+)\[([\u3040-\u30ffー・ ]+)\]/g,(m,k,r)=>`<ruby>${k}<rt>${r}</rt></ruby>`).replace(/\[([\u3040-\u30ffー]+)\]/g,"");
 }
 const plain=t=>String(t??"").replace(/\[[\u3040-\u30ffー・ ]+\]/g,"");
+/* What the voice should read: kana, never kanji (月 alone could be つき or がつ; the reading decides). */
+const KANJI_RUN=/[一-龯㐀-䶿々〆ヶ]+\[([\u3040-\u30ffー・ ]+)\]/g;
+const sayTok=t=>t?(hasKanji(t.s)&&t.r&&!hasKanji(t.r)?t.r:t.s):"";
+function toSay(t){
+  t=String(t??"");
+  if(/\[/.test(t))t=t.replace(KANJI_RUN,(m,r)=>r.replace(/\s/g,""));
+  t=plain(t);
+  if(hasKanji(t)){const core=t.replace(/[～〜\s。、！？!?]/g,"");
+    const raw=t.replace(/[\s。、！？!?]/g,"").replace(/〜/g,"～");
+    const exact=typeof DICT!=="undefined"&&DICT.ready?DICT.extra.concat(DICT.list).filter(e=>e.jp.replace(/〜/g,"～")===raw)[0]:null;
+    const w=words.find(x=>x.jp===raw||x.jp===core)||exact||(typeof dictFind==="function"&&dictFind(core))||(typeof findBasic==="function"&&findBasic(core));
+    const k=w&&String(w.kana||"").replace(/[～〜]/g,"").split(/[;,、・\/]/)[0].trim();
+    if(k&&!hasKanji(k))return t.replace(/[～〜]/g,"").replace(core,k);}
+  return t.replace(/^[～〜]|[～〜]$/g,"");
+}
 
 /* ============ Tama, the mascot (original design) ============ */
 // Tama, the red panda. tama-rig.js animates every .cat element (mesh deformation over the pose drawings).
@@ -731,7 +746,7 @@ function startHL(it,u){
   clearHL();const hl=it.hl;if(!hl)return;
   if(hl.el){hl.el.classList.add("saying");return}
   const m=msgAt(hl.mi);const toks=m&&toksOf(m,hl.k);if(!toks||!toks.length)return;
-  const starts=[];let pos=0;toks.forEach(t=>{starts.push(pos);pos+=t.s.length});
+  const starts=[];let pos=0;toks.forEach(t=>{starts.push(pos);pos+=sayTok(t).length});
   let gotBoundary=false;
   u.onboundary=e=>{if(typeof e.charIndex!=="number")return;if(!gotBoundary){gotBoundary=true;clearInterval(hlTimer)}
     let j=0;for(let x=0;x<starts.length;x++)if(starts[x]<=e.charIndex)j=x;markTok(hl.mi,hl.k,j)};
@@ -742,7 +757,7 @@ function startHL(it,u){
   hlTimer=setInterval(()=>{if(gotBoundary)return;const el=now()-t0;while(j<toks.length-1&&el>acc+durs[j]){acc+=durs[j];j++}markTok(hl.mi,hl.k,j)},60);
 }
 function speakSeq(items,onend){
-  items=items.filter(i=>i&&String(i.text||"").trim()).map(i=>({...i,text:plain(i.text)}));
+  items=items.filter(i=>i&&String(i.text||"").trim()).map(i=>({...i,text:i.lang==="es"?plain(i.text):toSay(i.text)}));
   if(!items.length){onend&&onend();return}
   if(!("speechSynthesis" in window)){voiceHelp(true);onend&&onend();return}
   const ss=speechSynthesis;if(!jaVoice)pickVoice();
@@ -763,7 +778,7 @@ function speakSeq(items,onend){
   if(ss.speaking||ss.pending){ss.cancel();setTimeout(next,120)}else next();
 }
 const speak=(text,rate,onend,hl)=>speakSeq([{text,lang:"ja",rate,hl}],onend);
-const speakMsg=(mi,rate,k)=>{const m=msgAt(mi);if(!m)return;speakSeq([{text:toksOf(m,k).map(t=>t.s).join(""),lang:"ja",rate,hl:{mi,k,tama:!k}}])};
+const speakMsg=(mi,rate,k)=>{const m=msgAt(mi);if(!m)return;speakSeq([{text:toksOf(m,k).map(sayTok).join(""),lang:"ja",rate,hl:{mi,k,tama:!k}}])};
 function stopSpeaking(){curU=null;try{speechSynthesis.cancel()}catch(e){}clearHL();tamaQuiet();if(vState==="speaking")setVState("idle");renderAssist()}
 function voiceHelp(noVoice){
   openSheet(`<div class="grab"></div><h3 class="h2">El audio no suena</h3>
@@ -947,7 +962,7 @@ const WELCOME={role:"ai",tokens:[{s:"こんにちは",r:"",m:"hola"},{s:"！",m:
  help:"Toca cualquier palabra para ver qué significa en esa frase. Toca el micro rojo para hablar sin manos, o mantenlo pulsado mientras hablas y suéltalo al terminar. Yo te escucho, te corrijo y te contesto. Si dices algo que no querías, pulsa «Cancelar» y no contestaré. Puedes pausar cuando quieras y seguir por escrito (en romaji se convierte solo a hiragana)."};
 const allMsgs=()=>[WELCOME,...chat.msgs];
 const msgAt=i=>i===0?WELCOME:chat.msgs[i-1];
-const sayText=m=>(m.tokens||[]).map(t=>t.s).join("");
+const sayText=m=>(m.tokens||[]).map(sayTok).join("");
 const toksOf=(m,k)=>k==="me"?(m.meTokens||[]):(m.tokens||[]);
 let busy=false,chatError="",liveText="";
 
@@ -1140,7 +1155,7 @@ Devuelve SOLO JSON: {"options":[{"jp":"","kana":"","romaji":"","es":"","tip":""}
     const opts=(r.options||[]).filter(o=>o&&o.jp);window._hintOpts=opts;
     const b=$("#hintBody");if(!b)return;
     b.innerHTML=opts.map((o,i)=>`<div class="opt"><div class="t"><span class="jp">${furi(o.jp)}</span><small>${esc(o.romaji)}</small><div style="font-size:14px">${esc(o.es)}</div><small>${esc(o.tip)}</small></div>
-      <div class="stack" style="gap:6px"><button class="mini" data-say="${esc(o.jp)}">${SVG.play}</button><button class="mini" data-use="${i}">Usar</button></div></div>`).join("")+
+      <div class="stack" style="gap:6px"><button class="mini" data-say="${esc(o.kana||o.jp)}">${SVG.play}</button><button class="mini" data-use="${i}">Usar</button></div></div>`).join("")+
       `<p style="margin:0;font-size:13px;color:var(--muted)">Escúchala, repítela en voz alta y luego dila tú. Es la mejor forma de que se te quede.</p>
       ${wasOn?`<button class="btn primary" id="btnResumeFromHint">${SVG.mic}Seguir hablando</button>`:""}`;
   }catch(e){const b=$("#hintBody");if(b)b.innerHTML=`<div class="notice">${esc(aiErr(e))}</div>`}
@@ -1151,7 +1166,7 @@ function ctxSentence(toks,j){
   let st=j,en=j;
   while(st>0&&!/[。！？!?]/.test(toks[st-1].s))st--;
   while(en<toks.length-1&&!/[。！？!?]/.test(toks[en].s))en++;
-  return {html:toks.slice(st,en+1).map((t,k)=>st+k===j?`<mark>${esc(t.s)}</mark>`:esc(t.s)).join(""),text:toks.slice(st,en+1).map(t=>t.s).join(""),full:toks.map(t=>t.s).join("")};
+  return {html:toks.slice(st,en+1).map((t,k)=>st+k===j?`<mark>${esc(t.s)}</mark>`:esc(t.s)).join(""),text:toks.slice(st,en+1).map(sayTok).join(""),full:toks.map(t=>t.s).join("")};
 }
 /* ============ local dictionary (offline, no AI) ============ */
 // JMdict-based list of ~3400 JLPT N5–N3 words with Spanish glosses. Gemini is only a fallback.
@@ -1226,7 +1241,7 @@ function tokenSheet(mi,j,k,silent){
   const ctx=ctxSentence(toks,j),x=t.x;
   const general=x&&x.general||(de?de.es:"")||(w?w.es:"")||(b?b.es:"");
   openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${rubyHTML(t.s,t.r)}</div><div style="color:var(--muted)">${[t.r&&t.r!==t.s?esc(t.r):"",de&&de.lv?LV(de.lv):""].filter(Boolean).join(" · ")}</div></div>
-   <button class="iconbtn" data-say="${esc(t.s)}" aria-label="Escuchar">${SVG.play}</button></div>
+   <button class="iconbtn" data-say="${esc(sayTok(t))}" aria-label="Escuchar">${SVG.play}</button></div>
    <div class="ctx">${ctx.html} <button class="mini" data-say="${esc(ctx.text)}">${SVG.play}</button></div>
    <div class="stack" style="gap:8px" id="tokBody">
      <div class="sec here"><span class="lbl">En esta frase</span><span class="val">${esc(x&&x.here||t.m)}</span></div>
@@ -1237,7 +1252,7 @@ function tokenSheet(mi,j,k,silent){
    </div>
    ${w?`<div class="row"><span class="pill ${status(w)[0]}">${status(w)[1]}</span><span style="font-size:13px;color:var(--muted)">Está en tu vocabulario.</span><span class="spacer"></span><button class="btn" data-open-word="${w.id}">Ficha</button></div>`:
      b?`<div class="row"><span class="pill basic">kit básico</span></div>`:`<button class="btn primary" data-add-tok="${mi}:${j}:${k||""}">Añadir a mi vocabulario</button>`}`);
-  if(!silent)speak(t.s);
+  if(!silent)speak(sayTok(t));
 }
 async function explainToken(mi,j,k){
   const m=msgAt(mi);const toks=m&&toksOf(m,k);const t=toks&&toks[j];if(!t)return;
@@ -1343,28 +1358,34 @@ function addWord(c,silent){
   words.push(w);saveWord();if(!silent){toast(`Añadida: ${w.jp}`);sfx("add")}updateBadge();return w;
 }
 /* suggestions: local, instant, no AI. Prefers the learner's level and words sharing kanji or theme with their vocabulary */
-function localSuggest(){
+// how often each suggestion has been shown without being picked: those fade so new ones appear (forgiven after 2 weeks)
+function sugSeen(){const m=LS.get("sugSeen")||{},t=now();for(const k in m)if(t-m[k][1]>14*DAY)delete m[k];return m}
+function markShown(list){const m=sugSeen(),t=now();list.forEach(e=>{const o=m[e.njp];m[e.njp]=[(o?o[0]:0)+1,t]});LS.set("sugSeen",m)}
+function localSuggest(keep){
   if(!DICT.ready){loadDict();return}
+  const seen=sugSeen(),kept=keep||[],keptSet=new Set(kept.map(e=>e.njp));
   const mine=words.filter(w=>!w.basic),have=new Set(mine.map(w=>normJP(w.jp))),kan=new Set();
   mine.forEach(w=>[...w.jp].forEach(ch=>{if(hasKanji(ch))kan.add(ch)}));
   const maxLv=mine.length<60?5:mine.length<250?4:3;
   const scored=[];
   for(const e of DICT.list){
-    if(have.has(e.njp)||/[～〜]/.test(e.jp))continue;
+    if(have.has(e.njp)||keptSet.has(e.njp)||/[～〜]/.test(e.jp))continue;
     let s=(e.lv===5?30:e.lv===4?18:8)+Math.random()*22;
+    const sn=seen[e.njp];if(sn)s-=sn[0]*20;
     let shared=0;for(const ch of e.jp)if(kan.has(ch))shared++;
     s+=shared*14;if(e.lv<maxLv)s-=25;
     scored.push([s,e]);
   }
   scored.sort((a,b)=>b[0]-a[0]);
-  const pickd=[],pos={};
-  for(const[,e]of scored){const p=e.pos||"x";if((pos[p]||0)>=3)continue;pos[p]=(pos[p]||0)+1;pickd.push(e);if(pickd.length>=8)break}
-  sugs=pickd;sugSel=new Set();renderSugs();
+  const pickd=[],pos={};kept.forEach(e=>{const p=e.pos||"x";pos[p]=(pos[p]||0)+1});
+  for(const[,e]of scored){if(kept.length+pickd.length>=8)break;const p=e.pos||"x";if((pos[p]||0)>=3)continue;pos[p]=(pos[p]||0)+1;pickd.push(e)}
+  markShown(pickd);
+  sugs=kept.concat(pickd);sugSel=new Set();renderSugs(kept.length);
 }
-function renderSugs(){
+function renderSugs(from=0){
   const box=$("#sugBox");if(!box)return;
   if(!sugs){box.innerHTML=`<div class="skel" style="width:100%"></div>`;return}
-  box.innerHTML=sugs.map((s,i)=>`<button class="sug" data-sug="${i}" aria-pressed="${sugSel.has(i)}" style="animation-delay:${i*35}ms"><span class="jp">${rubyHTML(s.jp,s.kana)}</span><span>${esc(s.es.split(";")[0])}</span></button>`).join("");
+  box.innerHTML=sugs.map((s,i)=>`<button class="sug" data-sug="${i}" aria-pressed="${sugSel.has(i)}" style="animation-delay:${Math.max(0,i-from)*35}ms${i<from?";animation:none":""}"><span class="jp">${rubyHTML(s.jp,s.kana)}</span><span>${esc(s.es.split(";")[0])}</span></button>`).join("");
   sugBtn();
 }
 function sugBtn(){const b=$("#btnSugAdd");if(b){b.disabled=!sugSel.size;b.textContent=sugSel.size?`Añadir ${sugSel.size}`:"Añadir seleccionadas"}}
@@ -1373,7 +1394,7 @@ function addSugs(){
   let n=0;[...sugSel].forEach(i=>{if(addWord(entryToWord(sugs[i]),true))n++});
   toast(`${n} palabras añadidas`);sfx("add");
   document.querySelectorAll("#sugBox .sug[aria-pressed=true]").forEach(b=>b.classList.add("gone"));
-  setTimeout(()=>{sugs=sugs.filter((_,i)=>!sugSel.has(i));sugSel=new Set();if(sugs.length<3)localSuggest();else renderSugs()},260);
+  setTimeout(()=>{localSuggest(sugs.filter((_,i)=>!sugSel.has(i)))},260);
   vStats();vList();
 }
 async function explainKanji(w){
@@ -1397,7 +1418,7 @@ function wordSheet(id,silent){
   if(w.basic){openSheet(`<div class="grab"></div><div class="head"><div style="flex:1"><div class="jp">${esc(w.jp)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana.split(" / ")[0])}">${SVG.play}</button></div><div style="font-size:18px;font-weight:600">${esc(w.es)}</div><span class="pill basic" style="align-self:flex-start">kit básico</span>`);return}
   const st=status(w),dueTxt=(w.due||0)<=now()?"hoy":new Date(w.due).toLocaleDateString("es-ES",{day:"numeric",month:"short"});
   openSheet(`<div class="grab"></div>
-   <div class="head"><div style="flex:1"><div class="jp">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.jp)}">${SVG.play}</button></div>
+   <div class="head"><div style="flex:1"><div class="jp">${rubyHTML(w.jp,w.kana)}</div><div style="color:var(--muted)">${esc(w.kana)} · ${esc(w.romaji)}</div></div><button class="iconbtn" data-say="${esc(w.kana||w.jp)}">${SVG.play}</button></div>
    <div style="font-size:19px;font-weight:600">${esc(w.es)} <span style="font-size:13px;color:var(--muted);font-weight:400">${esc(w.type)}</span></div>
    <div id="exBox">${w.ex_jp?`<div class="sec"><span class="lbl">Ejemplo</span><div class="row"><span class="jp" style="font-size:18px;flex:1;line-height:2">${furi(w.ex_jp)}</span><button class="mini" data-say="${esc(w.ex_jp)}">${SVG.play}Escuchar</button></div><span>${esc(w.ex_es)}</span></div>`:`<button class="btn ghost" data-example="${w.id}">${SVG.dots}Ver una frase de ejemplo (Tama)</button>`}</div>
    <dl class="kv"><dt>Estado</dt><dd><span class="pill ${st[0]}">${st[1]}</span></dd><dt>Aciertos / fallos</dt><dd>${w.good||0} / ${w.bad||0}</dd><dt>Consultada</dt><dd>${w.lookups||0} veces</dd><dt>Próximo repaso</dt><dd>${dueTxt}</dd></dl>
@@ -1418,7 +1439,7 @@ function nextCard(first){
   const w=rq&&rq[ri];
   if(w)rMode=(w.reps||0)<1?"rec":(w.reps||0)<3?pick(["rec","listen","prod"]):pick(["listen","prod","prod"]);
   if(!first&&rq&&!w&&rDone)sfx("done");
-  renderReview();if(w&&rMode!=="prod")setTimeout(()=>speak(w.jp),200);
+  renderReview();if(w&&rMode!=="prod")setTimeout(()=>speak(w.kana||w.jp),200);
 }
 function renderReview(){
   const mine=words.filter(w=>!w.basic);
@@ -1435,13 +1456,13 @@ function renderReview(){
   if(rMode==="rec"||rMode==="listen"){
     body=`<span class="eyebrow">${rMode==="listen"?"Escucha: ¿qué significa?":"¿Qué significa?"}</span>
      ${rMode==="rec"||rShown?answer:`<div class="big" style="opacity:.25">？</div>`}
-     <button class="mini" data-say="${esc(w.jp)}">${SVG.play}Escuchar otra vez</button>
+     <button class="mini" data-say="${esc(w.kana||w.jp)}">${SVG.play}Escuchar otra vez</button>
      ${rShown?`<div class="es-big">${esc(w.es)}</div>${w.ex_jp?`<div class="ex"><span class="jp">${furi(w.ex_jp)}</span>${esc(w.ex_es)}</div>`:""}${grades}`:`<button class="btn primary" id="btnShow">Mostrar respuesta</button>`}`;
   }else{
     body=`<span class="eyebrow">Dilo en japonés</span><div class="es-big">${esc(w.es)}</div>
      ${!rShown?`<div class="row" style="width:100%"><button class="micbtn" id="rMic" type="button" aria-label="Decirlo" style="width:46px;height:46px">${SVG.mic}</button><input class="field jp" id="rInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Dila al micro o escríbela en romaji"></div>
        <div class="row"><button class="btn primary" id="btnCheck">Comprobar</button><button class="btn ghost" id="btnShow">No me sale</button></div>`:
-      `${rVerdict!==null?`<div class="verdict ${rVerdict?"ok":"bad"}">${rVerdict?"¡Correcto!":"Respuesta correcta:"}</div>`:""}${answer}<button class="mini" data-say="${esc(w.jp)}">${SVG.play}Escuchar</button>${grades}`}`;
+      `${rVerdict!==null?`<div class="verdict ${rVerdict?"ok":"bad"}">${rVerdict?"¡Correcto!":"Respuesta correcta:"}</div>`:""}${answer}<button class="mini" data-say="${esc(w.kana||w.jp)}">${SVG.play}Escuchar</button>${grades}`}`;
   }
   $("#reviewPane").innerHTML=`<div class="row"><div class="progress" style="flex:1"><i style="width:${pct}%"></i></div><span style="font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums">${ri+1}/${rq.length}</span></div>
    <div class="card">${body}</div><p style="margin:0;font-size:12px;color:var(--muted);text-align:center">Las palabras que fallas vuelven antes y Tama las usa más al hablar.</p>`;
@@ -1450,7 +1471,7 @@ function renderReview(){
 function checkProd(){
   const w=rq[ri];const a=$("#rInput").value;
   rVerdict=!!a.trim()&&(normJP(a)===normJP(w.jp)||normJP(a)===normJP(w.kana)||normRo(a)===normRo(w.romaji));
-  rShown=true;sfx(rVerdict?"perfect":"wrong");renderReview();speak(w.jp);
+  rShown=true;sfx(rVerdict?"perfect":"wrong");renderReview();speak(w.kana||w.jp);
 }
 
 /* ============ sheets ============ */
@@ -1606,7 +1627,7 @@ document.addEventListener("click",e=>{
   if(el.id==="btnSug"){sfx("flip");return localSuggest()}
   if(d.sug!==undefined)return toggleSug(+d.sug,el);
   if(el.id==="btnSugAdd")return addSugs();
-  if(el.id==="btnShow"){rShown=true;rVerdict=rMode==="prod"?false:null;sfx("flip");renderReview();speak(rq[ri].jp);return}
+  if(el.id==="btnShow"){rShown=true;rVerdict=rMode==="prod"?false:null;sfx("flip");renderReview();speak(rq[ri].kana||rq[ri].jp);return}
   if(el.id==="btnCheck")return checkProd();
   if(el.id==="rMic"){const ri_=$("#rInput");el.classList.add("on","listening");sfx("listen");
     if(L){L.finish();return}

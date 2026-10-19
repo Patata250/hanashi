@@ -223,8 +223,8 @@ function next(){
   if(c.type==="order")PX.bank=shuffle([...c.tiles.map((s,k)=>({s,k,used:false})),...(c.extra||[]).map((s,k)=>({s,k:100+k,used:false}))]);
   if(c.type==="match")PX.match={left:shuffle(c.pairs),right:shuffle(c.pairs),picked:null,done:new Set(),bad:new Set(),miss:0};
   PX.justAdded=false;render();
-  if(c.type==="listen")setTimeout(()=>speak(plain(c.jp)),350);
-  if(c.type==="wordlisten")setTimeout(()=>speak(c.w.jp),350);
+  if(c.type==="listen")setTimeout(()=>speak(c.jp),350);
+  if(c.type==="wordlisten")setTimeout(()=>speak(c.w.kana||c.w.jp),350);
 }
 function canCheck(){const c=PX.cur;if(!c)return false;
   if(c.type==="verb"&&c.vmode==="type"){const i=$("#pxType");return !!(i&&i.value.trim())}
@@ -257,8 +257,8 @@ function finish(ok){
   catEl(ok?"happy":"oops");setTimeout(()=>{if(pxCat&&PX.state!=="loading"&&PX.state!=="round")catEl("")},1600);
   if(ok&&PX.combo>0&&PX.combo%5===0){confetti();toast(`¡${PX.combo} seguidas!`)}
   render();
-  const say=c.ans?c.ans.kana:c.full||c.jp||(c.w&&c.w.jp);
-  if(say&&c.type!=="match")setTimeout(()=>speak(plain(String(say).replace("＿＿",""))),250);
+  const say=c.ans?c.ans.kana:c.full||c.jp||(c.w&&(c.w.kana||c.w.jp));
+  if(say&&c.type!=="match")setTimeout(()=>speak(String(say).replace("＿＿","")),250);
 }
 
 /* ---------- rendering ---------- */
@@ -377,7 +377,7 @@ function selectOpt(k){
   const c=PX.cur;PX.sel=k;sfx("tap");
   document.querySelectorAll("#practicePane .pxopt").forEach((b,i)=>b.classList.toggle("sel",i===k));
   const g=document.querySelector("#practicePane .gapbox");if(g&&(c.type==="gap"||c.type==="particle")){g.className="gapbox on";g.innerHTML=furi(c.options[k])}
-  if(c.type==="reverse")speak(c.options[k].jp);
+  if(c.type==="reverse")speak(c.options[k].kana||c.options[k].jp);
   if(c.type==="verb")speak(c.options[k].kana);
   const b=$("#pxCheck");if(b)b.disabled=!canCheck();
 }
@@ -412,12 +412,12 @@ document.addEventListener("click",e=>{
   if(d.pxforce){const c=PX.cur;PX.state="ask";PX.round.n--;const st=pstat();st.done--;
     PX.queue.splice(PX.queue.findIndex((q,k)=>k>=PX.i&&q.retry&&q.full===c.full),1);return finish(true)}
   if(d.pxopt!==undefined&&PX.state==="ask")return selectOpt(+d.pxopt);
-  if(d.pxbank!==undefined&&PX.state==="ask"){const b=PX.bank[+d.pxbank];if(b.used)return;b.used=true;PX.built.push(b);PX.justAdded=true;sfx("tap");speak(plain(b.s),1.05);return renderOrder()}
+  if(d.pxbank!==undefined&&PX.state==="ask"){const b=PX.bank[+d.pxbank];if(b.used)return;b.used=true;PX.built.push(b);PX.justAdded=true;sfx("tap");speak(b.s,1.05);return renderOrder()}
   if(d.pxbuilt!==undefined&&PX.state==="ask"){PX.justAdded=false;const b=PX.built.splice(+d.pxbuilt,1)[0];b.used=false;sfx("flip");return renderOrder()}
   if(d.pxsay){const c=PX.cur;if(!c)return;
-    if(d.pxsay==="word")return speak(c.w.jp);
+    if(d.pxsay==="word")return speak(c.w.kana||c.w.jp);
     if(d.pxsay==="verb")return speak(c.type==="verbid"?c.ans.kana:V().norm(c.v).kana);
-    const t=plain(c.full||c.jp||"").replace("＿＿","");return speak(t,d.pxsay==="slow"?Math.max(.5,settings.rate-.3):null)}
+    const t=String(c.full||c.jp||"").replace("＿＿","");return speak(t,d.pxsay==="slow"?Math.max(.5,settings.rate-.3):null)}
   if(d.pxhint){PX.showHint=!PX.showHint;const h=document.querySelector(".pxhint");if(h)h.classList.toggle("blur",!PX.showHint);el.textContent=PX.showHint?"Ocultar":"Ver la frase";return}
   if(el.id==="pxLevels")return levelSheet();
   if(d.vlevel){const S=vset();S.level=+d.vlevel;saveSettings();sfx("add");closeSheet();if(d.vgo||PX.mode==="verbs"&&PX.active){PX.queue=PX.queue.slice(0,PX.i);return start("verbs")}return render()}
@@ -425,7 +425,7 @@ document.addEventListener("click",e=>{
   if(d.pxskip){settings.pracSpeak=false;saveSettings();toast("Vale, quito los ejercicios de hablar por ahora.");PX.queue=PX.queue.filter((q,k)=>k<PX.i||q.type!=="speak");return next()}
   if(el.id==="pxMic")return speakNow();
   if(d.pxm){const M=PX.match,[side,id]=d.pxm.split("|");const p=PX.cur.pairs.find(x=>(x.id||x.jp)===id);
-    if(side==="l")speak(p.jp);
+    if(side==="l")speak(p.kana||p.jp);
     if(!M.picked||M.picked.side===side){M.picked={side,p};sfx("tap");return renderMatch()}
     const other=M.picked.p;M.picked=null;
     if(other===p){M.done.add(id);sfx("receive");renderMatch();if(M.done.size===PX.cur.pairs.length)setTimeout(()=>check(),300);return}
